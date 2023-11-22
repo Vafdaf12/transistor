@@ -22,28 +22,29 @@ int main(int, char**) {
 
     sf::Vector2i mouse = sf::Mouse::getPosition();
 
-    while(window.isOpen()) {
-        for(sf::Event event; window.pollEvent(event);) {
-            if(event.type == sf::Event::Closed) {
+    while (window.isOpen()) {
+        for (sf::Event event; window.pollEvent(event);) {
+            if (event.type == sf::Event::Closed) {
                 window.close();
             }
-            if(event.type == sf::Event::Resized) {
+            if (event.type == sf::Event::Resized) {
                 float x = event.size.width;
                 float y = event.size.height;
                 view.setSize({x, y});
             }
-            if(event.type == sf::Event::MouseWheelScrolled) {
+            if (event.type == sf::Event::MouseWheelScrolled) {
                 float delta = event.mouseWheelScroll.delta;
                 std::cout << delta << std::endl;
                 view.zoom(1.0 - (delta * 0.1f));
             }
         }
         sf::Vector2i newPos = sf::Mouse::getPosition(window);
-        if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt)) {
+        if (sf::Mouse::isButtonPressed(sf::Mouse::Left) &&
+            sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt)) {
+
             sf::Vector2f delta = window.mapPixelToCoords(mouse) - window.mapPixelToCoords(newPos);
             view.move(delta);
         }
-
         mouse = newPos;
 
         window.setView(view);

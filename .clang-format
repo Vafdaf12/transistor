@@ -7,11 +7,10 @@ DerivePointerAlignment: false
 PointerAlignment: Left
 AccessModifierOffset: -4
 AlwaysBreakTemplateDeclarations: Yes
+ColumnLimit: 100
+
+AllowShortCaseLabelsOnASingleLine: true
 
 BinPackArguments: false
 BinPackParameters: false
-
-AllowShortCaseLabelsOnASingleLine: true
-AllowShortIfStatementsOnASingleLine: AllIfsAndElse
-
-AlignAfterOpenBracket: DontAlign
+AlignAfterOpenBracket: BlockIndent
