@@ -1,4 +1,5 @@
 #include "SFML/Graphics/CircleShape.hpp"
+#include "SFML/Graphics/RectangleShape.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 #include "SFML/Graphics/View.hpp"
@@ -61,46 +62,72 @@ int main(int, char**) {
 
     EventEmitter emitter;
     emitter.subscribe(sf::Event::Resized, [&](const sf::Event& event) {
-                float x = event.size.width;
-                float y = event.size.height;
-                view.setSize({x, y});
+        float x = event.size.width;
+        float y = event.size.height;
+        view.setSize({x, y});
     });
     emitter.subscribe(sf::Event::MouseWheelScrolled, [&](const sf::Event& event) {
-                float delta = event.mouseWheelScroll.delta;
-                std::cout << delta << std::endl;
-                view.zoom(1.0 - (delta * 0.1f));
+        float delta = event.mouseWheelScroll.delta;
+        std::cout << delta << std::endl;
+        view.zoom(1.0 - (delta * 0.1f));
     });
     emitter.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
-                if (event.mouseButton.button != sf::Mouse::Left) {
+        if (event.mouseButton.button != sf::Mouse::Left) {
             return;
-                }
-                sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
-                sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
+        }
+        sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
+        sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
 
-                tempPin = collidePin(pins, worldPos);
-                if (tempPin) {
-                    float r = tempPin->getRadius();
-                    vertex[0].position = tempPin->getPosition() + sf::Vector2f(r, r);
-                }
+        tempPin = collidePin(pins, worldPos);
+        if (tempPin) {
+            float r = tempPin->getRadius();
+            vertex[0].position = tempPin->getPosition() + sf::Vector2f(r, r);
+        }
     });
     emitter.subscribe(sf::Event::MouseButtonReleased, [&](const sf::Event& event) {
-                if (event.mouseButton.button != sf::Mouse::Left) {
+        if (event.mouseButton.button != sf::Mouse::Left) {
             return;
-                }
-                sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
-                sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
-                if (!tempPin) {
+        }
+        sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
+        sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
+        if (!tempPin) {
             return;
-                }
+        }
 
-                sf::CircleShape* nextPin = collidePin(pins, worldPos);
+        sf::CircleShape* nextPin = collidePin(pins, worldPos);
 
-                if (!nextPin || nextPin == tempPin) {
-                    tempPin = nullptr;
+        if (!nextPin || nextPin == tempPin) {
+            tempPin = nullptr;
             return;
-                }
-                edges.emplace_back(tempPin, nextPin);
-                tempPin = nullptr;
+        }
+        edges.emplace_back(tempPin, nextPin);
+        tempPin = nullptr;
+    });
+
+    // --- CIRCUIT DRAGGING ---
+    sf::RectangleShape circuit;
+    circuit.setFillColor(sf::Color::Green);
+    circuit.setSize({150, 100});
+    circuit.setPosition({-200, 0});
+    bool isDragging = false;
+    sf::Vector2f delta;
+
+    emitter.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
+        if (event.mouseButton.button != sf::Mouse::Left) {
+            return;
+        }
+        sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
+        sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
+
+        if(!circuit.getGlobalBounds().contains(worldPos)) {
+            return;
+        }
+
+        isDragging = true;
+        delta = circuit.getPosition() - worldPos;
+    });
+    emitter.subscribe(sf::Event::MouseButtonReleased, [&](const sf::Event& event) {
+        isDragging = false;
     });
 
     while (window.isOpen()) {
@@ -116,6 +143,10 @@ int main(int, char**) {
 
             sf::Vector2f delta = window.mapPixelToCoords(mouse) - window.mapPixelToCoords(newPos);
             view.move(delta);
+        }
+        if(isDragging) {
+            sf::Vector2f worldPos = window.mapPixelToCoords(mouse);
+            circuit.setPosition(worldPos + delta);
         }
         mouse = newPos;
         if (tempPin) {
