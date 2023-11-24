@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "EventEmitter.h"
+#include "ComponentDragger.h"
 
 sf::CircleShape createPin(sf::Vector2f pos = {0, 0}) {
     sf::CircleShape pin;
@@ -106,11 +107,18 @@ int main(int, char**) {
 
     // --- CIRCUIT DRAGGING ---
     sf::RectangleShape circuit;
+    int cpin1 = pins.size();
+    int cpin2 = pins.size()+1;
+
+    pins.emplace_back(createPin({-60, 15}));
+    pins.emplace_back(createPin({-60, 65}));
+
     circuit.setFillColor(sf::Color::Green);
     circuit.setSize({150, 100});
     circuit.setPosition({-200, 0});
-    bool isDragging = false;
-    sf::Vector2f delta;
+
+    ComponentDragger dragger;
+
 
     emitter.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
         if (event.mouseButton.button != sf::Mouse::Left) {
@@ -123,11 +131,10 @@ int main(int, char**) {
             return;
         }
 
-        isDragging = true;
-        delta = circuit.getPosition() - worldPos;
+        dragger.beginDrag({&circuit, &pins[cpin1], &pins[cpin2]}, worldPos);
     });
     emitter.subscribe(sf::Event::MouseButtonReleased, [&](const sf::Event& event) {
-        isDragging = false;
+        dragger.endDrag();
     });
 
     while (window.isOpen()) {
@@ -144,9 +151,9 @@ int main(int, char**) {
             sf::Vector2f delta = window.mapPixelToCoords(mouse) - window.mapPixelToCoords(newPos);
             view.move(delta);
         }
-        if(isDragging) {
-            sf::Vector2f worldPos = window.mapPixelToCoords(mouse);
-            circuit.setPosition(worldPos + delta);
+        {
+            sf::Vector2f worldPos = window.mapPixelToCoords(newPos);
+            dragger.update(worldPos);
         }
         mouse = newPos;
         if (tempPin) {
