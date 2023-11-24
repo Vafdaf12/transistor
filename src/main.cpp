@@ -9,6 +9,8 @@
 #include <iostream>
 #include <vector>
 
+#include "EventEmitter.h"
+
 sf::CircleShape createPin(sf::Vector2f pos = {0, 0}) {
     sf::CircleShape pin;
     pin.setPosition(pos);
@@ -57,24 +59,20 @@ int main(int, char**) {
 
     sf::CircleShape* tempPin = nullptr;
 
-    while (window.isOpen()) {
-        for (sf::Event event; window.pollEvent(event);) {
-            if (event.type == sf::Event::Closed) {
-                window.close();
-            }
-            if (event.type == sf::Event::Resized) {
+    EventEmitter emitter;
+    emitter.subscribe(sf::Event::Resized, [&](const sf::Event& event) {
                 float x = event.size.width;
                 float y = event.size.height;
                 view.setSize({x, y});
-            }
-            if (event.type == sf::Event::MouseWheelScrolled) {
+    });
+    emitter.subscribe(sf::Event::MouseWheelScrolled, [&](const sf::Event& event) {
                 float delta = event.mouseWheelScroll.delta;
                 std::cout << delta << std::endl;
                 view.zoom(1.0 - (delta * 0.1f));
-            }
-            if (event.type == sf::Event::MouseButtonPressed) {
+    });
+    emitter.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
                 if (event.mouseButton.button != sf::Mouse::Left) {
-                    continue;
+            return;
                 }
                 sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
                 sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
@@ -84,26 +82,33 @@ int main(int, char**) {
                     float r = tempPin->getRadius();
                     vertex[0].position = tempPin->getPosition() + sf::Vector2f(r, r);
                 }
-            }
-            if (event.type == sf::Event::MouseButtonReleased) {
+    });
+    emitter.subscribe(sf::Event::MouseButtonReleased, [&](const sf::Event& event) {
                 if (event.mouseButton.button != sf::Mouse::Left) {
-                    continue;
+            return;
                 }
                 sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
                 sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
                 if (!tempPin) {
-                    continue;
+            return;
                 }
 
                 sf::CircleShape* nextPin = collidePin(pins, worldPos);
 
                 if (!nextPin || nextPin == tempPin) {
                     tempPin = nullptr;
-                    continue;
+            return;
                 }
                 edges.emplace_back(tempPin, nextPin);
                 tempPin = nullptr;
+    });
+
+    while (window.isOpen()) {
+        for (sf::Event event; window.pollEvent(event);) {
+            if (event.type == sf::Event::Closed) {
+                window.close();
             }
+            emitter.post(event);
         }
         sf::Vector2i newPos = sf::Mouse::getPosition(window);
         if (sf::Mouse::isButtonPressed(sf::Mouse::Left) &&
@@ -120,6 +125,7 @@ int main(int, char**) {
         window.setView(view);
         window.clear();
 
+        window.draw(circuit);
         for (const auto& pin : pins) {
             window.draw(pin);
         }
