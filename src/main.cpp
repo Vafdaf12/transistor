@@ -2,6 +2,7 @@
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/RectangleShape.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
+#include "SFML/Graphics/Transformable.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 #include "SFML/Graphics/View.hpp"
 #include "SFML/System/Vector2.hpp"
@@ -35,6 +36,49 @@ sf::CircleShape* collidePin(std::vector<sf::CircleShape*>& pins, sf::Vector2f po
     return nullptr;
 }
 
+struct Circuit {
+    sf::RectangleShape body;
+    std::vector<sf::CircleShape> pins;
+};
+
+void initCircuit(Circuit& c, size_t n, sf::Vector2f pos) {
+    constexpr float RADIUS = 10.0f;
+    constexpr float SEP = 2*RADIUS;
+    constexpr float WIDTH = 150;
+
+    c.body.setPosition(pos);
+    c.body.setSize({WIDTH, (2*RADIUS+SEP)*n+SEP});
+
+    c.pins.clear();
+    for(size_t i = 0; i < n; i++) {
+        sf::Vector2f pinPos = pos + sf::Vector2f(WIDTH-RADIUS, pos.y+SEP+(2*RADIUS+SEP)*i);
+        sf::CircleShape pin;
+        pin.setPosition(pinPos);
+        pin.setFillColor(sf::Color::Black);
+        pin.setOutlineColor(sf::Color::White);
+        pin.setOutlineThickness(1);
+        pin.setRadius(RADIUS);
+        c.pins.emplace_back(std::move(pin));
+    }
+}
+
+void registerCircuit(Circuit& c, std::vector<sf::RectangleShape*>& bodies,std::vector<sf::CircleShape*>& pins) {
+    bodies.push_back(&c.body);
+    for(auto& p : c.pins) {
+        pins.push_back(&p);
+    }
+}
+
+std::vector<sf::Transformable*> circuitComponents(Circuit& c) {
+    std::vector<sf::Transformable*> components;
+    for(auto& p : c.pins) {
+        components.push_back(&p);
+    }
+    components.push_back(&c.body);
+    return components;
+}
+
+
 int main(int, char**) {
     std::cout << "Hello, World!" << std::endl;
     sf::RenderWindow window({1280, 720}, "Transistor");
@@ -60,17 +104,11 @@ int main(int, char**) {
     sf::CircleShape p3 = createPin({150, 50});
     pins.push_back(&p3);
 
-    sf::RectangleShape circuit;
-    circuits.push_back(&circuit);
-    circuit.setFillColor(sf::Color::Green);
-    circuit.setSize({150, 100});
-    circuit.setPosition({-200, 0});
 
-    sf::CircleShape cpin1 = createPin({-60, 15});
-    pins.push_back(&cpin1);
-
-    sf::CircleShape cpin2 = createPin({-60, 65});
-    pins.push_back(&cpin2);
+    Circuit circuit;
+    circuit.body.setFillColor(sf::Color::Green);
+    initCircuit(circuit, 3, {-200, 0});
+    registerCircuit(circuit, circuits, pins);
 
     // --- VIEW UPDATES ---
     sf::View view;
@@ -147,11 +185,11 @@ int main(int, char**) {
         sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
         sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
 
-        if (!circuit.getGlobalBounds().contains(worldPos)) {
+        if (!circuit.body.getGlobalBounds().contains(worldPos)) {
             return;
         }
 
-        dragger.beginDrag({&circuit, &cpin1, &cpin2}, worldPos);
+        dragger.beginDrag(circuitComponents(circuit), worldPos);
     });
     emitter.subscribe(sf::Event::MouseButtonReleased, [&](const sf::Event& event) {
         dragger.endDrag();
