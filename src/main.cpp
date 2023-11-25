@@ -81,6 +81,14 @@ std::vector<sf::Transformable*> circuitComponents(Circuit& c) {
     return components;
 }
 
+enum ToolState {
+    NONE = 0,
+    PANNING,
+    SELECTING,
+    CONNECTING,
+    DRAGGING,
+};
+
 
 int main(int, char**) {
     std::cout << "Hello, World!" << std::endl;
@@ -91,6 +99,7 @@ int main(int, char**) {
 
     sf::Vector2i mouse = sf::Mouse::getPosition();
     EventEmitter emitter;
+    ToolState state = NONE;
 
     // --- GRAPHICS COLLECTIONS ---
     std::vector<sf::CircleShape*> pins;
@@ -125,7 +134,6 @@ int main(int, char**) {
     sf::View view;
     view.setCenter({0, 0});
     view.setSize({1280, 720});
-    bool isPanning = false;
 
     emitter.subscribe(sf::Event::Resized, [&](const sf::Event& event) {
         float x = event.size.width;
@@ -135,11 +143,11 @@ int main(int, char**) {
     emitter.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
         if(event.mouseButton.button != sf::Mouse::Left) return;
         if(!sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt)) return;
-
-        isPanning = true;
+        state = PANNING;
     });
     emitter.subscribe(sf::Event::MouseButtonReleased, [&](const sf::Event& event) {
-        isPanning = false;
+        if(state != PANNING) return;
+        state = NONE;
     });
     emitter.subscribe(sf::Event::MouseWheelScrolled, [&](const sf::Event& event) {
         float delta = event.mouseWheelScroll.delta;
@@ -150,6 +158,7 @@ int main(int, char**) {
     // --- PIN CONNECTION ---
     sf::CircleShape* tempPin = nullptr;
     emitter.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
+        if(state != NONE) return;
         if (event.mouseButton.button != sf::Mouse::Left) {
             return;
         }
@@ -157,25 +166,26 @@ int main(int, char**) {
         sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
 
         tempPin = collidePin(pins, worldPos);
-        if (tempPin) {
-            float r = tempPin->getRadius();
-            connectVertices[0].position = tempPin->getPosition() + sf::Vector2f(r, r);
+        if (!tempPin) {
+            return;
         }
+        float r = tempPin->getRadius();
+        connectVertices[0].position = tempPin->getPosition() + sf::Vector2f(r, r);
+        state = CONNECTING;
     });
     emitter.subscribe(sf::Event::MouseButtonReleased, [&](const sf::Event& event) {
+        if(state != CONNECTING) return;
         if (event.mouseButton.button != sf::Mouse::Left) {
             return;
         }
         sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
         sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
-        if (!tempPin) {
-            return;
-        }
 
         sf::CircleShape* nextPin = collidePin(pins, worldPos);
 
         if (!nextPin || nextPin == tempPin) {
             tempPin = nullptr;
+            state = NONE;
             return;
         }
         if (tempPin < nextPin) {
@@ -184,6 +194,7 @@ int main(int, char**) {
             edges.insert({nextPin, tempPin});
         }
         tempPin = nullptr;
+        state = NONE;
     });
 
     // --- CIRCUIT DRAGGING ---
@@ -191,6 +202,7 @@ int main(int, char**) {
     std::vector<Circuit*> selected;
 
     emitter.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
+        if(state != NONE) return;
         if (event.mouseButton.button != sf::Mouse::Left) {
             return;
         }
@@ -212,13 +224,16 @@ int main(int, char**) {
                 std::vector<sf::Transformable*> children = circuitComponents(*c);
                 std::copy(children.begin(), children.end(), std::back_inserter(components));
             }
-
+        }
+        if(components.empty()) {
+            return;
         }
 
         dragger.beginDrag(components, worldPos);
+        state = DRAGGING;
     });
     emitter.subscribe(sf::Event::MouseButtonReleased, [&](const sf::Event& event) {
-        if(!dragger.isDragging()) return;
+        if(state != DRAGGING) return;
         dragger.endDrag();
 
         sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
@@ -229,28 +244,32 @@ int main(int, char**) {
             }
         }
         selected.clear();
+        state = NONE;
     });
     // --- CIRCUIT SELECTION ---
     sf::RectangleShape selector;
     selector.setSize({100, 100});
     selector.setFillColor({66, 135, 245, 100});
-    bool isSelecting = false;
 
     emitter.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
-        if(dragger.isDragging()) return;
-        if(event.mouseButton.button != sf::Mouse::Left) return;
-        if(sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt)) return;
+        std::cout << "Selecting" << state << std::endl;
+        if(state != NONE) return;
+        if (event.mouseButton.button != sf::Mouse::Left) {
+            return;
+        }
+
         selected.clear();
 
         sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
         sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
 
-        isSelecting = true;
         selector.setPosition(worldPos);
         selector.setSize({0, 0});
+        state = SELECTING;
+        std::cout << "Selecting" << std::endl;
     });
     emitter.subscribe(sf::Event::MouseMoved, [&](const sf::Event& event) {
-        if(!isSelecting) return;
+        if(state != SELECTING) return;
         selected.clear();
         std::copy_if(circuits.begin(), circuits.end(), std::back_inserter(selected), [&](Circuit* c) {
             sf::Vector2f tl = c->body.getPosition();
@@ -264,7 +283,8 @@ int main(int, char**) {
     });
 
     emitter.subscribe(sf::Event::MouseButtonReleased, [&](const sf::Event& event) {
-        isSelecting = false;
+        if(state != SELECTING) return;
+        state = NONE;
     });
 
 
@@ -279,20 +299,30 @@ int main(int, char**) {
         sf::Vector2i newPos = sf::Mouse::getPosition(window);
         sf::Vector2f newWorldPos = window.mapPixelToCoords(newPos);
 
-        if(isPanning) {
+        switch(state) {
+
+        case PANNING: {
             sf::Vector2f delta = window.mapPixelToCoords(mouse) - newWorldPos;
             view.move(delta);
+            break;
+
         }
-        if(isSelecting) {
+        case SELECTING: {
             sf::Vector2f pos = newWorldPos - selector.getPosition();
             selector.setSize(pos);
+            break;
+
         }
+        case CONNECTING: {
+            connectVertices[1] = window.mapPixelToCoords(mouse);
+
+        }
+        default: break;
+        }
+
 
         dragger.update(newWorldPos);
         mouse = newPos;
-        if (tempPin) {
-            connectVertices[1] = window.mapPixelToCoords(mouse);
-        }
 
         window.setView(view);
         window.clear();
@@ -313,10 +343,10 @@ int main(int, char**) {
             window.draw(edgeVertices, 2, sf::Lines);
         }
 
-        if (tempPin) {
+        if (state == CONNECTING) {
             window.draw(connectVertices, 2, sf::Lines);
         }
-        if (isSelecting) {
+        if (state == SELECTING) {
             window.draw(selector);
         }
         for(const Circuit* c : selected) {
