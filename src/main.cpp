@@ -1,4 +1,5 @@
 #include "SFML/Graphics/CircleShape.hpp"
+#include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/RectangleShape.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Vertex.hpp"
@@ -8,10 +9,12 @@
 #include "SFML/Window/Keyboard.hpp"
 
 #include <iostream>
+#include <set>
+#include <utility>
 #include <vector>
 
-#include "EventEmitter.h"
 #include "ComponentDragger.h"
+#include "EventEmitter.h"
 
 sf::CircleShape createPin(sf::Vector2f pos = {0, 0}) {
     sf::CircleShape pin;
@@ -43,7 +46,7 @@ int main(int, char**) {
     window.setView(view);
 
     std::vector<sf::CircleShape> pins;
-    std::vector<std::pair<sf::CircleShape*, sf::CircleShape*>> edges;
+    std::set<std::pair<sf::CircleShape*, sf::CircleShape*>> edges;
 
     pins.emplace_back(createPin({0, 0}));
     pins.emplace_back(createPin({100, 50}));
@@ -62,16 +65,30 @@ int main(int, char**) {
     sf::CircleShape* tempPin = nullptr;
 
     EventEmitter emitter;
+
+    // --- VIEW UPDATES ---
+    bool isPanning = false;
     emitter.subscribe(sf::Event::Resized, [&](const sf::Event& event) {
         float x = event.size.width;
         float y = event.size.height;
         view.setSize({x, y});
+    });
+    emitter.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
+        if(event.mouseButton.button != sf::Mouse::Left) return;
+        if(!sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt)) return;
+
+        isPanning = true;
+    });
+    emitter.subscribe(sf::Event::MouseButtonReleased, [&](const sf::Event& event) {
+        isPanning = false;
     });
     emitter.subscribe(sf::Event::MouseWheelScrolled, [&](const sf::Event& event) {
         float delta = event.mouseWheelScroll.delta;
         std::cout << delta << std::endl;
         view.zoom(1.0 - (delta * 0.1f));
     });
+
+    // --- PIN CONNECTION ---
     emitter.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
         if (event.mouseButton.button != sf::Mouse::Left) {
             return;
@@ -101,14 +118,18 @@ int main(int, char**) {
             tempPin = nullptr;
             return;
         }
-        edges.emplace_back(tempPin, nextPin);
+        if (tempPin < nextPin) {
+            edges.insert({tempPin, nextPin});
+        } else {
+            edges.insert({nextPin, tempPin});
+        }
         tempPin = nullptr;
     });
 
     // --- CIRCUIT DRAGGING ---
     sf::RectangleShape circuit;
     int cpin1 = pins.size();
-    int cpin2 = pins.size()+1;
+    int cpin2 = pins.size() + 1;
 
     pins.emplace_back(createPin({-60, 15}));
     pins.emplace_back(createPin({-60, 65}));
@@ -119,7 +140,6 @@ int main(int, char**) {
 
     ComponentDragger dragger;
 
-
     emitter.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
         if (event.mouseButton.button != sf::Mouse::Left) {
             return;
@@ -127,7 +147,7 @@ int main(int, char**) {
         sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
         sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
 
-        if(!circuit.getGlobalBounds().contains(worldPos)) {
+        if (!circuit.getGlobalBounds().contains(worldPos)) {
             return;
         }
 
@@ -137,6 +157,31 @@ int main(int, char**) {
         dragger.endDrag();
     });
 
+    // --- CIRCUIT SELECTION ---
+    sf::RectangleShape selector;
+    selector.setSize({100, 100});
+    selector.setFillColor({66, 135, 245, 100});
+    bool isSelecting = false;
+
+    emitter.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
+        if(dragger.isDragging()) return;
+        if(event.mouseButton.button != sf::Mouse::Left) return;
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt)) return;
+
+        sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
+        sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
+
+        isSelecting = true;
+        selector.setPosition(worldPos);
+        selector.setSize({0, 0});
+
+    });
+
+    emitter.subscribe(sf::Event::MouseButtonReleased, [&](const sf::Event& event) {
+        isSelecting = false;
+    });
+
+    // --- EVENT LOOP ---
     while (window.isOpen()) {
         for (sf::Event event; window.pollEvent(event);) {
             if (event.type == sf::Event::Closed) {
@@ -145,16 +190,18 @@ int main(int, char**) {
             emitter.post(event);
         }
         sf::Vector2i newPos = sf::Mouse::getPosition(window);
-        if (sf::Mouse::isButtonPressed(sf::Mouse::Left) &&
-            sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt)) {
+        sf::Vector2f newWorldPos = window.mapPixelToCoords(newPos);
 
-            sf::Vector2f delta = window.mapPixelToCoords(mouse) - window.mapPixelToCoords(newPos);
+        if(isPanning) {
+            sf::Vector2f delta = window.mapPixelToCoords(mouse) - newWorldPos;
             view.move(delta);
         }
-        {
-            sf::Vector2f worldPos = window.mapPixelToCoords(newPos);
-            dragger.update(worldPos);
+        if(isSelecting) {
+            sf::Vector2f pos = newWorldPos - selector.getPosition();
+            selector.setSize(pos);
         }
+
+        dragger.update(newWorldPos);
         mouse = newPos;
         if (tempPin) {
             vertex[1] = window.mapPixelToCoords(mouse);
@@ -179,6 +226,9 @@ int main(int, char**) {
 
         if (tempPin) {
             window.draw(vertex, 2, sf::Lines);
+        }
+        if (isSelecting) {
+            window.draw(selector);
         }
         window.display();
     }

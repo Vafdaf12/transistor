@@ -22,3 +22,8 @@ void ComponentDragger::update(sf::Vector2f newPos) {
         t->setPosition(newPos + delta);
     }
 }
+
+bool ComponentDragger::isDragging() const {
+    return !_components.empty();
+    
+}

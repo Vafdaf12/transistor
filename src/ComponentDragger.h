@@ -10,6 +10,8 @@ public:
     void endDrag();
 
     void update(sf::Vector2f newPos);
+
+    bool isDragging() const;
 private:
     std::vector<std::pair<sf::Transformable*, sf::Vector2f>> _components;
 };
