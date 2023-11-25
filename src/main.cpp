@@ -1,5 +1,6 @@
 #include "SFML/Graphics/CircleShape.hpp"
 #include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/Rect.hpp"
 #include "SFML/Graphics/RectangleShape.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Transformable.hpp"
@@ -9,7 +10,9 @@
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/Keyboard.hpp"
 
+#include <algorithm>
 #include <iostream>
+#include <iterator>
 #include <set>
 #include <utility>
 #include <vector>
@@ -51,7 +54,7 @@ void initCircuit(Circuit& c, size_t n, sf::Vector2f pos) {
 
     c.pins.clear();
     for(size_t i = 0; i < n; i++) {
-        sf::Vector2f pinPos = pos + sf::Vector2f(WIDTH-RADIUS, pos.y+SEP+(2*RADIUS+SEP)*i);
+        sf::Vector2f pinPos = pos + sf::Vector2f(WIDTH-RADIUS, SEP+(2*RADIUS+SEP)*i);
         sf::CircleShape pin;
         pin.setPosition(pinPos);
         pin.setFillColor(sf::Color::Black);
@@ -84,13 +87,14 @@ int main(int, char**) {
     sf::RenderWindow window({1280, 720}, "Transistor");
 
     std::set<std::pair<const sf::CircleShape*, const sf::CircleShape*>> edges;
+    std::vector<Circuit*> circuits;
 
     sf::Vector2i mouse = sf::Mouse::getPosition();
     EventEmitter emitter;
 
     // --- GRAPHICS COLLECTIONS ---
     std::vector<sf::CircleShape*> pins;
-    std::vector<sf::RectangleShape*> circuits;
+    std::vector<sf::RectangleShape*> bodies;
     sf::Vertex edgeVertices[2] = {sf::Vertex({0, 0}, sf::Color::White)};
     sf::Vertex connectVertices[2] = {sf::Vertex({0, 0}, sf::Color::White)};
     
@@ -108,7 +112,14 @@ int main(int, char**) {
     Circuit circuit;
     circuit.body.setFillColor(sf::Color::Green);
     initCircuit(circuit, 3, {-200, 0});
-    registerCircuit(circuit, circuits, pins);
+    registerCircuit(circuit, bodies, pins);
+    circuits.push_back(&circuit);
+
+    Circuit circuit2;
+    circuit2.body.setFillColor(sf::Color::Red);
+    initCircuit(circuit2, 2, {-200, 400});
+    registerCircuit(circuit2, bodies, pins);
+    circuits.push_back(&circuit2);
 
     // --- VIEW UPDATES ---
     sf::View view;
@@ -177,6 +188,7 @@ int main(int, char**) {
 
     // --- CIRCUIT DRAGGING ---
     ComponentDragger dragger;
+    std::vector<Circuit*> selected;
 
     emitter.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
         if (event.mouseButton.button != sf::Mouse::Left) {
@@ -185,16 +197,39 @@ int main(int, char**) {
         sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
         sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
 
-        if (!circuit.body.getGlobalBounds().contains(worldPos)) {
-            return;
+        std::vector<sf::Transformable*> components;
+        if(selected.empty()) {
+            // Find 
+            for(Circuit* c : circuits) {
+                if (c->body.getGlobalBounds().contains(worldPos)) {
+                    std::vector<sf::Transformable*> children = circuitComponents(*c);
+                    std::copy(children.begin(), children.end(), std::back_inserter(components));
+                }
+            }
+        }
+        else {
+            for(Circuit* c : selected) {
+                std::vector<sf::Transformable*> children = circuitComponents(*c);
+                std::copy(children.begin(), children.end(), std::back_inserter(components));
+            }
+
         }
 
-        dragger.beginDrag(circuitComponents(circuit), worldPos);
+        dragger.beginDrag(components, worldPos);
     });
     emitter.subscribe(sf::Event::MouseButtonReleased, [&](const sf::Event& event) {
+        if(!dragger.isDragging()) return;
         dragger.endDrag();
-    });
 
+        sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
+        sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
+        for(Circuit* c : selected) {
+            if (c->body.getGlobalBounds().contains(worldPos)) {
+                return;
+            }
+        }
+        selected.clear();
+    });
     // --- CIRCUIT SELECTION ---
     sf::RectangleShape selector;
     selector.setSize({100, 100});
@@ -205,6 +240,7 @@ int main(int, char**) {
         if(dragger.isDragging()) return;
         if(event.mouseButton.button != sf::Mouse::Left) return;
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt)) return;
+        selected.clear();
 
         sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
         sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
@@ -212,12 +248,25 @@ int main(int, char**) {
         isSelecting = true;
         selector.setPosition(worldPos);
         selector.setSize({0, 0});
+    });
+    emitter.subscribe(sf::Event::MouseMoved, [&](const sf::Event& event) {
+        if(!isSelecting) return;
+        selected.clear();
+        std::copy_if(circuits.begin(), circuits.end(), std::back_inserter(selected), [&](Circuit* c) {
+            sf::Vector2f tl = c->body.getPosition();
+            sf::Vector2f br = tl + c->body.getSize();
+            sf::FloatRect selectRect = selector.getGlobalBounds();
+            if(!selectRect.contains(tl)) return false;
+            if(!selectRect.contains(br)) return false;
+            return true;
+        });
 
     });
 
     emitter.subscribe(sf::Event::MouseButtonReleased, [&](const sf::Event& event) {
         isSelecting = false;
     });
+
 
     // --- EVENT LOOP ---
     while (window.isOpen()) {
@@ -248,7 +297,7 @@ int main(int, char**) {
         window.setView(view);
         window.clear();
 
-        for(const auto& c : circuits) {
+        for(const auto& c : bodies) {
             window.draw(*c);
         }
         for (const auto& pin : pins) {
@@ -269,6 +318,13 @@ int main(int, char**) {
         }
         if (isSelecting) {
             window.draw(selector);
+        }
+        for(const Circuit* c : selected) {
+            sf::RectangleShape outline = c->body;
+            outline.setFillColor(sf::Color::Transparent);
+            outline.setOutlineColor({66, 135, 245, 150});
+            outline.setOutlineThickness(5);
+            window.draw(outline);
         }
         window.display();
     }
