@@ -26,10 +26,10 @@ sf::CircleShape createPin(sf::Vector2f pos = {0, 0}) {
     return pin;
 }
 
-sf::CircleShape* collidePin(std::vector<sf::CircleShape>& pins, sf::Vector2f pos) {
+sf::CircleShape* collidePin(std::vector<sf::CircleShape*>& pins, sf::Vector2f pos) {
     for (int i = 0; i < pins.size(); i++) {
-        if (pins[i].getGlobalBounds().contains(pos)) {
-            return &pins[i];
+        if (pins[i]->getGlobalBounds().contains(pos)) {
+            return pins[i];
         }
     }
     return nullptr;
@@ -38,36 +38,46 @@ sf::CircleShape* collidePin(std::vector<sf::CircleShape>& pins, sf::Vector2f pos
 int main(int, char**) {
     std::cout << "Hello, World!" << std::endl;
     sf::RenderWindow window({1280, 720}, "Transistor");
-    window.setFramerateLimit(70);
 
+    std::set<std::pair<const sf::CircleShape*, const sf::CircleShape*>> edges;
+
+    sf::Vector2i mouse = sf::Mouse::getPosition();
+    EventEmitter emitter;
+
+    // --- GRAPHICS COLLECTIONS ---
+    std::vector<sf::CircleShape*> pins;
+    std::vector<sf::RectangleShape*> circuits;
+    sf::Vertex edgeVertices[2] = {sf::Vertex({0, 0}, sf::Color::White)};
+    sf::Vertex connectVertices[2] = {sf::Vertex({0, 0}, sf::Color::White)};
+    
+    // --- GRAPHICS ELEMENTS ---
+    sf::CircleShape p1 = createPin({0, 0});
+    pins.push_back(&p1);
+
+    sf::CircleShape p2 = createPin({100, 50});
+    pins.push_back(&p2);
+
+    sf::CircleShape p3 = createPin({150, 50});
+    pins.push_back(&p3);
+
+    sf::RectangleShape circuit;
+    circuits.push_back(&circuit);
+    circuit.setFillColor(sf::Color::Green);
+    circuit.setSize({150, 100});
+    circuit.setPosition({-200, 0});
+
+    sf::CircleShape cpin1 = createPin({-60, 15});
+    pins.push_back(&cpin1);
+
+    sf::CircleShape cpin2 = createPin({-60, 65});
+    pins.push_back(&cpin2);
+
+    // --- VIEW UPDATES ---
     sf::View view;
     view.setCenter({0, 0});
     view.setSize({1280, 720});
-    window.setView(view);
-
-    std::vector<sf::CircleShape> pins;
-    std::set<std::pair<sf::CircleShape*, sf::CircleShape*>> edges;
-
-    pins.emplace_back(createPin({0, 0}));
-    pins.emplace_back(createPin({100, 50}));
-    pins.emplace_back(createPin({150, 50}));
-
-    sf::Vector2i mouse = sf::Mouse::getPosition();
-
-    sf::Vertex vertex[2];
-    vertex[0].color = sf::Color::White;
-    vertex[1].color = sf::Color::White;
-
-    sf::Vertex edgeVertex[2];
-    edgeVertex[0].color = sf::Color::White;
-    edgeVertex[1].color = sf::Color::White;
-
-    sf::CircleShape* tempPin = nullptr;
-
-    EventEmitter emitter;
-
-    // --- VIEW UPDATES ---
     bool isPanning = false;
+
     emitter.subscribe(sf::Event::Resized, [&](const sf::Event& event) {
         float x = event.size.width;
         float y = event.size.height;
@@ -89,6 +99,7 @@ int main(int, char**) {
     });
 
     // --- PIN CONNECTION ---
+    sf::CircleShape* tempPin = nullptr;
     emitter.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
         if (event.mouseButton.button != sf::Mouse::Left) {
             return;
@@ -99,7 +110,7 @@ int main(int, char**) {
         tempPin = collidePin(pins, worldPos);
         if (tempPin) {
             float r = tempPin->getRadius();
-            vertex[0].position = tempPin->getPosition() + sf::Vector2f(r, r);
+            connectVertices[0].position = tempPin->getPosition() + sf::Vector2f(r, r);
         }
     });
     emitter.subscribe(sf::Event::MouseButtonReleased, [&](const sf::Event& event) {
@@ -127,17 +138,6 @@ int main(int, char**) {
     });
 
     // --- CIRCUIT DRAGGING ---
-    sf::RectangleShape circuit;
-    int cpin1 = pins.size();
-    int cpin2 = pins.size() + 1;
-
-    pins.emplace_back(createPin({-60, 15}));
-    pins.emplace_back(createPin({-60, 65}));
-
-    circuit.setFillColor(sf::Color::Green);
-    circuit.setSize({150, 100});
-    circuit.setPosition({-200, 0});
-
     ComponentDragger dragger;
 
     emitter.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
@@ -151,7 +151,7 @@ int main(int, char**) {
             return;
         }
 
-        dragger.beginDrag({&circuit, &pins[cpin1], &pins[cpin2]}, worldPos);
+        dragger.beginDrag({&circuit, &cpin1, &cpin2}, worldPos);
     });
     emitter.subscribe(sf::Event::MouseButtonReleased, [&](const sf::Event& event) {
         dragger.endDrag();
@@ -204,28 +204,30 @@ int main(int, char**) {
         dragger.update(newWorldPos);
         mouse = newPos;
         if (tempPin) {
-            vertex[1] = window.mapPixelToCoords(mouse);
+            connectVertices[1] = window.mapPixelToCoords(mouse);
         }
 
         window.setView(view);
         window.clear();
 
-        window.draw(circuit);
+        for(const auto& c : circuits) {
+            window.draw(*c);
+        }
         for (const auto& pin : pins) {
-            window.draw(pin);
+            window.draw(*pin);
         }
         for (const auto& [s1, s2] : edges) {
             float r1 = s1->getRadius();
             float r2 = s2->getRadius();
 
-            edgeVertex[0].position = s1->getPosition() + sf::Vector2f(r1, r1);
-            edgeVertex[1].position = s2->getPosition() + sf::Vector2f(r2, r2);
+            edgeVertices[0].position = s1->getPosition() + sf::Vector2f(r1, r1);
+            edgeVertices[1].position = s2->getPosition() + sf::Vector2f(r2, r2);
 
-            window.draw(edgeVertex, 2, sf::Lines);
+            window.draw(edgeVertices, 2, sf::Lines);
         }
 
         if (tempPin) {
-            window.draw(vertex, 2, sf::Lines);
+            window.draw(connectVertices, 2, sf::Lines);
         }
         if (isSelecting) {
             window.draw(selector);
