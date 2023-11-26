@@ -2,6 +2,7 @@
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Rect.hpp"
 #include "SFML/Graphics/RectangleShape.hpp"
+#include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Transformable.hpp"
 #include "SFML/Graphics/Vertex.hpp"
@@ -30,24 +31,61 @@ sf::CircleShape createPin(sf::Vector2f pos = {0, 0}) {
     return pin;
 }
 
-sf::CircleShape* collidePin(std::vector<sf::CircleShape*>& pins, sf::Vector2f pos) {
+
+struct Pin {
+    enum PinType  {
+        INPUT,
+        OUTPUT,
+        ANY
+    };
+    sf::CircleShape body;
+    PinType type = ANY;
+};
+
+struct Circuit {
+    sf::RectangleShape body;
+    std::vector<Pin> pins;
+};
+
+
+constexpr float RADIUS = 10.0f;
+constexpr float SEP = 2*RADIUS;
+constexpr float WIDTH = 150;
+
+Pin* collidePin(const std::vector<Pin*>& pins, sf::Vector2f pos) {
     for (int i = 0; i < pins.size(); i++) {
-        if (pins[i]->getGlobalBounds().contains(pos)) {
+        if (pins[i]->body.getGlobalBounds().contains(pos)) {
             return pins[i];
         }
     }
     return nullptr;
 }
 
-struct Circuit {
-    sf::RectangleShape body;
-    std::vector<sf::CircleShape> pins;
-};
+bool isCompatible(const Pin& p1, const Pin& p2) {
+    if(p1.type == Pin::ANY || p2.type == Pin::ANY) return true;
+    return p1.type != p2.type;
+}
+
+void initPin(Pin& p, sf::Vector2f pos, Pin::PinType type = Pin::ANY) {
+    p.type = type;
+    p.body.setPosition(pos);
+    p.body.setFillColor(sf::Color::Black);
+    switch(type) {
+        case Pin::INPUT:
+            p.body.setOutlineColor(sf::Color::Blue);
+            break;
+        case Pin::OUTPUT:
+            p.body.setOutlineColor(sf::Color::Magenta);
+            break;
+        case Pin::ANY:
+            p.body.setOutlineColor(sf::Color::White);
+            break;
+    }
+    p.body.setOutlineThickness(1);
+    p.body.setRadius(RADIUS);
+}
 
 void initCircuit(Circuit& c, size_t n, sf::Vector2f pos) {
-    constexpr float RADIUS = 10.0f;
-    constexpr float SEP = 2*RADIUS;
-    constexpr float WIDTH = 150;
 
     c.body.setPosition(pos);
     c.body.setSize({WIDTH, (2*RADIUS+SEP)*n+SEP});
@@ -55,17 +93,13 @@ void initCircuit(Circuit& c, size_t n, sf::Vector2f pos) {
     c.pins.clear();
     for(size_t i = 0; i < n; i++) {
         sf::Vector2f pinPos = pos + sf::Vector2f(WIDTH-RADIUS, SEP+(2*RADIUS+SEP)*i);
-        sf::CircleShape pin;
-        pin.setPosition(pinPos);
-        pin.setFillColor(sf::Color::Black);
-        pin.setOutlineColor(sf::Color::White);
-        pin.setOutlineThickness(1);
-        pin.setRadius(RADIUS);
+        Pin pin;
+        initPin(pin, pinPos, Pin::OUTPUT);
         c.pins.emplace_back(std::move(pin));
     }
 }
 
-void registerCircuit(Circuit& c, std::vector<sf::RectangleShape*>& bodies,std::vector<sf::CircleShape*>& pins) {
+void registerCircuit(Circuit& c, std::vector<sf::RectangleShape*>& bodies,std::vector<Pin*>& pins) {
     bodies.push_back(&c.body);
     for(auto& p : c.pins) {
         pins.push_back(&p);
@@ -75,7 +109,7 @@ void registerCircuit(Circuit& c, std::vector<sf::RectangleShape*>& bodies,std::v
 std::vector<sf::Transformable*> circuitComponents(Circuit& c) {
     std::vector<sf::Transformable*> components;
     for(auto& p : c.pins) {
-        components.push_back(&p);
+        components.push_back(&p.body);
     }
     components.push_back(&c.body);
     return components;
@@ -94,7 +128,7 @@ int main(int, char**) {
     std::cout << "Hello, World!" << std::endl;
     sf::RenderWindow window({1280, 720}, "Transistor");
 
-    std::set<std::pair<const sf::CircleShape*, const sf::CircleShape*>> edges;
+    std::set<std::pair<const Pin*, const Pin*>> edges;
     std::vector<Circuit*> circuits;
 
     sf::Vector2i mouse = sf::Mouse::getPosition();
@@ -102,19 +136,19 @@ int main(int, char**) {
     ToolState state = NONE;
 
     // --- GRAPHICS COLLECTIONS ---
-    std::vector<sf::CircleShape*> pins;
+    std::vector<Pin*> pins;
     std::vector<sf::RectangleShape*> bodies;
     sf::Vertex edgeVertices[2] = {sf::Vertex({0, 0}, sf::Color::White)};
     sf::Vertex connectVertices[2] = {sf::Vertex({0, 0}, sf::Color::White)};
     
     // --- GRAPHICS ELEMENTS ---
-    sf::CircleShape p1 = createPin({0, 0});
+    Pin p1; initPin(p1, {0, 0}, Pin::INPUT);
     pins.push_back(&p1);
 
-    sf::CircleShape p2 = createPin({100, 50});
+    Pin p2; initPin(p2, {100, 50}, Pin::OUTPUT);
     pins.push_back(&p2);
 
-    sf::CircleShape p3 = createPin({150, 50});
+    Pin p3; initPin(p3, {150, 50});
     pins.push_back(&p3);
 
 
@@ -156,7 +190,7 @@ int main(int, char**) {
     });
 
     // --- PIN CONNECTION ---
-    sf::CircleShape* tempPin = nullptr;
+    Pin* tempPin = nullptr;
     emitter.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
         if(state != NONE) return;
         if (event.mouseButton.button != sf::Mouse::Left) {
@@ -169,8 +203,8 @@ int main(int, char**) {
         if (!tempPin) {
             return;
         }
-        float r = tempPin->getRadius();
-        connectVertices[0].position = tempPin->getPosition() + sf::Vector2f(r, r);
+        float r = tempPin->body.getRadius();
+        connectVertices[0].position = tempPin->body.getPosition() + sf::Vector2f(r, r);
         state = CONNECTING;
     });
     emitter.subscribe(sf::Event::MouseButtonReleased, [&](const sf::Event& event) {
@@ -181,13 +215,19 @@ int main(int, char**) {
         sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
         sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
 
-        sf::CircleShape* nextPin = collidePin(pins, worldPos);
+        Pin* nextPin = collidePin(pins, worldPos);
 
         if (!nextPin || nextPin == tempPin) {
             tempPin = nullptr;
             state = NONE;
             return;
         }
+        if(!isCompatible(*tempPin, *nextPin)) {
+            tempPin = nullptr;
+            state = NONE;
+            return;
+        }
+
         if (tempPin < nextPin) {
             edges.insert({tempPin, nextPin});
         } else {
@@ -252,7 +292,6 @@ int main(int, char**) {
     selector.setFillColor({66, 135, 245, 100});
 
     emitter.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
-        std::cout << "Selecting" << state << std::endl;
         if(state != NONE) return;
         if (event.mouseButton.button != sf::Mouse::Left) {
             return;
@@ -266,7 +305,6 @@ int main(int, char**) {
         selector.setPosition(worldPos);
         selector.setSize({0, 0});
         state = SELECTING;
-        std::cout << "Selecting" << std::endl;
     });
     emitter.subscribe(sf::Event::MouseMoved, [&](const sf::Event& event) {
         if(state != SELECTING) return;
@@ -331,14 +369,14 @@ int main(int, char**) {
             window.draw(*c);
         }
         for (const auto& pin : pins) {
-            window.draw(*pin);
+            window.draw(pin->body);
         }
         for (const auto& [s1, s2] : edges) {
-            float r1 = s1->getRadius();
-            float r2 = s2->getRadius();
+            float r1 = s1->body.getRadius();
+            float r2 = s2->body.getRadius();
 
-            edgeVertices[0].position = s1->getPosition() + sf::Vector2f(r1, r1);
-            edgeVertices[1].position = s2->getPosition() + sf::Vector2f(r2, r2);
+            edgeVertices[0].position = s1->body.getPosition() + sf::Vector2f(r1, r1);
+            edgeVertices[1].position = s2->body.getPosition() + sf::Vector2f(r2, r2);
 
             window.draw(edgeVertices, 2, sf::Lines);
         }
