@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <iostream>
 #include <iterator>
+#include <list>
 #include <set>
 #include <utility>
 #include <vector>
@@ -163,6 +164,24 @@ int main(int, char**) {
     initCircuit(circuit2, 2, {-200, 400});
     registerCircuit(circuit2, bodies, pins);
     circuits.push_back(&circuit2);
+
+    // --- GUI UPDATES ---
+    EventEmitter guiEmitter;
+    sf::RectangleShape button;
+
+    button.setSize({200, 75});
+    button.setPosition({10, 10});
+    button.setFillColor(sf::Color::White);
+
+    bool buttonClicked = false;
+
+    guiEmitter.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
+        if(event.mouseButton.button != sf::Mouse::Left) return;
+        sf::Vector2f pos = {float(event.mouseButton.x), float(event.mouseButton.y)};
+        if(!button.getGlobalBounds().contains(pos)) return;
+        std::cout << "Pressed" << std::endl;
+        buttonClicked = true;
+    });
 
     // --- VIEW UPDATES ---
     sf::View view;
@@ -328,12 +347,28 @@ int main(int, char**) {
 
     // --- EVENT LOOP ---
     while (window.isOpen()) {
-        for (sf::Event event; window.pollEvent(event);) {
-            if (event.type == sf::Event::Closed) {
+        std::list<sf::Event> events;
+        for(sf::Event e; window.pollEvent(e);) events.push_back(e);
+        for(sf::Event e : events) {
+            if(e.type == sf::Event::Closed) {
                 window.close();
             }
-            emitter.post(event);
         }
+
+        // GUI Events
+        window.setView(window.getDefaultView());
+        for (sf::Event e : events) {
+            guiEmitter.post(e);
+        }
+        window.setView(view);
+        if(!buttonClicked) {
+            // World Events
+            for (sf::Event e : events) {
+                emitter.post(e);
+            }
+        }
+        buttonClicked = false;
+
         sf::Vector2i newPos = sf::Mouse::getPosition(window);
         sf::Vector2f newWorldPos = window.mapPixelToCoords(newPos);
 
@@ -362,9 +397,10 @@ int main(int, char**) {
         dragger.update(newWorldPos);
         mouse = newPos;
 
-        window.setView(view);
         window.clear();
 
+        // --- WORLD VIEW ---
+        window.setView(view);
         for(const auto& c : bodies) {
             window.draw(*c);
         }
@@ -394,6 +430,10 @@ int main(int, char**) {
             outline.setOutlineThickness(5);
             window.draw(outline);
         }
+
+        // --- GUI VIEW ---
+        window.setView(window.getDefaultView());
+        window.draw(button);
         window.display();
     }
     return 0;
