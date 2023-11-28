@@ -4,6 +4,7 @@
 #include "SFML/Graphics/RectangleShape.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
+#include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/Transformable.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 #include "SFML/Graphics/View.hpp"
@@ -40,7 +41,10 @@ struct Pin {
 
 struct Circuit {
     sf::RectangleShape body;
-    std::vector<Pin> pins;
+    sf::Text text;
+
+    std::vector<Pin> inputs;
+    std::vector<Pin> outputs;
 };
 
 struct Button {
@@ -115,17 +119,29 @@ void initPin(Pin& p, sf::Vector2f pos, Pin::PinType type = Pin::ANY) {
     p.body.setRadius(RADIUS);
 }
 
-void initCircuit(Circuit& c, size_t n, sf::Vector2f pos) {
+void initCircuit(Circuit& c, sf::Vector2f pos, size_t inputs, size_t outputs) {
+    size_t maxPins = std::max(inputs, outputs);
 
     c.body.setPosition(pos);
-    c.body.setSize({WIDTH, (2 * RADIUS + SEP) * n + SEP});
+    c.body.setSize({WIDTH, (2 * RADIUS + SEP) * maxPins + SEP});
 
-    c.pins.clear();
-    for (size_t i = 0; i < n; i++) {
-        sf::Vector2f pinPos = pos + sf::Vector2f(WIDTH - RADIUS, SEP + (2 * RADIUS + SEP) * i);
+    c.inputs.clear();
+    float inputStart = (c.body.getSize().y - (2 * RADIUS + SEP) * inputs) / 2.f + RADIUS;
+    for (size_t i = 0; i < inputs; i++) {
+        sf::Vector2f pinPos = pos + sf::Vector2f(-RADIUS, inputStart + (2 * RADIUS + SEP) * i);
+        Pin pin;
+        initPin(pin, pinPos, Pin::INPUT);
+        c.inputs.emplace_back(std::move(pin));
+    }
+
+    c.outputs.clear();
+    float outputStart = (c.body.getSize().y - (2 * RADIUS + SEP) * outputs) / 2.f + RADIUS;
+    for (size_t i = 0; i < outputs; i++) {
+        sf::Vector2f pinPos =
+            pos + sf::Vector2f(WIDTH - RADIUS, outputStart + (2 * RADIUS + SEP) * i);
         Pin pin;
         initPin(pin, pinPos, Pin::OUTPUT);
-        c.pins.emplace_back(std::move(pin));
+        c.outputs.emplace_back(std::move(pin));
     }
 }
 
@@ -133,14 +149,20 @@ void registerCircuit(
     Circuit& c, std::vector<sf::RectangleShape*>& bodies, std::vector<Pin*>& pins
 ) {
     bodies.push_back(&c.body);
-    for (auto& p : c.pins) {
+    for (auto& p : c.inputs) {
+        pins.push_back(&p);
+    }
+    for (auto& p : c.outputs) {
         pins.push_back(&p);
     }
 }
 
 std::vector<sf::Transformable*> circuitComponents(Circuit& c) {
     std::vector<sf::Transformable*> components;
-    for (auto& p : c.pins) {
+    for (auto& p : c.inputs) {
+        components.push_back(&p.body);
+    }
+    for (auto& p : c.outputs) {
         components.push_back(&p.body);
     }
     components.push_back(&c.body);
@@ -168,7 +190,7 @@ int main(int, char**) {
 
     Circuit* dragBoard = nullptr;
     Circuit prototype;
-    initCircuit(prototype, 2, {0, 0});
+    initCircuit(prototype, {0, 0}, 2, 1);
     prototype.body.setFillColor(sf::Color::Cyan);
 
     // --- GRAPHICS COLLECTIONS ---
@@ -192,13 +214,13 @@ int main(int, char**) {
 
     Circuit circuit;
     circuit.body.setFillColor(sf::Color::Green);
-    initCircuit(circuit, 3, {-200, 0});
+    initCircuit(circuit, {-200, 0}, 2, 3);
     registerCircuit(circuit, bodies, pins);
     circuits.push_back(&circuit);
 
     Circuit circuit2;
     circuit2.body.setFillColor(sf::Color::Red);
-    initCircuit(circuit2, 2, {-200, 400});
+    initCircuit(circuit2, {-200, 400}, 2, 1);
     registerCircuit(circuit2, bodies, pins);
     circuits.push_back(&circuit2);
 
