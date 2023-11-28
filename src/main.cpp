@@ -1,7 +1,9 @@
 #include "SFML/Graphics/CircleShape.hpp"
 #include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/Drawable.hpp"
 #include "SFML/Graphics/Rect.hpp"
 #include "SFML/Graphics/RectangleShape.hpp"
+#include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Text.hpp"
@@ -22,6 +24,7 @@
 
 #include "ComponentDragger.h"
 #include "EventLayer.h"
+#include "SFML/Window/WindowBase.hpp"
 
 sf::CircleShape createPin(sf::Vector2f pos = {0, 0}) {
     sf::CircleShape pin;
@@ -177,9 +180,40 @@ std::vector<sf::Transformable*> circuitComponents(Circuit& c) {
     return components;
 }
 
+
+class Tool : public sf::Drawable{
+public:
+    virtual void update() = 0;
+
+protected:
+    virtual void draw(sf::RenderTarget&, sf::RenderStates) const override {}
+};
+
+class PanTool : public Tool {
+public:
+    PanTool(sf::View& v, const sf::RenderWindow& w) : _view(v), _window(w) {
+        _previousPosition = sf::Mouse::getPosition(_window);
+    }
+    void update() override {
+        sf::Vector2i pos = sf::Mouse::getPosition(_window);
+
+        sf::Vector2f prevWorldPos = _window.mapPixelToCoords(_previousPosition);
+        sf::Vector2f worldPos = _window.mapPixelToCoords(pos);
+
+        _view.move(prevWorldPos - worldPos);
+
+        _previousPosition = pos;
+    }
+private:
+    sf::View& _view;
+    const sf::RenderWindow& _window;
+
+    sf::Vector2i _previousPosition;
+
+};
+
 enum ToolState {
     NONE = 0,
-    PANNING,
     SELECTING,
     CONNECTING,
     DRAGGING,
@@ -196,6 +230,7 @@ int main(int, char**) {
     SfLayer worldLayer;
 
     sf::Vector2i mouse = sf::Mouse::getPosition();
+    Tool* currentTool = nullptr;
     ToolState state = NONE;
 
     Circuit* dragBoard = nullptr;
@@ -273,13 +308,13 @@ int main(int, char**) {
             return false;
         if (!sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt))
             return false;
-        state = PANNING;
+        currentTool = new PanTool(view, window);
         return true;
     });
     worldLayer.subscribe(sf::Event::MouseButtonReleased, [&](const sf::Event& event) {
-        if (state != PANNING)
-            return false;
-        state = NONE;
+        if(!currentTool) return false;
+        delete currentTool;
+        currentTool = nullptr;
         return true;
     });
     worldLayer.subscribe(sf::Event::MouseWheelScrolled, [&](const sf::Event& event) {
@@ -530,14 +565,12 @@ int main(int, char**) {
 
         sf::Vector2i newPos = sf::Mouse::getPosition(window);
         sf::Vector2f newWorldPos = window.mapPixelToCoords(newPos);
+        if(currentTool) {
+            currentTool->update();
+        }
 
         switch (state) {
 
-        case PANNING: {
-            sf::Vector2f delta = window.mapPixelToCoords(mouse) - newWorldPos;
-            view.move(delta);
-            break;
-        }
         case SELECTING: {
             sf::Vector2f pos = newWorldPos - selector.getPosition();
             selector.setSize(pos);
@@ -584,6 +617,9 @@ int main(int, char**) {
             outline.setOutlineColor({66, 135, 245, 150});
             outline.setOutlineThickness(5);
             window.draw(outline);
+        }
+        if(currentTool) {
+            window.draw(*currentTool);
         }
 
         // --- GUI VIEW ---
