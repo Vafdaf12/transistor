@@ -21,7 +21,7 @@
 #include <vector>
 
 #include "ComponentDragger.h"
-#include "EventEmitter.h"
+#include "EventLayer.h"
 
 sf::CircleShape createPin(sf::Vector2f pos = {0, 0}) {
     sf::CircleShape pin;
@@ -32,6 +32,8 @@ sf::CircleShape createPin(sf::Vector2f pos = {0, 0}) {
     pin.setRadius(10);
     return pin;
 }
+
+using SfLayer = EventLayer<sf::Event::EventType, sf::Event>;
 
 struct Pin {
     enum PinType { INPUT, OUTPUT, ANY };
@@ -54,36 +56,42 @@ struct Button {
     std::function<void(const sf::Event&)> onMouseUp;
 };
 
-void buttonRegister(const Button& b, EventEmitter& emitter, const sf::RenderTarget& target) {
+void buttonRegister(const Button& b, SfLayer& emitter, const sf::RenderTarget& target) {
     emitter.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
         sf::Vector2i pos = {event.mouseButton.x, event.mouseButton.y};
         sf::Vector2f worldPos = target.mapPixelToCoords(pos);
 
-        if (!b.bounds.contains(worldPos))
-            return;
+        if (!b.bounds.contains(worldPos)) {
+            return false;
+        }
         if (b.onMouseDown) {
             b.onMouseDown(event);
         }
+        return true;
     });
     emitter.subscribe(sf::Event::MouseButtonReleased, [&](const sf::Event& event) {
         sf::Vector2i pos = {event.mouseButton.x, event.mouseButton.y};
         sf::Vector2f worldPos = target.mapPixelToCoords(pos);
 
-        if (!b.bounds.contains(worldPos))
-            return;
+        if (!b.bounds.contains(worldPos)) {
+            return false;
+        }
         if (b.onMouseUp) {
             b.onMouseUp(event);
         }
+        return true;
     });
     emitter.subscribe(sf::Event::MouseMoved, [&](const sf::Event& event) {
         sf::Vector2i pos = {event.mouseMove.x, event.mouseMove.y};
         sf::Vector2f worldPos = target.mapPixelToCoords(pos);
 
-        if (!b.bounds.contains(worldPos))
-            return;
+        if (!b.bounds.contains(worldPos)) {
+            return false;
+        }
         if (b.onMouseMove) {
             b.onMouseMove(event);
         }
+        return true;
     });
 }
 
@@ -184,8 +192,10 @@ int main(int, char**) {
     std::set<std::pair<const Pin*, const Pin*>> edges;
     std::vector<Circuit*> circuits;
 
+    SfLayer guiLayer;
+    SfLayer worldLayer;
+
     sf::Vector2i mouse = sf::Mouse::getPosition();
-    EventEmitter emitter;
     ToolState state = NONE;
 
     Circuit* dragBoard = nullptr;
@@ -225,85 +235,85 @@ int main(int, char**) {
     circuits.push_back(&circuit2);
 
     // --- GUI UPDATES ---
-    EventEmitter guiEmitter;
     sf::RectangleShape buttonShape;
 
     buttonShape.setSize({200, 75});
     buttonShape.setPosition({10, 10});
     buttonShape.setFillColor(sf::Color::White);
 
-    bool buttonClicked = false;
     Button button = {buttonShape.getGlobalBounds()};
     button.onMouseDown = [&](const sf::Event& e) {
         if (e.mouseButton.button != sf::Mouse::Left)
             return;
         std::cout << "Pressed" << std::endl;
-        buttonClicked = true;
         dragBoard = &prototype;
     };
     button.onMouseUp = [&](const sf::Event& e) {
         if (e.mouseButton.button != sf::Mouse::Left)
             return;
         std::cout << "Released" << std::endl;
-        buttonClicked = false;
         dragBoard = nullptr;
     };
-    button.onMouseMove = [&](const sf::Event& e) { buttonClicked = true; };
 
-    buttonRegister(button, guiEmitter, window);
+    buttonRegister(button, guiLayer, window);
 
     // --- VIEW UPDATES ---
     sf::View view;
     view.setCenter({0, 0});
     view.setSize({1280, 720});
 
-    emitter.subscribe(sf::Event::Resized, [&](const sf::Event& event) {
+    worldLayer.subscribe(sf::Event::Resized, [&](const sf::Event& event) {
         float x = event.size.width;
         float y = event.size.height;
         view.setSize({x, y});
+        return false;
     });
-    emitter.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
+    worldLayer.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
         if (event.mouseButton.button != sf::Mouse::Left)
-            return;
+            return false;
         if (!sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt))
-            return;
+            return false;
         state = PANNING;
+        return true;
     });
-    emitter.subscribe(sf::Event::MouseButtonReleased, [&](const sf::Event& event) {
+    worldLayer.subscribe(sf::Event::MouseButtonReleased, [&](const sf::Event& event) {
         if (state != PANNING)
-            return;
+            return false;
         state = NONE;
+        return true;
     });
-    emitter.subscribe(sf::Event::MouseWheelScrolled, [&](const sf::Event& event) {
+    worldLayer.subscribe(sf::Event::MouseWheelScrolled, [&](const sf::Event& event) {
         float delta = event.mouseWheelScroll.delta;
         std::cout << delta << std::endl;
         view.zoom(1.0 - (delta * 0.1f));
+        return false;
     });
 
     // --- PIN CONNECTION ---
     Pin* tempPin = nullptr;
-    emitter.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
+    worldLayer.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
         if (state != NONE)
-            return;
+            return false;
         if (event.mouseButton.button != sf::Mouse::Left) {
-            return;
+            return false;
         }
         sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
         sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
 
         tempPin = collidePin(pins, worldPos);
         if (!tempPin) {
-            return;
+            return false;
         }
         float r = tempPin->body.getRadius();
         connectVertices[0].position = tempPin->body.getPosition() + sf::Vector2f(r, r);
         state = CONNECTING;
+        return true;
     });
-    emitter.subscribe(sf::Event::MouseButtonReleased, [&](const sf::Event& event) {
+    worldLayer.subscribe(sf::Event::MouseButtonReleased, [&](const sf::Event& event) {
         if (state != CONNECTING)
-            return;
+            return false;
         if (event.mouseButton.button != sf::Mouse::Left) {
-            return;
+            return false;
         }
         sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
         sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
@@ -313,12 +323,12 @@ int main(int, char**) {
         if (!nextPin || nextPin == tempPin) {
             tempPin = nullptr;
             state = NONE;
-            return;
+            return true;
         }
         if (!isCompatible(*tempPin, *nextPin)) {
             tempPin = nullptr;
             state = NONE;
-            return;
+            return true;
         }
 
         if (tempPin < nextPin) {
@@ -328,17 +338,18 @@ int main(int, char**) {
         }
         tempPin = nullptr;
         state = NONE;
+        return true;
     });
 
     // --- CIRCUIT DRAGGING ---
     ComponentDragger dragger;
     std::vector<Circuit*> selected;
 
-    emitter.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
+    worldLayer.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
         if (state != NONE)
-            return;
+            return false;
         if (event.mouseButton.button != sf::Mouse::Left) {
-            return;
+            return false;
         }
         sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
         sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
@@ -359,37 +370,39 @@ int main(int, char**) {
             }
         }
         if (components.empty()) {
-            return;
+            return false;
         }
 
         dragger.beginDrag(components, worldPos);
         state = DRAGGING;
+        return true;
     });
-    emitter.subscribe(sf::Event::MouseButtonReleased, [&](const sf::Event& event) {
+    worldLayer.subscribe(sf::Event::MouseButtonReleased, [&](const sf::Event& event) {
         if (state != DRAGGING)
-            return;
+            return false;
         dragger.endDrag();
 
         sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
         sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
         for (Circuit* c : selected) {
             if (c->body.getGlobalBounds().contains(worldPos)) {
-                return;
+                return false;
             }
         }
         selected.clear();
         state = NONE;
+        return true;
     });
     // --- CIRCUIT SELECTION ---
     sf::RectangleShape selector;
     selector.setSize({100, 100});
     selector.setFillColor({66, 135, 245, 100});
 
-    emitter.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
+    worldLayer.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
         if (state != NONE)
-            return;
+            return false;
         if (event.mouseButton.button != sf::Mouse::Left) {
-            return;
+            return false;
         }
 
         selected.clear();
@@ -400,10 +413,11 @@ int main(int, char**) {
         selector.setPosition(worldPos);
         selector.setSize({0, 0});
         state = SELECTING;
+        return true;
     });
-    emitter.subscribe(sf::Event::MouseMoved, [&](const sf::Event& event) {
+    worldLayer.subscribe(sf::Event::MouseMoved, [&](const sf::Event& event) {
         if (state != SELECTING)
-            return;
+            return false;
         selected.clear();
         std::copy_if(
             circuits.begin(),
@@ -420,18 +434,20 @@ int main(int, char**) {
                 return true;
             }
         );
+        return true;
     });
 
-    emitter.subscribe(sf::Event::MouseButtonReleased, [&](const sf::Event& event) {
+    worldLayer.subscribe(sf::Event::MouseButtonReleased, [&](const sf::Event& event) {
         if (state != SELECTING)
-            return;
+            return false;
         state = NONE;
+        return true;
     });
 
     // --- DRAG DROP ---
-    emitter.subscribe(sf::Event::MouseMoved, [&](const sf::Event& event) {
+    worldLayer.subscribe(sf::Event::MouseMoved, [&](const sf::Event& event) {
         if (!dragBoard)
-            return;
+            return false;
         Circuit* c = new Circuit(*dragBoard);
 
         registerCircuit(*c, bodies, pins);
@@ -439,15 +455,16 @@ int main(int, char**) {
         circuits.push_back(c);
         state = DRAGGING;
         dragBoard = nullptr;
+        return true;
     });
 
     // --- CIRCUIT DELETION ---
-    emitter.subscribe(sf::Event::KeyReleased, [&](const sf::Event& event) {
+    worldLayer.subscribe(sf::Event::KeyReleased, [&](const sf::Event& event) {
         if (event.key.code != sf::Keyboard::Delete)
-            return;
+            return false;
         if (selected.empty()) {
             std::cout << "Nothing to delete" << std::endl;
-            return;
+            return false;
         }
 
         // Remove bodies
@@ -484,6 +501,7 @@ int main(int, char**) {
         });
 
         selected.clear();
+        return true;
     });
 
     // --- EVENT LOOP ---
@@ -498,18 +516,17 @@ int main(int, char**) {
         }
 
         // GUI Events
-        window.setView(window.getDefaultView());
         for (sf::Event e : events) {
-            guiEmitter.post(e);
+            window.setView(window.getDefaultView());
+            if (guiLayer.handle(e.type, e))
+                continue;
+
+            window.setView(view);
+            if (worldLayer.handle(e.type, e))
+                continue;
         }
+
         window.setView(view);
-        if (!buttonClicked) {
-            // World Events
-            for (sf::Event e : events) {
-                emitter.post(e);
-            }
-        }
-        buttonClicked = false;
 
         sf::Vector2i newPos = sf::Mouse::getPosition(window);
         sf::Vector2f newWorldPos = window.mapPixelToCoords(newPos);
