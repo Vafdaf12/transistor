@@ -39,10 +39,24 @@ sf::CircleShape createPin(sf::Vector2f pos = {0, 0}) {
 using SfLayer = EventLayer<sf::Event::EventType, sf::Event>;
 
 struct Pin {
-    enum PinType { INPUT, OUTPUT, ANY };
+    enum PinType { INPUT, OUTPUT, TOGGLE };
     sf::CircleShape body;
-    PinType type = ANY;
+    PinType type = TOGGLE;
+    int state = 0;
 };
+
+void pinState(Pin& pin, int state) {
+    if(state == pin.state) {
+        return;
+    }
+    pin.state = state;
+    if(state == 0) {
+        pin.body.setFillColor(sf::Color::Black);
+    }
+    else {
+        pin.body.setFillColor(sf::Color::Red);
+    }
+}
 
 struct Circuit {
     sf::RectangleShape body;
@@ -112,19 +126,20 @@ Pin* collidePin(const std::vector<Pin*>& pins, sf::Vector2f pos) {
 }
 
 bool isCompatible(const Pin& p1, const Pin& p2) {
-    if (p1.type == Pin::ANY || p2.type == Pin::ANY)
-        return true;
-    return p1.type != p2.type;
+    if(p1.type == Pin::OUTPUT || p1.type == Pin::TOGGLE) {
+        return p2.type == Pin::INPUT;
+    }
+    return p2.type == Pin::OUTPUT || p2.type == Pin::TOGGLE;
 }
 
-void initPin(Pin& p, sf::Vector2f pos, Pin::PinType type = Pin::ANY) {
+void initPin(Pin& p, sf::Vector2f pos, Pin::PinType type) {
     p.type = type;
     p.body.setPosition(pos);
     p.body.setFillColor(sf::Color::Black);
     switch (type) {
     case Pin::INPUT: p.body.setOutlineColor(sf::Color::Blue); break;
     case Pin::OUTPUT: p.body.setOutlineColor(sf::Color::Magenta); break;
-    case Pin::ANY: p.body.setOutlineColor(sf::Color::White); break;
+    case Pin::TOGGLE: p.body.setOutlineColor(sf::Color::White); break;
     }
     p.body.setOutlineThickness(1);
     p.body.setRadius(RADIUS);
@@ -254,7 +269,7 @@ int main(int, char**) {
     pins.push_back(&p2);
 
     Pin p3;
-    initPin(p3, {150, 50});
+    initPin(p3, {150, 50}, Pin::TOGGLE);
     pins.push_back(&p3);
 
     Circuit circuit;
@@ -338,6 +353,11 @@ int main(int, char**) {
         tempPin = collidePin(pins, worldPos);
         if (!tempPin) {
             return false;
+        }
+        if(tempPin->type == Pin::TOGGLE) {
+            pinState(*tempPin, !tempPin->state);
+            tempPin = nullptr;
+            return true;
         }
         float r = tempPin->body.getRadius();
         connectVertices[0].position = tempPin->body.getPosition() + sf::Vector2f(r, r);
