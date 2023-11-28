@@ -48,6 +48,43 @@ struct Circuit {
     std::vector<Pin> pins;
 };
 
+struct Button {
+    sf::FloatRect bounds;
+    std::function<void(const sf::Event&)> onMouseDown;
+    std::function<void(const sf::Event&)> onMouseMove;
+    std::function<void(const sf::Event&)> onMouseUp;
+};
+
+void buttonRegister(const Button& b, EventEmitter& emitter, const sf::RenderTarget& target) {
+    emitter.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
+        sf::Vector2i pos = { event.mouseButton.x, event.mouseButton.y };
+        sf::Vector2f worldPos = target.mapPixelToCoords(pos);
+
+        if(!b.bounds.contains(worldPos)) return;
+        if(b.onMouseDown) {
+            b.onMouseDown(event);
+        }
+    });
+    emitter.subscribe(sf::Event::MouseButtonReleased, [&](const sf::Event& event) {
+        sf::Vector2i pos = { event.mouseButton.x, event.mouseButton.y };
+        sf::Vector2f worldPos = target.mapPixelToCoords(pos);
+
+        if(!b.bounds.contains(worldPos)) return;
+        if(b.onMouseUp) {
+            b.onMouseUp(event);
+        }
+
+    });
+    emitter.subscribe(sf::Event::MouseMoved, [&](const sf::Event& event) {
+        sf::Vector2i pos = {event.mouseMove.x, event.mouseMove.y};
+        sf::Vector2f worldPos = target.mapPixelToCoords(pos);
+
+        if(!b.bounds.contains(worldPos)) return;
+        if(b.onMouseMove) {
+            b.onMouseMove(event);
+        }
+    });
+}
 
 constexpr float RADIUS = 10.0f;
 constexpr float SEP = 2*RADIUS;
@@ -172,34 +209,33 @@ int main(int, char**) {
 
     // --- GUI UPDATES ---
     EventEmitter guiEmitter;
-    sf::RectangleShape button;
+    sf::RectangleShape buttonShape;
 
-    button.setSize({200, 75});
-    button.setPosition({10, 10});
-    button.setFillColor(sf::Color::White);
+
+
+    buttonShape.setSize({200, 75});
+    buttonShape.setPosition({10, 10});
+    buttonShape.setFillColor(sf::Color::White);
 
     bool buttonClicked = false;
-
-    guiEmitter.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
-        if(event.mouseButton.button != sf::Mouse::Left) return;
-        sf::Vector2f pos = {float(event.mouseButton.x), float(event.mouseButton.y)};
-        if(!button.getGlobalBounds().contains(pos)) return;
+    Button button = {buttonShape.getGlobalBounds()};
+    button.onMouseDown = [&](const sf::Event& e) {
+        if(e.mouseButton.button != sf::Mouse::Left) return;
         std::cout << "Pressed" << std::endl;
         buttonClicked = true;
         dragBoard = &prototype;
-    });
-    guiEmitter.subscribe(sf::Event::MouseButtonReleased, [&](const sf::Event& event) {
-        if(event.mouseButton.button != sf::Mouse::Left) return;
-        sf::Vector2f pos = {float(event.mouseButton.x), float(event.mouseButton.y)};
-        if(!button.getGlobalBounds().contains(pos)) return;
+    };
+    button.onMouseUp = [&](const sf::Event& e) {
+        if(e.mouseButton.button != sf::Mouse::Left) return;
+        std::cout << "Released" << std::endl;
         buttonClicked = false;
         dragBoard = nullptr;
-    });
-    guiEmitter.subscribe(sf::Event::MouseMoved, [&](const sf::Event& event) {
-        sf::Vector2f pos = {float(event.mouseMove.x), float(event.mouseMove.y)};
-        if(!button.getGlobalBounds().contains(pos)) return;
+    };
+    button.onMouseMove = [&](const sf::Event& e) {
         buttonClicked = true;
-    });
+    };
+
+    buttonRegister(button, guiEmitter, window);
 
     // --- VIEW UPDATES ---
     sf::View view;
@@ -464,7 +500,7 @@ int main(int, char**) {
 
         // --- GUI VIEW ---
         window.setView(window.getDefaultView());
-        window.draw(button);
+        window.draw(buttonShape);
         window.display();
     }
     return 0;
