@@ -136,6 +136,11 @@ int main(int, char**) {
     EventEmitter emitter;
     ToolState state = NONE;
 
+    Circuit* dragBoard = nullptr;
+    Circuit prototype;
+    initCircuit(prototype, 2, {0, 0});
+    prototype.body.setFillColor(sf::Color::Cyan);
+
     // --- GRAPHICS COLLECTIONS ---
     std::vector<Pin*> pins;
     std::vector<sf::RectangleShape*> bodies;
@@ -180,6 +185,19 @@ int main(int, char**) {
         sf::Vector2f pos = {float(event.mouseButton.x), float(event.mouseButton.y)};
         if(!button.getGlobalBounds().contains(pos)) return;
         std::cout << "Pressed" << std::endl;
+        buttonClicked = true;
+        dragBoard = &prototype;
+    });
+    guiEmitter.subscribe(sf::Event::MouseButtonReleased, [&](const sf::Event& event) {
+        if(event.mouseButton.button != sf::Mouse::Left) return;
+        sf::Vector2f pos = {float(event.mouseButton.x), float(event.mouseButton.y)};
+        if(!button.getGlobalBounds().contains(pos)) return;
+        buttonClicked = false;
+        dragBoard = nullptr;
+    });
+    guiEmitter.subscribe(sf::Event::MouseMoved, [&](const sf::Event& event) {
+        sf::Vector2f pos = {float(event.mouseMove.x), float(event.mouseMove.y)};
+        if(!button.getGlobalBounds().contains(pos)) return;
         buttonClicked = true;
     });
 
@@ -343,6 +361,19 @@ int main(int, char**) {
         if(state != SELECTING) return;
         state = NONE;
     });
+
+    // --- DRAG DROP ---
+    emitter.subscribe(sf::Event::MouseMoved, [&](const sf::Event& event) {
+        if(!dragBoard) return;
+        Circuit* c = new Circuit(*dragBoard);
+
+        registerCircuit(*c, bodies, pins);
+        dragger.beginDrag(circuitComponents(*c), c->body.getPosition() + c->body.getSize()/2.f);
+        circuits.push_back(c);
+        state = DRAGGING;
+        dragBoard = nullptr;
+    });
+
 
 
     // --- EVENT LOOP ---
