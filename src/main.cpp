@@ -441,6 +441,51 @@ int main(int, char**) {
         dragBoard = nullptr;
     });
 
+    // --- CIRCUIT DELETION ---
+    emitter.subscribe(sf::Event::KeyReleased, [&](const sf::Event& event) {
+        if (event.key.code != sf::Keyboard::Delete)
+            return;
+        if (selected.empty()) {
+            std::cout << "Nothing to delete" << std::endl;
+            return;
+        }
+
+        // Remove bodies
+        std::erase_if(bodies, [&](const sf::RectangleShape* r) {
+            for (auto s : selected) {
+                if (r == &s->body)
+                    return true;
+            }
+            return false;
+        });
+
+        // Remove pins
+        std::erase_if(pins, [&](const Pin* pin) {
+            for (auto s : selected) {
+                for (const auto& p : s->inputs) {
+                    if (&p == pin)
+                        return true;
+                }
+                for (const auto& p : s->outputs) {
+                    if (&p == pin)
+                        return true;
+                }
+            }
+            return false;
+        });
+
+        // Remove Circuit
+        std::erase_if(circuits, [&](const Circuit* c) {
+            for (auto s : selected) {
+                if (c == s)
+                    return true;
+            }
+            return false;
+        });
+
+        selected.clear();
+    });
+
     // --- EVENT LOOP ---
     while (window.isOpen()) {
         std::list<sf::Event> events;
