@@ -28,6 +28,8 @@ public:
 
     void draw(sf::RenderTarget&, sf::RenderStates) const override;
 
+    static constexpr float RADIUS = 10.0f;
+
 private:
     sf::CircleShape _shape;
     PinType _type;

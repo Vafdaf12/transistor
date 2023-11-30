@@ -10,6 +10,7 @@ add_executable(${BINARY}
     main.cpp
     ComponentDragger.cpp
     Pin.cpp
+    Circuit.cpp
 )
 target_include_directories(${BINARY}
     PRIVATE src/

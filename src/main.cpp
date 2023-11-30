@@ -1,4 +1,3 @@
-#include "SFML/Graphics/CircleShape.hpp"
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Drawable.hpp"
 #include "SFML/Graphics/Rect.hpp"
@@ -6,7 +5,6 @@
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/Transformable.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 #include "SFML/Graphics/View.hpp"
@@ -17,11 +15,11 @@
 #include <algorithm>
 #include <iostream>
 #include <iterator>
-#include <list>
 #include <set>
 #include <utility>
 #include <vector>
 
+#include "Circuit.h"
 #include "ComponentDragger.h"
 #include "EventLayer.h"
 #include "Pin.h"
@@ -29,14 +27,6 @@
 #include "SFML/Window/WindowBase.hpp"
 
 using SfLayer = EventLayer<sf::Event::EventType, sf::Event>;
-
-struct Circuit {
-    sf::RectangleShape body;
-    sf::Text text;
-
-    std::vector<Pin> inputs;
-    std::vector<Pin> outputs;
-};
 
 struct Button {
     sf::FloatRect bounds;
@@ -88,61 +78,6 @@ constexpr float RADIUS = 10.0f;
 constexpr float SEP = 2 * RADIUS;
 constexpr float WIDTH = 150;
 
-Pin* collidePin(const std::vector<Pin*>& pins, sf::Vector2f pos) {
-    for (int i = 0; i < pins.size(); i++) {
-        if (pins[i]->collide(pos)) {
-            return pins[i];
-        }
-    }
-    return nullptr;
-}
-
-void initCircuit(Circuit& c, sf::Vector2f pos, size_t inputs, size_t outputs) {
-    size_t maxPins = std::max(inputs, outputs);
-
-    c.body.setPosition(pos);
-    c.body.setSize({WIDTH, (2 * RADIUS + SEP) * maxPins + SEP});
-
-    c.inputs.clear();
-    float inputStart = (c.body.getSize().y - (2 * RADIUS + SEP) * inputs) / 2.f + RADIUS;
-    for (size_t i = 0; i < inputs; i++) {
-        sf::Vector2f pinPos = pos + sf::Vector2f(-RADIUS, inputStart + (2 * RADIUS + SEP) * i);
-        c.inputs.emplace_back(Pin::Input, pinPos);
-    }
-
-    c.outputs.clear();
-    float outputStart = (c.body.getSize().y - (2 * RADIUS + SEP) * outputs) / 2.f + RADIUS;
-    for (size_t i = 0; i < outputs; i++) {
-        sf::Vector2f pinPos =
-            pos + sf::Vector2f(WIDTH - RADIUS, outputStart + (2 * RADIUS + SEP) * i);
-        c.outputs.emplace_back(Pin::Output, pinPos);
-    }
-}
-
-void registerCircuit(
-    Circuit& c, std::vector<sf::RectangleShape*>& bodies, std::vector<Pin*>& pins
-) {
-    bodies.push_back(&c.body);
-    for (auto& p : c.inputs) {
-        pins.push_back(&p);
-    }
-    for (auto& p : c.outputs) {
-        pins.push_back(&p);
-    }
-}
-
-std::vector<sf::Transformable*> circuitComponents(Circuit& c) {
-    std::vector<sf::Transformable*> components;
-    for (auto& p : c.inputs) {
-        components.push_back(&p.getTransform());
-    }
-    for (auto& p : c.outputs) {
-        components.push_back(&p.getTransform());
-    }
-    components.push_back(&c.body);
-    return components;
-}
-
 class Tool : public sf::Drawable {
 public:
     virtual void update() = 0;
@@ -180,6 +115,22 @@ enum ToolState {
     CONNECTING,
     DRAGGING,
 };
+const Pin* collidePin(const std::vector<Circuit*>& circuits, sf::Vector2f pos) {
+    for (Circuit* c : circuits) {
+        if (const Pin* p = c->collidePin(pos)) {
+            return p;
+        }
+    }
+    return nullptr;
+}
+const Pin* collidePin(const std::vector<Pin*>& circuits, sf::Vector2f pos) {
+    for (Pin* p : circuits) {
+        if (p->collide(pos)) {
+            return p;
+        }
+    }
+    return nullptr;
+}
 
 int main(int, char**) {
     std::cout << "Hello, World!" << std::endl;
@@ -196,13 +147,11 @@ int main(int, char**) {
     ToolState state = NONE;
 
     Circuit* dragBoard = nullptr;
-    Circuit prototype;
-    initCircuit(prototype, {0, 0}, 2, 1);
-    prototype.body.setFillColor(sf::Color::Cyan);
+    Circuit prototype(2, 1, {0, 0});
+    prototype.setColor(sf::Color::Cyan);
 
     // --- GRAPHICS COLLECTIONS ---
     std::vector<Pin*> pins;
-    std::vector<sf::RectangleShape*> bodies;
     sf::Vertex edgeVertices[2] = {sf::Vertex({0, 0}, sf::Color::White)};
     sf::Vertex connectVertices[2] = {sf::Vertex({0, 0}, sf::Color::White)};
 
@@ -216,16 +165,12 @@ int main(int, char**) {
     Pin p3(Pin::Output, {150, 50});
     pins.push_back(&p3);
 
-    Circuit circuit;
-    circuit.body.setFillColor(sf::Color::Green);
-    initCircuit(circuit, {-200, 0}, 2, 3);
-    registerCircuit(circuit, bodies, pins);
+    Circuit circuit(2, 3, {-200, 0});
+    circuit.setColor(sf::Color::Green);
     circuits.push_back(&circuit);
 
-    Circuit circuit2;
-    circuit2.body.setFillColor(sf::Color::Red);
-    initCircuit(circuit2, {-200, 400}, 2, 1);
-    registerCircuit(circuit2, bodies, pins);
+    Circuit circuit2(2, 1, {-200, 400});
+    circuit2.setColor(sf::Color::Red);
     circuits.push_back(&circuit2);
 
     // --- GUI UPDATES ---
@@ -285,7 +230,7 @@ int main(int, char**) {
     });
 
     // --- PIN CONNECTION ---
-    Pin* tempPin = nullptr;
+    const Pin* tempPin = nullptr;
     worldLayer.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
         if (state != NONE)
             return false;
@@ -295,7 +240,10 @@ int main(int, char**) {
         sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
         sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
 
-        tempPin = collidePin(pins, worldPos);
+        tempPin = collidePin(circuits, worldPos);
+        if (!tempPin) {
+            tempPin = collidePin(pins, worldPos);
+        }
         if (!tempPin) {
             return false;
         }
@@ -312,14 +260,12 @@ int main(int, char**) {
         sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
         sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
 
-        Pin* nextPin = collidePin(pins, worldPos);
-
-        if (!nextPin || nextPin == tempPin) {
-            tempPin = nullptr;
-            state = NONE;
-            return true;
+        const Pin* nextPin = collidePin(circuits, worldPos);
+        if (!nextPin) {
+            nextPin = collidePin(pins, worldPos);
         }
-        if (!tempPin->canConnect(*nextPin)) {
+
+        if (!nextPin || nextPin == tempPin || !tempPin->canConnect(*nextPin)) {
             tempPin = nullptr;
             state = NONE;
             return true;
@@ -352,14 +298,14 @@ int main(int, char**) {
         if (selected.empty()) {
             // Find
             for (Circuit* c : circuits) {
-                if (c->body.getGlobalBounds().contains(worldPos)) {
-                    std::vector<sf::Transformable*> children = circuitComponents(*c);
+                if (c->collide(worldPos)) {
+                    std::vector<sf::Transformable*> children = c->getTransforms();
                     std::copy(children.begin(), children.end(), std::back_inserter(components));
                 }
             }
         } else {
             for (Circuit* c : selected) {
-                std::vector<sf::Transformable*> children = circuitComponents(*c);
+                std::vector<sf::Transformable*> children = c->getTransforms();
                 std::copy(children.begin(), children.end(), std::back_inserter(components));
             }
         }
@@ -379,7 +325,7 @@ int main(int, char**) {
         sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
         sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
         for (Circuit* c : selected) {
-            if (c->body.getGlobalBounds().contains(worldPos)) {
+            if (c->collide(worldPos)) {
                 return false;
             }
         }
@@ -418,8 +364,8 @@ int main(int, char**) {
             circuits.end(),
             std::back_inserter(selected),
             [&](Circuit* c) {
-                sf::Vector2f tl = c->body.getPosition();
-                sf::Vector2f br = tl + c->body.getSize();
+                sf::Vector2f tl = c->getBoundingBox().getPosition();
+                sf::Vector2f br = tl + c->getBoundingBox().getSize();
                 sf::FloatRect selectRect = selector.getGlobalBounds();
                 if (!selectRect.contains(tl))
                     return false;
@@ -444,8 +390,9 @@ int main(int, char**) {
             return false;
         Circuit* c = new Circuit(*dragBoard);
 
-        registerCircuit(*c, bodies, pins);
-        dragger.beginDrag(circuitComponents(*c), c->body.getPosition() + c->body.getSize() / 2.f);
+        sf::Vector2f pos = c->getBoundingBox().getPosition() + c->getBoundingBox().getSize() / 2.f;
+
+        dragger.beginDrag(c->getTransforms(), pos);
         circuits.push_back(c);
         state = DRAGGING;
         dragBoard = nullptr;
@@ -462,30 +409,6 @@ int main(int, char**) {
         }
 
         // Remove bodies
-        std::erase_if(bodies, [&](const sf::RectangleShape* r) {
-            for (auto s : selected) {
-                if (r == &s->body)
-                    return true;
-            }
-            return false;
-        });
-
-        // Remove pins
-        std::erase_if(pins, [&](const Pin* pin) {
-            for (auto s : selected) {
-                for (const auto& p : s->inputs) {
-                    if (&p == pin)
-                        return true;
-                }
-                for (const auto& p : s->outputs) {
-                    if (&p == pin)
-                        return true;
-                }
-            }
-            return false;
-        });
-
-        // Remove Circuit
         std::erase_if(circuits, [&](const Circuit* c) {
             for (auto s : selected) {
                 if (c == s)
@@ -548,7 +471,7 @@ int main(int, char**) {
 
         // --- WORLD VIEW ---
         window.setView(view);
-        for (const auto& c : bodies) {
+        for (const auto& c : circuits) {
             window.draw(*c);
         }
         for (const auto& pin : pins) {
@@ -568,7 +491,10 @@ int main(int, char**) {
             window.draw(selector);
         }
         for (const Circuit* c : selected) {
-            sf::RectangleShape outline = c->body;
+            sf::RectangleShape outline;
+            sf::FloatRect rect = c->getBoundingBox();
+            outline.setSize(rect.getSize());
+            outline.setPosition(rect.getPosition());
             outline.setFillColor(sf::Color::Transparent);
             outline.setOutlineColor({66, 135, 245, 150});
             outline.setOutlineThickness(5);
