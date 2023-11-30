@@ -24,39 +24,11 @@
 
 #include "ComponentDragger.h"
 #include "EventLayer.h"
+#include "Pin.h"
+
 #include "SFML/Window/WindowBase.hpp"
 
-sf::CircleShape createPin(sf::Vector2f pos = {0, 0}) {
-    sf::CircleShape pin;
-    pin.setPosition(pos);
-    pin.setFillColor(sf::Color::Black);
-    pin.setOutlineColor(sf::Color::White);
-    pin.setOutlineThickness(1);
-    pin.setRadius(10);
-    return pin;
-}
-
 using SfLayer = EventLayer<sf::Event::EventType, sf::Event>;
-
-struct Pin {
-    enum PinType { INPUT, OUTPUT, TOGGLE };
-    sf::CircleShape body;
-    PinType type = TOGGLE;
-    int state = 0;
-};
-
-void pinState(Pin& pin, int state) {
-    if(state == pin.state) {
-        return;
-    }
-    pin.state = state;
-    if(state == 0) {
-        pin.body.setFillColor(sf::Color::Black);
-    }
-    else {
-        pin.body.setFillColor(sf::Color::Red);
-    }
-}
 
 struct Circuit {
     sf::RectangleShape body;
@@ -118,31 +90,11 @@ constexpr float WIDTH = 150;
 
 Pin* collidePin(const std::vector<Pin*>& pins, sf::Vector2f pos) {
     for (int i = 0; i < pins.size(); i++) {
-        if (pins[i]->body.getGlobalBounds().contains(pos)) {
+        if (pins[i]->collide(pos)) {
             return pins[i];
         }
     }
     return nullptr;
-}
-
-bool isCompatible(const Pin& p1, const Pin& p2) {
-    if(p1.type == Pin::OUTPUT || p1.type == Pin::TOGGLE) {
-        return p2.type == Pin::INPUT;
-    }
-    return p2.type == Pin::OUTPUT || p2.type == Pin::TOGGLE;
-}
-
-void initPin(Pin& p, sf::Vector2f pos, Pin::PinType type) {
-    p.type = type;
-    p.body.setPosition(pos);
-    p.body.setFillColor(sf::Color::Black);
-    switch (type) {
-    case Pin::INPUT: p.body.setOutlineColor(sf::Color::Blue); break;
-    case Pin::OUTPUT: p.body.setOutlineColor(sf::Color::Magenta); break;
-    case Pin::TOGGLE: p.body.setOutlineColor(sf::Color::White); break;
-    }
-    p.body.setOutlineThickness(1);
-    p.body.setRadius(RADIUS);
 }
 
 void initCircuit(Circuit& c, sf::Vector2f pos, size_t inputs, size_t outputs) {
@@ -155,9 +107,7 @@ void initCircuit(Circuit& c, sf::Vector2f pos, size_t inputs, size_t outputs) {
     float inputStart = (c.body.getSize().y - (2 * RADIUS + SEP) * inputs) / 2.f + RADIUS;
     for (size_t i = 0; i < inputs; i++) {
         sf::Vector2f pinPos = pos + sf::Vector2f(-RADIUS, inputStart + (2 * RADIUS + SEP) * i);
-        Pin pin;
-        initPin(pin, pinPos, Pin::INPUT);
-        c.inputs.emplace_back(std::move(pin));
+        c.inputs.emplace_back(Pin::Input, pinPos);
     }
 
     c.outputs.clear();
@@ -165,9 +115,7 @@ void initCircuit(Circuit& c, sf::Vector2f pos, size_t inputs, size_t outputs) {
     for (size_t i = 0; i < outputs; i++) {
         sf::Vector2f pinPos =
             pos + sf::Vector2f(WIDTH - RADIUS, outputStart + (2 * RADIUS + SEP) * i);
-        Pin pin;
-        initPin(pin, pinPos, Pin::OUTPUT);
-        c.outputs.emplace_back(std::move(pin));
+        c.outputs.emplace_back(Pin::Output, pinPos);
     }
 }
 
@@ -186,17 +134,16 @@ void registerCircuit(
 std::vector<sf::Transformable*> circuitComponents(Circuit& c) {
     std::vector<sf::Transformable*> components;
     for (auto& p : c.inputs) {
-        components.push_back(&p.body);
+        components.push_back(&p.getTransform());
     }
     for (auto& p : c.outputs) {
-        components.push_back(&p.body);
+        components.push_back(&p.getTransform());
     }
     components.push_back(&c.body);
     return components;
 }
 
-
-class Tool : public sf::Drawable{
+class Tool : public sf::Drawable {
 public:
     virtual void update() = 0;
 
@@ -219,12 +166,12 @@ public:
 
         _previousPosition = pos;
     }
+
 private:
     sf::View& _view;
     const sf::RenderWindow& _window;
 
     sf::Vector2i _previousPosition;
-
 };
 
 enum ToolState {
@@ -260,16 +207,13 @@ int main(int, char**) {
     sf::Vertex connectVertices[2] = {sf::Vertex({0, 0}, sf::Color::White)};
 
     // --- GRAPHICS ELEMENTS ---
-    Pin p1;
-    initPin(p1, {0, 0}, Pin::INPUT);
+    Pin p1(Pin::Input, {0, 0});
     pins.push_back(&p1);
 
-    Pin p2;
-    initPin(p2, {100, 50}, Pin::OUTPUT);
+    Pin p2(Pin::Output, {100, 50});
     pins.push_back(&p2);
 
-    Pin p3;
-    initPin(p3, {150, 50}, Pin::TOGGLE);
+    Pin p3(Pin::Output, {150, 50});
     pins.push_back(&p3);
 
     Circuit circuit;
@@ -327,7 +271,8 @@ int main(int, char**) {
         return true;
     });
     worldLayer.subscribe(sf::Event::MouseButtonReleased, [&](const sf::Event& event) {
-        if(!currentTool) return false;
+        if (!currentTool)
+            return false;
         delete currentTool;
         currentTool = nullptr;
         return true;
@@ -354,13 +299,7 @@ int main(int, char**) {
         if (!tempPin) {
             return false;
         }
-        if(tempPin->type == Pin::TOGGLE) {
-            pinState(*tempPin, !tempPin->state);
-            tempPin = nullptr;
-            return true;
-        }
-        float r = tempPin->body.getRadius();
-        connectVertices[0].position = tempPin->body.getPosition() + sf::Vector2f(r, r);
+        connectVertices[0].position = tempPin->getCenter();
         state = CONNECTING;
         return true;
     });
@@ -380,7 +319,7 @@ int main(int, char**) {
             state = NONE;
             return true;
         }
-        if (!isCompatible(*tempPin, *nextPin)) {
+        if (!tempPin->canConnect(*nextPin)) {
             tempPin = nullptr;
             state = NONE;
             return true;
@@ -585,7 +524,7 @@ int main(int, char**) {
 
         sf::Vector2i newPos = sf::Mouse::getPosition(window);
         sf::Vector2f newWorldPos = window.mapPixelToCoords(newPos);
-        if(currentTool) {
+        if (currentTool) {
             currentTool->update();
         }
 
@@ -613,14 +552,11 @@ int main(int, char**) {
             window.draw(*c);
         }
         for (const auto& pin : pins) {
-            window.draw(pin->body);
+            window.draw(*pin);
         }
         for (const auto& [s1, s2] : edges) {
-            float r1 = s1->body.getRadius();
-            float r2 = s2->body.getRadius();
-
-            edgeVertices[0].position = s1->body.getPosition() + sf::Vector2f(r1, r1);
-            edgeVertices[1].position = s2->body.getPosition() + sf::Vector2f(r2, r2);
+            edgeVertices[0].position = s1->getCenter();
+            edgeVertices[1].position = s2->getCenter();
 
             window.draw(edgeVertices, 2, sf::Lines);
         }
@@ -638,7 +574,7 @@ int main(int, char**) {
             outline.setOutlineThickness(5);
             window.draw(outline);
         }
-        if(currentTool) {
+        if (currentTool) {
             window.draw(*currentTool);
         }
 

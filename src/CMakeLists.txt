@@ -9,6 +9,7 @@ FetchContent_MakeAvailable(SFML)
 add_executable(${BINARY} 
     main.cpp
     ComponentDragger.cpp
+    Pin.cpp
 )
 target_include_directories(${BINARY}
     PRIVATE src/
