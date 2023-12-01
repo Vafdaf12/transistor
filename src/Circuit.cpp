@@ -3,23 +3,24 @@
 
 Circuit::Circuit(size_t numInputs, size_t numOutputs, sf::Vector2f pos) {
     size_t maxPins = std::max(numInputs, numOutputs);
-    const float totalHeight = 2 * Pin::RADIUS + PADDING;
+    const float pinHeight = 2 * Pin::RADIUS + PADDING;
+    const float totalHeight = pinHeight * maxPins + PADDING;
 
     _shape.setPosition(pos);
-    _shape.setSize({WIDTH, totalHeight * maxPins + PADDING});
+    _shape.setSize({WIDTH, totalHeight});
 
-    _inputs.clear();
-    float inputStart = (_shape.getSize().y - totalHeight * numInputs) / 2.f;
+    float inputHeight = 2*Pin::RADIUS*numInputs + PADDING * (numInputs-1);
+    float inputStart = Pin::RADIUS + (totalHeight - inputHeight) / 2.f;
     for (size_t i = 0; i < numInputs; i++) {
 
-        sf::Vector2f pinPos = pos + sf::Vector2f(0, inputStart + totalHeight * i);
+        sf::Vector2f pinPos = pos + sf::Vector2f(0, inputStart + pinHeight * i);
         _inputs.emplace_back(Pin::Input, pinPos);
     }
 
-    _outputs.clear();
-    float outputStart = (_shape.getSize().y - (2 * Pin::RADIUS + PADDING) * numOutputs) / 2.f;
+    float outputHeight = 2*Pin::RADIUS*numOutputs + PADDING * (numOutputs-1);
+    float outputStart = Pin::RADIUS + (totalHeight - outputHeight) / 2.f;
     for (size_t i = 0; i < numOutputs; i++) {
-        sf::Vector2f pinPos = pos + sf::Vector2f(WIDTH, outputStart + totalHeight * i);
+        sf::Vector2f pinPos = pos + sf::Vector2f(WIDTH, outputStart + pinHeight * i);
         _outputs.emplace_back(Pin::Output, pinPos);
     }
 }
