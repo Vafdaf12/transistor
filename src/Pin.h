@@ -21,6 +21,7 @@ public:
     sf::Vector2f getCenter() const;
     void setCenter(sf::Vector2f pos);
 
+
     bool canConnect(const Pin& other) const;
     bool collide(sf::Vector2f) const;
 
@@ -30,8 +31,8 @@ public:
 
     static constexpr float RADIUS = 10.0f;
 
+    const PinType type;
 private:
     sf::CircleShape _shape;
-    PinType _type;
     int _state = 0;
 };

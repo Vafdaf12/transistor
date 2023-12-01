@@ -3,7 +3,7 @@
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/System/Vector2.hpp"
 
-Pin::Pin(PinType type, sf::Vector2f pos, int state) : _type(type), _state(state) {
+Pin::Pin(PinType type, sf::Vector2f pos, int state) : type(type), _state(state) {
     _shape.setPosition(pos - sf::Vector2f(RADIUS, RADIUS));
     _shape.setFillColor(sf::Color::Black);
     _shape.setOutlineThickness(1);
@@ -36,9 +36,9 @@ void Pin::setCenter(sf::Vector2f pos) {
     _shape.setPosition(pos - sf::Vector2f(r, r));
 }
 bool Pin::canConnect(const Pin& other) const {
-    switch (_type) {
-    case Input: return other._type == Output;
-    case Output: return other._type == Input;
+    switch (type) {
+    case Input: return other.type == Output;
+    case Output: return other.type == Input;
     }
     return false;
 }

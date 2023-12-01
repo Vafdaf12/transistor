@@ -123,7 +123,7 @@ const Pin* collidePin(const std::vector<Circuit*>& circuits, sf::Vector2f pos) {
     }
     return nullptr;
 }
-const Pin* collidePin(const std::vector<Pin*>& circuits, sf::Vector2f pos) {
+Pin* collidePin(const std::vector<Pin*>& circuits, sf::Vector2f pos) {
     for (Pin* p : circuits) {
         if (p->collide(pos)) {
             return p;
@@ -278,6 +278,46 @@ int main(int, char**) {
         }
         tempPin = nullptr;
         state = NONE;
+        return true;
+    });
+
+    // --- PIN TOGGLING ---
+    Pin* clickedPin = nullptr;
+    worldLayer.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
+        if (event.mouseButton.button != sf::Mouse::Left) {
+            return false;
+        }
+        sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
+        sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
+
+        clickedPin = collidePin(pins, worldPos);
+        if(clickedPin && clickedPin->type != Pin::Output) {
+            clickedPin = nullptr;
+        }
+        return false;
+    });
+    worldLayer.subscribe(sf::Event::MouseMoved, [&](const sf::Event& event) {
+        if (!clickedPin) {
+            return false;
+        }
+        sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
+        sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
+        if (clickedPin->collide(worldPos)) {
+            return false;
+        }
+        clickedPin = nullptr;
+        return true;
+    });
+    worldLayer.subscribe(sf::Event::MouseButtonReleased, [&](const sf::Event& event) {
+        if (event.mouseButton.button != sf::Mouse::Left) {
+            return false;
+        }
+        if (!clickedPin) {
+            return false;
+        }
+        clickedPin->setState(!clickedPin->getState());
+        clickedPin = nullptr;
+
         return true;
     });
 
