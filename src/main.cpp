@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <iostream>
 #include <iterator>
+#include <list>
 #include <vector>
 
 #include "Circuit.h"
@@ -135,7 +136,7 @@ int main(int, char**) {
     std::cout << "Hello, World!" << std::endl;
     sf::RenderWindow window({1280, 720}, "Transistor");
 
-    std::vector<Wire> wires;
+    std::list<Wire> wires;
     std::vector<Circuit*> circuits;
 
     SfLayer guiLayer;

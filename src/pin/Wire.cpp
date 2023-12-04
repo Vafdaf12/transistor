@@ -8,6 +8,13 @@ Wire::Wire(Pin* p1, Pin* p2) {
     } else {
         _pins = {p2, p1};
     }
+    if(p1->type == Pin::Output) {
+        p2->setState(p1->getState());
+    }
+    if(p2->type == Pin::Output) {
+        p1->setState(p2->getState());
+    }
+
     p1->connect(this);
     p2->connect(this);
 }

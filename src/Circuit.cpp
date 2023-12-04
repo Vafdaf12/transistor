@@ -15,6 +15,7 @@ Circuit::Circuit(size_t numInputs, size_t numOutputs, sf::Vector2f pos) {
 
         sf::Vector2f pinPos = pos + sf::Vector2f(0, inputStart + pinHeight * i);
         _inputs.emplace_back(Pin::Input, pinPos);
+        _inputs.back().connect(this);
     }
 
     float outputHeight = 2*Pin::RADIUS*numOutputs + PADDING * (numOutputs-1);
@@ -72,4 +73,11 @@ void Circuit::draw(sf::RenderTarget& target, sf::RenderStates) const {
 
 void Circuit::setColor(sf::Color color) {
     _shape.setFillColor(color);
+}
+
+void Circuit::update(Pin* pin) {
+    size_t minPins = std::min(_outputs.size(), _inputs.size());
+    for (size_t i = 0; i < minPins; i++) {
+        _outputs[i].setState(_inputs[i].getState());
+    }
 }

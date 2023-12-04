@@ -8,7 +8,7 @@
 #include "SFML/Graphics/Transformable.hpp"
 #include <vector>
 
-class Circuit : public sf::Drawable {
+class Circuit : public sf::Drawable, public PinObserver {
 public:
     Circuit(size_t numInputs, size_t numOutputs, sf::Vector2f pos = {0, 0});
 
@@ -21,6 +21,7 @@ public:
 
     void setColor(sf::Color color);
 
+    void update(Pin* pin) override;
 private:
     static constexpr float PADDING = 10;
     static constexpr float WIDTH = 150;
