@@ -2,12 +2,14 @@
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 
-Wire::Wire(const Pin* p1, const Pin* p2) {
+Wire::Wire(Pin* p1, Pin* p2) {
     if (p1 < p2) {
         _pins = {p1, p2};
     } else {
         _pins = {p2, p1};
     }
+    p1->connect(this);
+    p2->connect(this);
 }
 void Wire::draw(sf::RenderTarget& target, sf::RenderStates) const {
     sf::Vertex edge[2] = {sf::Vertex({0, 0}, sf::Color::White)};
@@ -19,6 +21,17 @@ void Wire::draw(sf::RenderTarget& target, sf::RenderStates) const {
         edge[1].color = sf::Color::Red;
     }
     target.draw(edge, 2, sf::Lines);
+}
+
+void Wire::update(Pin* pin) {
+    int state = pin->getState();
+    if(_pins.first == pin) {
+        _pins.second->setState(state);
+    }
+    else {
+        _pins.first->setState(state);
+    }
+    
 }
 
 bool Wire::isEndpoint(const Pin* pin) const {

@@ -29,7 +29,7 @@ bool Circuit::collide(sf::Vector2f p) const {
     return _shape.getGlobalBounds().contains(p);
 }
 
-const Pin* Circuit::collidePin(sf::Vector2f v) const {
+Pin* Circuit::collidePin(sf::Vector2f v) {
     for (auto& p : _inputs) {
         if (p.collide(v)) {
             return &p;

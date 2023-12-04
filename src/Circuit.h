@@ -13,7 +13,7 @@ public:
     Circuit(size_t numInputs, size_t numOutputs, sf::Vector2f pos = {0, 0});
 
     bool collide(sf::Vector2f) const;
-    const Pin* collidePin(sf::Vector2f) const;
+    Pin* collidePin(sf::Vector2f);
 
     std::vector<sf::Transformable*> getTransforms();
     sf::FloatRect getBoundingBox() const;

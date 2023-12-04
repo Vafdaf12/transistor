@@ -114,9 +114,9 @@ enum ToolState {
     CONNECTING,
     DRAGGING,
 };
-const Pin* collidePin(const std::vector<Circuit*>& circuits, sf::Vector2f pos) {
+Pin* collidePin(const std::vector<Circuit*>& circuits, sf::Vector2f pos) {
     for (Circuit* c : circuits) {
-        if (const Pin* p = c->collidePin(pos)) {
+        if (Pin* p = c->collidePin(pos)) {
             return p;
         }
     }
@@ -228,7 +228,7 @@ int main(int, char**) {
     });
 
     // --- PIN CONNECTION ---
-    const Pin* tempPin = nullptr;
+    Pin* tempPin = nullptr;
     worldLayer.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
         if (state != NONE)
             return false;
@@ -258,7 +258,7 @@ int main(int, char**) {
         sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
         sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
 
-        const Pin* nextPin = collidePin(circuits, worldPos);
+        Pin* nextPin = collidePin(circuits, worldPos);
         if (!nextPin) {
             nextPin = collidePin(pins, worldPos);
         }

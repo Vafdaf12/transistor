@@ -25,6 +25,7 @@ void Pin::setState(int s) {
     } else {
         _shape.setFillColor(sf::Color::Black);
     }
+    notify();
 }
 int Pin::getState() const { return _state; }
 
@@ -51,4 +52,18 @@ sf::Transformable& Pin::getTransform() {
 }
 void Pin::draw(sf::RenderTarget& target, sf::RenderStates) const {
     target.draw(_shape);
+}
+
+bool Pin::connect(PinObserver* obs) {
+    return _observers.insert(obs).second;
+}
+bool Pin::disconnect(PinObserver* obs) {
+    return _observers.erase(obs) > 0;
+
+}
+void Pin::notify() {
+    for(PinObserver* obs : _observers) {
+        obs->update(this);
+    }
+
 }

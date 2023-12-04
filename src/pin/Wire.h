@@ -6,11 +6,12 @@
 
 #include "Pin.h"
 
-class Wire : public sf::Drawable {
+class Wire : public sf::Drawable, public PinObserver {
 public:
-    Wire(const Pin*, const Pin*);
+    Wire(Pin*, Pin*);
 
     void draw(sf::RenderTarget&, sf::RenderStates) const override;
+    void update(Pin* pin) override;
 
     bool isEndpoint(const Pin* pin) const;
 
@@ -19,5 +20,5 @@ public:
 
 
 private:
-    std::pair<const Pin*, const Pin*> _pins;
+    std::pair<Pin*, Pin*> _pins;
 };

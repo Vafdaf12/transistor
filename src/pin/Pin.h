@@ -5,6 +5,14 @@
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/Transformable.hpp"
 #include "SFML/System/Vector2.hpp"
+#include <set>
+
+class Pin;
+
+class PinObserver {
+public:
+    virtual void update(Pin* pin) = 0;
+};
 
 class Pin : public sf::Drawable {
 public:
@@ -33,7 +41,14 @@ public:
 
     const PinType type;
 
+    bool connect(PinObserver* obs);
+    bool disconnect(PinObserver* obs);
+
 private:
+    void notify();
+
     sf::CircleShape _shape;
     int _state = 0;
+
+    std::set<PinObserver*> _observers;
 };
