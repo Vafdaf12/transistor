@@ -32,6 +32,7 @@ public:
     static constexpr float RADIUS = 10.0f;
 
     const PinType type;
+
 private:
     sf::CircleShape _shape;
     int _state = 0;

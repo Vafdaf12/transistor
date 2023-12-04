@@ -4,7 +4,7 @@
 #include "SFML/Graphics/Drawable.hpp"
 #include "SFML/Graphics/RectangleShape.hpp"
 
-#include "Pin.h"
+#include "pin/Pin.h"
 #include "SFML/Graphics/Transformable.hpp"
 #include <vector>
 

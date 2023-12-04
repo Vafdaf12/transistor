@@ -15,14 +15,13 @@
 #include <algorithm>
 #include <iostream>
 #include <iterator>
-#include <set>
-#include <utility>
 #include <vector>
 
 #include "Circuit.h"
 #include "ComponentDragger.h"
 #include "EventLayer.h"
-#include "Pin.h"
+#include "pin/Pin.h"
+#include "pin/Wire.h"
 
 #include "SFML/Window/WindowBase.hpp"
 
@@ -136,7 +135,7 @@ int main(int, char**) {
     std::cout << "Hello, World!" << std::endl;
     sf::RenderWindow window({1280, 720}, "Transistor");
 
-    std::set<std::pair<const Pin*, const Pin*>> edges;
+    std::vector<Wire> wires;
     std::vector<Circuit*> circuits;
 
     SfLayer guiLayer;
@@ -152,7 +151,6 @@ int main(int, char**) {
 
     // --- GRAPHICS COLLECTIONS ---
     std::vector<Pin*> pins;
-    sf::Vertex edgeVertices[2] = {sf::Vertex({0, 0}, sf::Color::White)};
     sf::Vertex connectVertices[2] = {sf::Vertex({0, 0}, sf::Color::White)};
 
     // --- GRAPHICS ELEMENTS ---
@@ -271,11 +269,9 @@ int main(int, char**) {
             return true;
         }
 
-        if (tempPin < nextPin) {
-            edges.insert({tempPin, nextPin});
-        } else {
-            edges.insert({nextPin, tempPin});
-        }
+
+        wires.emplace_back(tempPin, nextPin);
+
         tempPin = nullptr;
         state = NONE;
         return true;
@@ -517,11 +513,9 @@ int main(int, char**) {
         for (const auto& pin : pins) {
             window.draw(*pin);
         }
-        for (const auto& [s1, s2] : edges) {
-            edgeVertices[0].position = s1->getCenter();
-            edgeVertices[1].position = s2->getCenter();
+        for (const auto& wire : wires) {
 
-            window.draw(edgeVertices, 2, sf::Lines);
+            window.draw(wire);
         }
 
         if (state == CONNECTING) {
