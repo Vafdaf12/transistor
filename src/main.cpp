@@ -18,11 +18,12 @@
 #include <list>
 #include <vector>
 
-#include "Circuit.h"
 #include "ComponentDragger.h"
 #include "EventLayer.h"
 #include "pin/Pin.h"
 #include "pin/Wire.h"
+#include "circuit/Circuit.h"
+#include "circuit/PassthroughCircuit.h"
 
 #include "SFML/Window/WindowBase.hpp"
 
@@ -147,8 +148,8 @@ int main(int, char**) {
     ToolState state = NONE;
 
     Circuit* dragBoard = nullptr;
-    Circuit prototype(2, 1, {0, 0});
-    prototype.setColor(sf::Color::Cyan);
+    PassthroughCircuit* proto = new PassthroughCircuit(2, {0, 0});
+    proto->setColor(sf::Color::Cyan);
 
     // --- GRAPHICS COLLECTIONS ---
     std::vector<Pin*> pins;
@@ -164,13 +165,15 @@ int main(int, char**) {
     Pin p3(Pin::Output, {150, 50});
     pins.push_back(&p3);
 
-    Circuit circuit(2, 3, {-200, 0});
-    circuit.setColor(sf::Color::Green);
-    circuits.push_back(&circuit);
+    PassthroughCircuit* c;
 
-    Circuit circuit2(2, 1, {-200, 400});
-    circuit2.setColor(sf::Color::Red);
-    circuits.push_back(&circuit2);
+    c = new PassthroughCircuit(3, {-200, 0});
+    c->setColor(sf::Color::Green);
+    circuits.push_back(c);
+
+    c = new PassthroughCircuit(1, {-200, 400});
+    c->setColor(sf::Color::Red);
+    circuits.push_back(c);
 
     // --- GUI UPDATES ---
     sf::RectangleShape buttonShape;
@@ -184,7 +187,7 @@ int main(int, char**) {
         if (e.mouseButton.button != sf::Mouse::Left)
             return;
         std::cout << "Pressed" << std::endl;
-        dragBoard = &prototype;
+        dragBoard = proto;
     };
     button.onMouseUp = [&](const sf::Event& e) {
         if (e.mouseButton.button != sf::Mouse::Left)
@@ -425,7 +428,7 @@ int main(int, char**) {
     worldLayer.subscribe(sf::Event::MouseMoved, [&](const sf::Event& event) {
         if (!dragBoard)
             return false;
-        Circuit* c = new Circuit(*dragBoard);
+        Circuit* c = dragBoard->clone();
 
         sf::Vector2f pos = c->getBoundingBox().getPosition() + c->getBoundingBox().getSize() / 2.f;
 

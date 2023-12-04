@@ -3,25 +3,28 @@
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Drawable.hpp"
 #include "SFML/Graphics/RectangleShape.hpp"
-
-#include "pin/Pin.h"
 #include "SFML/Graphics/Transformable.hpp"
+
+#include "../pin/Pin.h"
+#include "Circuit.h"
 #include <vector>
 
-class Circuit : public sf::Drawable, public PinObserver {
+class PassthroughCircuit : public Circuit {
 public:
-    Circuit(size_t numInputs, size_t numOutputs, sf::Vector2f pos = {0, 0});
+    PassthroughCircuit(size_t size, sf::Vector2f pos = {0, 0});
 
-    bool collide(sf::Vector2f) const;
-    Pin* collidePin(sf::Vector2f);
+    bool collide(sf::Vector2f) const override;
+    Pin* collidePin(sf::Vector2f) override;
 
-    std::vector<sf::Transformable*> getTransforms();
-    sf::FloatRect getBoundingBox() const;
+    std::vector<sf::Transformable*> getTransforms() override;
+    sf::FloatRect getBoundingBox() const override;
+
     void draw(sf::RenderTarget&, sf::RenderStates) const override;
+    void update(Pin* pin) override;
 
     void setColor(sf::Color color);
 
-    void update(Pin* pin) override;
+    PassthroughCircuit* clone() override;
 private:
     static constexpr float PADDING = 10;
     static constexpr float WIDTH = 150;
