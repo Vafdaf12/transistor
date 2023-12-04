@@ -14,6 +14,11 @@ Pin::Pin(PinType type, sf::Vector2f pos, int state) : type(type), _state(state) 
     case Input: _shape.setOutlineColor(sf::Color(0x888888ff)); break;
     case Output: _shape.setOutlineColor(sf::Color::White); break;
     }
+    if (_state) {
+        _shape.setFillColor(sf::Color::Red);
+    } else {
+        _shape.setFillColor(sf::Color::Black);
+    }
 }
 void Pin::setState(int s) {
     if (_state == s) {

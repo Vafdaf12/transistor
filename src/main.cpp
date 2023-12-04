@@ -1,5 +1,6 @@
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Drawable.hpp"
+#include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/Rect.hpp"
 #include "SFML/Graphics/RectangleShape.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
@@ -24,6 +25,7 @@
 #include "pin/Wire.h"
 #include "circuit/Circuit.h"
 #include "circuit/PassthroughCircuit.h"
+#include "circuit/NandCircuit.h"
 
 #include "SFML/Window/WindowBase.hpp"
 
@@ -136,6 +138,9 @@ Pin* collidePin(const std::vector<Pin*>& circuits, sf::Vector2f pos) {
 int main(int, char**) {
     std::cout << "Hello, World!" << std::endl;
     sf::RenderWindow window({1280, 720}, "Transistor");
+    sf::Font font;
+    font.loadFromFile("assets/fonts/CutiveMono-Regular.ttf");
+
 
     std::list<Wire> wires;
     std::vector<Circuit*> circuits;
@@ -148,8 +153,7 @@ int main(int, char**) {
     ToolState state = NONE;
 
     Circuit* dragBoard = nullptr;
-    PassthroughCircuit* proto = new PassthroughCircuit(2, {0, 0});
-    proto->setColor(sf::Color::Cyan);
+    NandCircuit* proto = new NandCircuit(font);
 
     // --- GRAPHICS COLLECTIONS ---
     std::vector<Pin*> pins;

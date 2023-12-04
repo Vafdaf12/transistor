@@ -10,6 +10,7 @@ add_executable(${BINARY}
     main.cpp
     ComponentDragger.cpp
     circuit/PassthroughCircuit.cpp
+    circuit/NandCircuit.cpp
     pin/Pin.cpp
     pin/Wire.cpp
 )

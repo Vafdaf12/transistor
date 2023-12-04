@@ -21,7 +21,7 @@ public:
         Output
     };
 
-    Pin(PinType type, sf::Vector2f pos, int state = 0);
+    Pin(PinType type, sf::Vector2f pos={0, 0}, int state = 0);
 
     void setState(int s);
     int getState() const;
