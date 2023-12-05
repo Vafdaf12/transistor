@@ -5,7 +5,7 @@
 #include "SFML/Graphics/RectangleShape.hpp"
 #include "SFML/Graphics/Transformable.hpp"
 
-#include "../pin/Pin.h"
+#include "pin/Pin.h"
 #include "Circuit.h"
 #include <vector>
 

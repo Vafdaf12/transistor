@@ -21,11 +21,12 @@
 
 #include "ComponentDragger.h"
 #include "EventLayer.h"
-#include "pin/Pin.h"
-#include "pin/Wire.h"
 #include "circuit/Circuit.h"
-#include "circuit/PassthroughCircuit.h"
 #include "circuit/NandCircuit.h"
+#include "circuit/PassthroughCircuit.h"
+#include "game/GameWorld.h"
+#include "pin/Pin.h"
+
 
 #include "SFML/Window/WindowBase.hpp"
 
@@ -118,22 +119,6 @@ enum ToolState {
     CONNECTING,
     DRAGGING,
 };
-Pin* collidePin(const std::vector<Circuit*>& circuits, sf::Vector2f pos) {
-    for (Circuit* c : circuits) {
-        if (Pin* p = c->collidePin(pos)) {
-            return p;
-        }
-    }
-    return nullptr;
-}
-Pin* collidePin(const std::vector<Pin*>& circuits, sf::Vector2f pos) {
-    for (Pin* p : circuits) {
-        if (p->collide(pos)) {
-            return p;
-        }
-    }
-    return nullptr;
-}
 
 int main(int, char**) {
     std::cout << "Hello, World!" << std::endl;
@@ -141,9 +126,7 @@ int main(int, char**) {
     sf::Font font;
     font.loadFromFile("assets/fonts/CutiveMono-Regular.ttf");
 
-
-    std::list<Wire> wires;
-    std::vector<Circuit*> circuits;
+    GameWorld world;
 
     SfLayer guiLayer;
     SfLayer worldLayer;
@@ -156,28 +139,29 @@ int main(int, char**) {
     NandCircuit* proto = new NandCircuit(font);
 
     // --- GRAPHICS COLLECTIONS ---
-    std::vector<Pin*> pins;
     sf::Vertex connectVertices[2] = {sf::Vertex({0, 0}, sf::Color::White)};
 
     // --- GRAPHICS ELEMENTS ---
-    Pin p1(Pin::Input, {0, 0});
-    pins.push_back(&p1);
+    Pin* p;
 
-    Pin p2(Pin::Output, {100, 50});
-    pins.push_back(&p2);
+    p = new Pin(Pin::Input, {0, 0});
+    world.addPin(p);
 
-    Pin p3(Pin::Output, {150, 50});
-    pins.push_back(&p3);
+    p = new Pin(Pin::Output, {100, 50});
+    world.addPin(p);
+
+    p = new Pin(Pin::Output, {150, 50});
+    world.addPin(p);
 
     PassthroughCircuit* c;
 
     c = new PassthroughCircuit(3, {-200, 0});
     c->setColor(sf::Color::Green);
-    circuits.push_back(c);
+    world.addCircuit(c);
 
     c = new PassthroughCircuit(1, {-200, 400});
     c->setColor(sf::Color::Red);
-    circuits.push_back(c);
+    world.addCircuit(c);
 
     // --- GUI UPDATES ---
     sf::RectangleShape buttonShape;
@@ -246,10 +230,7 @@ int main(int, char**) {
         sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
         sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
 
-        tempPin = collidePin(circuits, worldPos);
-        if (!tempPin) {
-            tempPin = collidePin(pins, worldPos);
-        }
+        tempPin = world.collidePin(worldPos);
         if (!tempPin) {
             return false;
         }
@@ -266,10 +247,7 @@ int main(int, char**) {
         sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
         sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
 
-        Pin* nextPin = collidePin(circuits, worldPos);
-        if (!nextPin) {
-            nextPin = collidePin(pins, worldPos);
-        }
+        Pin* nextPin = world.collidePin(worldPos);
 
         if (!nextPin || nextPin == tempPin || !tempPin->canConnect(*nextPin)) {
             tempPin = nullptr;
@@ -277,8 +255,7 @@ int main(int, char**) {
             return true;
         }
 
-
-        wires.emplace_back(tempPin, nextPin);
+        world.connectPins(tempPin, nextPin);
 
         tempPin = nullptr;
         state = NONE;
@@ -294,8 +271,8 @@ int main(int, char**) {
         sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
         sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
 
-        clickedPin = collidePin(pins, worldPos);
-        if(clickedPin && clickedPin->type != Pin::Output) {
+        clickedPin = world.collidePin(worldPos, GameWorld::SINGLE);
+        if (clickedPin && clickedPin->type != Pin::Output) {
             clickedPin = nullptr;
         }
         return false;
@@ -340,12 +317,10 @@ int main(int, char**) {
 
         std::vector<sf::Transformable*> components;
         if (selected.empty()) {
-            // Find
-            for (Circuit* c : circuits) {
-                if (c->collide(worldPos)) {
-                    std::vector<sf::Transformable*> children = c->getTransforms();
-                    std::copy(children.begin(), children.end(), std::back_inserter(components));
-                }
+            Circuit* hovered = world.collideCircuit(worldPos);
+            if (hovered) {
+                std::vector<sf::Transformable*> children = hovered->getTransforms();
+                std::copy(children.begin(), children.end(), std::back_inserter(components));
             }
         } else {
             for (Circuit* c : selected) {
@@ -402,22 +377,7 @@ int main(int, char**) {
     worldLayer.subscribe(sf::Event::MouseMoved, [&](const sf::Event& event) {
         if (state != SELECTING)
             return false;
-        selected.clear();
-        std::copy_if(
-            circuits.begin(),
-            circuits.end(),
-            std::back_inserter(selected),
-            [&](Circuit* c) {
-                sf::Vector2f tl = c->getBoundingBox().getPosition();
-                sf::Vector2f br = tl + c->getBoundingBox().getSize();
-                sf::FloatRect selectRect = selector.getGlobalBounds();
-                if (!selectRect.contains(tl))
-                    return false;
-                if (!selectRect.contains(br))
-                    return false;
-                return true;
-            }
-        );
+        selected = world.collideCircuit(selector.getGlobalBounds());
         return true;
     });
 
@@ -437,7 +397,7 @@ int main(int, char**) {
         sf::Vector2f pos = c->getBoundingBox().getPosition() + c->getBoundingBox().getSize() / 2.f;
 
         dragger.beginDrag(c->getTransforms(), pos);
-        circuits.push_back(c);
+        world.addCircuit(c);
         state = DRAGGING;
         dragBoard = nullptr;
         return true;
@@ -451,23 +411,9 @@ int main(int, char**) {
             std::cout << "Nothing to delete" << std::endl;
             return false;
         }
-
-        // Remove bodies
-        std::erase_if(circuits, [&](const Circuit* c) {
-            for (auto s : selected) {
-                if (c == s)
-                    return true;
-            }
-            return false;
-        });
-        for (Circuit* c : selected) {
-            delete c;
+        for (auto s : selected) {
+            world.removeCircuit(s);
         }
-
-        // Remove Wires
-        std::erase_if(wires, [&](const Wire& c) {
-            return !c.isValid();
-        });
 
         selected.clear();
         return true;
@@ -523,16 +469,7 @@ int main(int, char**) {
 
         // --- WORLD VIEW ---
         window.setView(view);
-        for (const auto& c : circuits) {
-            window.draw(*c);
-        }
-        for (const auto& pin : pins) {
-            window.draw(*pin);
-        }
-        for (const auto& wire : wires) {
-
-            window.draw(wire);
-        }
+        window.draw(world);
 
         if (state == CONNECTING) {
             window.draw(connectVertices, 2, sf::Lines);

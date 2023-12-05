@@ -1,7 +1,7 @@
 #pragma once
 
 #include "SFML/Graphics/Drawable.hpp"
-#include "../pin/Pin.h"
+#include "pin/Pin.h"
 
 class Circuit : public sf::Drawable, public PinObserver {
 public:

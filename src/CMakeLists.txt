@@ -13,8 +13,9 @@ add_executable(${BINARY}
     circuit/NandCircuit.cpp
     pin/Pin.cpp
     pin/Wire.cpp
+    game/GameWorld.cpp
 )
 target_include_directories(${BINARY}
-    PUBLIC src/
+    PUBLIC .
 )
 target_link_libraries(${BINARY} sfml-graphics)
