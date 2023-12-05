@@ -22,9 +22,9 @@ NandCircuit::NandCircuit(const sf::Font& font, sf::Vector2f pos)
 
     _out.setCenter(pos + sf::Vector2f(size.x, size.y / 2.f));
 
-    size.y /= 3;
+    size.y /= 4;
     _in1.setCenter(pos + sf::Vector2f(0, size.y * 1.f));
-    _in2.setCenter(pos + sf::Vector2f(0, size.y * 2.f));
+    _in2.setCenter(pos + sf::Vector2f(0, size.y * 3.f));
 
     _in1.connect(this);
     _in2.connect(this);

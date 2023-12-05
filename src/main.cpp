@@ -460,6 +460,14 @@ int main(int, char**) {
             }
             return false;
         });
+        for (Circuit* c : selected) {
+            delete c;
+        }
+
+        // Remove Wires
+        std::erase_if(wires, [&](const Wire& c) {
+            return !c.isValid();
+        });
 
         selected.clear();
         return true;

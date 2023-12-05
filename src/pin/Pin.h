@@ -12,6 +12,7 @@ class Pin;
 class PinObserver {
 public:
     virtual void update(Pin* pin) = 0;
+    virtual void onRemove(Pin* pin) {}
 };
 
 class Pin : public sf::Drawable {
@@ -22,6 +23,7 @@ public:
     };
 
     Pin(PinType type, sf::Vector2f pos={0, 0}, int state = 0);
+    ~Pin();
 
     void setState(int s);
     int getState() const;

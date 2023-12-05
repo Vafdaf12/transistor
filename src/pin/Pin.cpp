@@ -20,6 +20,12 @@ Pin::Pin(PinType type, sf::Vector2f pos, int state) : type(type), _state(state) 
         _shape.setFillColor(sf::Color::Black);
     }
 }
+Pin::~Pin()
+{
+    for(PinObserver* obs : _observers) {
+        obs->onRemove(this);
+    }
+}
 void Pin::setState(int s) {
     if (_state == s) {
         return;

@@ -12,8 +12,10 @@ public:
 
     void draw(sf::RenderTarget&, sf::RenderStates) const override;
     void update(Pin* pin) override;
+    void onRemove(Pin* pin) override;
 
     bool isEndpoint(const Pin* pin) const;
+    bool isValid() const;
 
     bool operator==(const Wire&) const;
     bool operator!=(const Wire& rhs) const { return !(*this == rhs); }
