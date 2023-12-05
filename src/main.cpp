@@ -17,6 +17,7 @@
 #include <iostream>
 #include <iterator>
 #include <list>
+#include <sstream>
 #include <vector>
 
 #include "ComponentDragger.h"
@@ -25,6 +26,7 @@
 #include "circuit/NandCircuit.h"
 #include "circuit/PassthroughCircuit.h"
 #include "game/GameWorld.h"
+#include "io/CommandLoader.h"
 #include "pin/Pin.h"
 
 
@@ -127,7 +129,49 @@ int main(int, char**) {
     font.loadFromFile("assets/fonts/CutiveMono-Regular.ttf");
 
     GameWorld world;
+    CommandLoader loader;
+    loader.registerCommand("pin", [&world](const std::string& params) {
+        std::stringstream stream(params);
+        char t;
+        float x, y;
+        stream >> t >> x >> y;
+        switch (t) {
+            case 'I': {
+                world.addPin(new Pin(Pin::Input, {x, y}));
+                break;
+            }
+            case 'O': {
+                world.addPin(new Pin(Pin::Output, {x, y}));
+                break;
+            }
+            default: break;
+        }
+    });
 
+    loader.registerCommand("circuit", [&world, &font](const std::string& params) {
+        std::stringstream stream(params);
+        char t;
+        float x, y;
+        stream >> t >> x >> y;
+        switch(t) {
+            case 'P': {
+                int n, r, g, b;
+                stream >> n >> r >> g >> b;
+                PassthroughCircuit* c;
+                c = new PassthroughCircuit(n, {x, y});
+                c->setColor(sf::Color(r, g, b, 255));
+                world.addCircuit(c);
+
+                break;
+            }
+            case 'N': {
+                world.addCircuit(new NandCircuit(font, {x, y}));
+                break;
+            }
+            default: break;
+        }
+    });
+    loader.loadFile("assets/world.txt");
     SfLayer guiLayer;
     SfLayer worldLayer;
 
@@ -140,28 +184,6 @@ int main(int, char**) {
 
     // --- GRAPHICS COLLECTIONS ---
     sf::Vertex connectVertices[2] = {sf::Vertex({0, 0}, sf::Color::White)};
-
-    // --- GRAPHICS ELEMENTS ---
-    Pin* p;
-
-    p = new Pin(Pin::Input, {0, 0});
-    world.addPin(p);
-
-    p = new Pin(Pin::Output, {100, 50});
-    world.addPin(p);
-
-    p = new Pin(Pin::Output, {150, 50});
-    world.addPin(p);
-
-    PassthroughCircuit* c;
-
-    c = new PassthroughCircuit(3, {-200, 0});
-    c->setColor(sf::Color::Green);
-    world.addCircuit(c);
-
-    c = new PassthroughCircuit(1, {-200, 400});
-    c->setColor(sf::Color::Red);
-    world.addCircuit(c);
 
     // --- GUI UPDATES ---
     sf::RectangleShape buttonShape;

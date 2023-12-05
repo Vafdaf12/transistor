@@ -1,0 +1,7 @@
+:pin I 0 0
+:pin O 100 50
+:pin O 150 50
+
+:circuit P -200 0 3 0 255 0
+:circuit P -200 400 1 255 0 0
+:circuit N 100 0
