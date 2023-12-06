@@ -12,6 +12,7 @@
 #include "SFML/System/Vector2.hpp"
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/Keyboard.hpp"
+#include "SFML/Window/Clipboard.hpp"
 
 #include <algorithm>
 #include <iostream>
@@ -25,12 +26,16 @@
 #include "circuit/Circuit.h"
 #include "circuit/NandCircuit.h"
 #include "circuit/PassthroughCircuit.h"
+#include "circuit/BinaryGate.h"
 #include "game/GameWorld.h"
 #include "io/CommandLoader.h"
 #include "pin/Pin.h"
 
 
 #include "SFML/Window/WindowBase.hpp"
+
+#include "SFML/Graphics/Texture.hpp"
+#include "SFML/Graphics/Sprite.hpp"
 
 using SfLayer = EventLayer<sf::Event::EventType, sf::Event>;
 
@@ -123,10 +128,17 @@ enum ToolState {
 };
 
 int main(int, char**) {
-    std::cout << "Hello, World!" << std::endl;
+    std::cout << sf::Clipboard::getString().toAnsiString() << std::endl;
     sf::RenderWindow window({1280, 720}, "Transistor");
     sf::Font font;
     font.loadFromFile("assets/fonts/CutiveMono-Regular.ttf");
+
+    sf::Texture xorTexture;
+    sf::Texture orTexture;
+    sf::Texture andTexture;
+    orTexture.loadFromFile("assets/sprites/gate_or.png");
+    xorTexture.loadFromFile("assets/sprites/gate_xor.png");
+    andTexture.loadFromFile("assets/sprites/gate_and.png");
 
     GameWorld world;
     CommandLoader loader;
@@ -148,7 +160,7 @@ int main(int, char**) {
         }
     });
 
-    loader.registerCommand("circuit", [&world, &font](const std::string& params) {
+    loader.registerCommand("circuit", [&](const std::string& params) {
         std::stringstream stream(params);
         char t;
         float x, y;
@@ -166,6 +178,18 @@ int main(int, char**) {
             }
             case 'N': {
                 world.addCircuit(new NandCircuit(font, {x, y}));
+                break;
+            }
+            case 'X': {
+                world.addCircuit(new BinaryGate(xorTexture, BinaryGate::Xor, {x, y}));
+                break;
+            }
+            case 'O': {
+                world.addCircuit(new BinaryGate(orTexture, BinaryGate::Or, {x, y}));
+                break;
+            }
+            case 'A': {
+                world.addCircuit(new BinaryGate(andTexture, BinaryGate::And, {x, y}));
                 break;
             }
             default: break;

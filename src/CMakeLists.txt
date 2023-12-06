@@ -11,6 +11,7 @@ add_executable(${BINARY}
     ComponentDragger.cpp
     circuit/PassthroughCircuit.cpp
     circuit/NandCircuit.cpp
+    circuit/BinaryGate.cpp
     pin/Pin.cpp
     pin/Wire.cpp
     game/GameWorld.cpp
