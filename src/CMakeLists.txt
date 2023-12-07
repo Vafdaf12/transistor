@@ -19,5 +19,6 @@ add_executable(${BINARY}
 )
 target_include_directories(${BINARY}
     PUBLIC .
+    PUBLIC ${INCLUDE_VENDOR}
 )
 target_link_libraries(${BINARY} sfml-graphics)
