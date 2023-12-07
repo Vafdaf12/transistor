@@ -4,7 +4,7 @@
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/System/Vector2.hpp"
 
-Pin::Pin(PinType type, sf::Vector2f pos, int state) : type(type), _state(state) {
+Pin::Pin(const std::string& id, PinType type, sf::Vector2f pos, int state) : type(type), _state(state), _id(id) {
     _shape.setPosition(pos - sf::Vector2f(RADIUS, RADIUS));
     _shape.setFillColor(sf::Color::Black);
     _shape.setOutlineThickness(1);

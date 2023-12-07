@@ -117,18 +117,21 @@ int main(int, char**) {
 
     GameWorld world;
     CommandLoader loader;
-    loader.registerCommand("pin", [&world](const std::string& params) {
+
+    size_t inputCount = 0;
+    size_t outputCount = 0;
+    loader.registerCommand("pin", [&](const std::string& params) {
         std::stringstream stream(params);
         char t;
         float x, y;
         stream >> t >> x >> y;
         switch (t) {
             case 'I': {
-                world.addPin(new Pin(Pin::Input, {x, y}));
+                world.addPin(new Pin("in" + std::to_string(++inputCount), Pin::Input, {x, y}));
                 break;
             }
             case 'O': {
-                world.addPin(new Pin(Pin::Output, {x, y}));
+                world.addPin(new Pin("out" + std::to_string(++outputCount), Pin::Output, {x, y}));
                 break;
             }
             default: break;

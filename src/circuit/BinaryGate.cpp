@@ -6,9 +6,9 @@
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/System/Vector2.hpp"
 
-BinaryGate::BinaryGate(const std::string& id, const sf::Texture& tex, Func fn,  sf::Vector2f pos)
-    : Circuit(id), _sprite(tex), _in1(Pin::Input), _in2(Pin::Input), _out(Pin::Output, {0, 0}, 0),
-      _process(fn) {
+BinaryGate::BinaryGate(const std::string& id, const sf::Texture& tex, Func fn, sf::Vector2f pos)
+    : Circuit(id), _sprite(tex), _in1("in1", Pin::Input), _in2("in2", Pin::Input),
+      _out("out", Pin::Output, {0, 0}, 0), _process(fn) {
 
     _sprite.setPosition(pos);
     _sprite.scale(0.7, 0.7);

@@ -1,5 +1,6 @@
 #include "PassthroughCircuit.h"
 #include "SFML/Graphics/RenderTarget.hpp"
+#include <string>
 
 PassthroughCircuit::PassthroughCircuit(const std::string& id, size_t size, sf::Vector2f pos)
     : Circuit(id) {
@@ -13,8 +14,10 @@ PassthroughCircuit::PassthroughCircuit(const std::string& id, size_t size, sf::V
     for (size_t i = 0; i < size; i++) {
         float y = pos.y + startY + (2 * Pin::RADIUS + PADDING) * i;
 
-        _outputs.emplace_back(Pin::Output, sf::Vector2f(pos.x + WIDTH, y));
-        _inputs.emplace_back(Pin::Input, sf::Vector2f(pos.x, y));
+        std::string id = std::to_string(i);
+
+        _outputs.emplace_back("out" + id, Pin::Output, sf::Vector2f(pos.x + WIDTH, y));
+        _inputs.emplace_back("in" + id, Pin::Input, sf::Vector2f(pos.x, y));
         _inputs.back().connect(this);
     }
 }
@@ -64,7 +67,8 @@ void PassthroughCircuit::draw(sf::RenderTarget& target, sf::RenderStates) const 
 void PassthroughCircuit::setColor(sf::Color color) { _shape.setFillColor(color); }
 
 PassthroughCircuit* PassthroughCircuit::clone(const std::string& newId) {
-    PassthroughCircuit* circuit = new PassthroughCircuit(newId, _inputs.size(), _shape.getPosition());
+    PassthroughCircuit* circuit =
+        new PassthroughCircuit(newId, _inputs.size(), _shape.getPosition());
     circuit->setColor(_shape.getFillColor());
     return circuit;
 }

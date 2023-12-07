@@ -6,6 +6,7 @@
 #include "SFML/Graphics/Transformable.hpp"
 #include "SFML/System/Vector2.hpp"
 #include <set>
+#include <string>
 
 class Pin;
 
@@ -22,7 +23,7 @@ public:
         Output
     };
 
-    Pin(PinType type, sf::Vector2f pos={0, 0}, int state = 0);
+    Pin(const std::string& id, PinType type, sf::Vector2f pos={0, 0}, int state = 0);
     ~Pin();
 
     void setState(int s);
@@ -46,6 +47,9 @@ public:
     bool connect(PinObserver* obs);
     bool disconnect(PinObserver* obs);
 
+    inline const std::string& getId() const { return _id; }
+    inline void setId(const std::string& id) { _id = id; }
+
 private:
     void notify();
 
@@ -53,4 +57,5 @@ private:
     int _state = 0;
 
     std::set<PinObserver*> _observers;
+    std::string _id;
 };

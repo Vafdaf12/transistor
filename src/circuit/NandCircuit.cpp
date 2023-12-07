@@ -4,7 +4,8 @@
 #include "SFML/System/Vector2.hpp"
 
 NandCircuit::NandCircuit(const std::string& id, const sf::Font& font, sf::Vector2f pos)
-    : Circuit(id), _text("NAND", font), _in1(Pin::Input), _in2(Pin::Input), _out(Pin::Output, {0, 0}, 1) {
+    : Circuit(id), _text("NAND", font), _in1("in1", Pin::Input), _in2("in2", Pin::Input),
+      _out("out", Pin::Output, {0, 0}, 1) {
     const sf::Vector2f pad = sf::Vector2f(PADDING, PADDING);
     _text.setStyle(sf::Text::Bold);
 
