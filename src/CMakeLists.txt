@@ -16,6 +16,7 @@ add_executable(${BINARY}
     pin/Wire.cpp
     game/GameWorld.cpp
     io/CommandLoader.cpp
+    tools/PanTool.cpp
 )
 target_include_directories(${BINARY}
     PUBLIC .

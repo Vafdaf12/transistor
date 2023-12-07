@@ -36,6 +36,8 @@
 
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/Sprite.hpp"
+#include "tools/PanTool.h"
+#include "tools/Tool.h"
 
 using SfLayer = EventLayer<sf::Event::EventType, sf::Event>;
 
@@ -89,36 +91,6 @@ constexpr float RADIUS = 10.0f;
 constexpr float SEP = 2 * RADIUS;
 constexpr float WIDTH = 150;
 
-class Tool : public sf::Drawable {
-public:
-    virtual void update() = 0;
-
-protected:
-    virtual void draw(sf::RenderTarget&, sf::RenderStates) const override {}
-};
-
-class PanTool : public Tool {
-public:
-    PanTool(sf::View& v, const sf::RenderWindow& w) : _view(v), _window(w) {
-        _previousPosition = sf::Mouse::getPosition(_window);
-    }
-    void update() override {
-        sf::Vector2i pos = sf::Mouse::getPosition(_window);
-
-        sf::Vector2f prevWorldPos = _window.mapPixelToCoords(_previousPosition);
-        sf::Vector2f worldPos = _window.mapPixelToCoords(pos);
-
-        _view.move(prevWorldPos - worldPos);
-
-        _previousPosition = pos;
-    }
-
-private:
-    sf::View& _view;
-    const sf::RenderWindow& _window;
-
-    sf::Vector2i _previousPosition;
-};
 
 enum ToolState {
     NONE = 0,
@@ -130,6 +102,8 @@ enum ToolState {
 int main(int, char**) {
     std::cout << sf::Clipboard::getString().toAnsiString() << std::endl;
     sf::RenderWindow window({1280, 720}, "Transistor");
+    window.setKeyRepeatEnabled(false);
+
     sf::Font font;
     font.loadFromFile("assets/fonts/CutiveMono-Regular.ttf");
 
@@ -243,17 +217,18 @@ int main(int, char**) {
         view.setSize({x, y});
         return false;
     });
-    worldLayer.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
-        if (event.mouseButton.button != sf::Mouse::Left)
+    worldLayer.subscribe(sf::Event::KeyPressed, [&](const sf::Event& event) {
+        if(event.key.code != sf::Keyboard::LAlt) {
             return false;
-        if (!sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt))
-            return false;
+        }
         currentTool = new PanTool(view, window);
+        std::cout << "Tool assigned" << std::endl;
         return true;
     });
-    worldLayer.subscribe(sf::Event::MouseButtonReleased, [&](const sf::Event& event) {
-        if (!currentTool)
+    worldLayer.subscribe(sf::Event::KeyReleased, [&](const sf::Event& event) {
+        if(event.key.code != sf::Keyboard::LAlt) {
             return false;
+        }
         delete currentTool;
         currentTool = nullptr;
         return true;
@@ -473,6 +448,9 @@ int main(int, char**) {
         for (sf::Event e : events) {
             if (e.type == sf::Event::Closed) {
                 window.close();
+            }
+            if(currentTool) {
+                currentTool->getEventTarget()->post(e);
             }
         }
 
