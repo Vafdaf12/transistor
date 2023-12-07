@@ -21,6 +21,7 @@ public:
     GameWorld();
 
     bool loadFromFile(const std::string& path, const sf::Font& font);
+    bool saveToFile(const std::string& path);
 
     void addPin(Pin* p);
 

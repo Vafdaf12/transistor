@@ -10,6 +10,10 @@ BinaryGate::BinaryGate(const std::string& id, const sf::Texture& tex, Func fn, s
     : Circuit(id), _sprite(tex), _in1("in1", Pin::Input), _in2("in2", Pin::Input),
       _out("out", Pin::Output, {0, 0}, 0), _process(fn) {
 
+    _in1.setParent(this);
+    _in2.setParent(this);
+    _out.setParent(this);
+
     _sprite.setPosition(pos);
     _sprite.scale(0.7, 0.7);
 

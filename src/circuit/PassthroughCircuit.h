@@ -23,6 +23,9 @@ public:
     void update(Pin* pin) override;
 
     void setColor(sf::Color color);
+    inline sf::Color getColor() const { return _shape.getFillColor(); }
+
+    inline size_t getSize() const { return _inputs.size(); }
 
     PassthroughCircuit* clone(const std::string& newId) override;
 

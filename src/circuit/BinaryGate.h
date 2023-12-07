@@ -24,6 +24,8 @@ public:
 
     Pin* queryPin(const std::string& id) override;
 
+    inline Func getFunc() const { return _process; }
+
 
     static int And(int, int);
     static int Or(int, int);

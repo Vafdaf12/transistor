@@ -1,10 +1,13 @@
 #include "GameWorld.h"
+#include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
+#include "SFML/System/Vector2.hpp"
 #include "circuit/BinaryGate.h"
 #include "circuit/NandCircuit.h"
 #include "circuit/PassthroughCircuit.h"
 #include "json.hpp"
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <vector>
 
@@ -88,6 +91,69 @@ bool GameWorld::loadFromFile(const std::string& path, const sf::Font& font) {
         std::cout << "Added wire" << std::endl;
     }
 
+    return true;
+}
+
+bool GameWorld::saveToFile(const std::string& path) {
+    std::ofstream file(path);
+    if(!file.is_open()) {
+        return false;
+    }
+
+    json data;
+    for(const auto& p : _pins) {
+        switch (p->type) {
+
+        case Pin::Input: {
+            data["outputs"].push_back(p->getId());
+            break;
+        }
+
+        case Pin::Output: {
+            data["inputs"].push_back(p->getId());
+            break;
+        }
+        }
+    }
+    for(const auto& circuit : _circuits) {
+        json elem;
+        elem["id"] = circuit->getId();
+
+        sf::Vector2f pos = circuit->getBoundingBox().getPosition();
+        elem["position"]["x"] = pos.x;
+        elem["position"]["y"] = pos.y;
+
+        if(auto c = dynamic_cast<const PassthroughCircuit*>(circuit.get())) {
+            elem["type"] = "passthrough";
+            sf::Color color = c->getColor();
+            elem["pins"] = c->getSize();
+            elem["color"] = {color.r, color.g, color.b};
+        }
+        else if(dynamic_cast<NandCircuit*>(circuit.get())) {
+            elem["type"] = "nand_gate";
+        }
+        else if(auto c = dynamic_cast<const BinaryGate*>(circuit.get())) {
+            if(c->getFunc() == BinaryGate::And) {
+                elem["type"] = "and_gate";
+            }
+            else if(c->getFunc() == BinaryGate::Or) {
+                elem["type"] = "or_gate";
+            }
+            else if(c->getFunc() == BinaryGate::Xor) {
+                elem["type"] = "xor_gate";
+            }
+
+        }
+        data["elements"].push_back(elem);
+    }
+    for(const auto& w : _wires) {
+        json elem;
+        auto [from, to] = w.getPins();
+        elem["from"] = from->getFullPath();
+        elem["to"] = to->getFullPath();
+        data["wires"].push_back(elem);
+    }
+    file << std::setw(4) << data;
     return true;
 }
 

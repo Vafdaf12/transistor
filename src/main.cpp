@@ -463,5 +463,6 @@ int main(int, char**) {
         window.draw(buttonShape);
         window.display();
     }
+    world.saveToFile("world.json");
     return 0;
 }

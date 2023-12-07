@@ -9,6 +9,7 @@
 #include <string>
 
 class Pin;
+class Circuit;
 
 class PinObserver {
 public:
@@ -50,6 +51,11 @@ public:
     inline const std::string& getId() const { return _id; }
     inline void setId(const std::string& id) { _id = id; }
 
+    std::string getFullPath() const;
+
+
+    inline void setParent(Circuit* c) { _parent = c; }
+
 private:
     void notify();
 
@@ -58,4 +64,6 @@ private:
 
     std::set<PinObserver*> _observers;
     std::string _id;
+
+    Circuit* _parent = nullptr;
 };

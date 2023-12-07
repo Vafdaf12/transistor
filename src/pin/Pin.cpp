@@ -4,6 +4,8 @@
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/System/Vector2.hpp"
 
+#include "circuit/Circuit.h"
+
 Pin::Pin(const std::string& id, PinType type, sf::Vector2f pos, int state) : type(type), _state(state), _id(id) {
     _shape.setPosition(pos - sf::Vector2f(RADIUS, RADIUS));
     _shape.setFillColor(sf::Color::Black);
@@ -71,6 +73,12 @@ bool Pin::connect(PinObserver* obs) {
 bool Pin::disconnect(PinObserver* obs) {
     return _observers.erase(obs) > 0;
 
+}
+std::string Pin::getFullPath() const {
+    if(_parent) {
+        return _parent->getId() + "/" + _id;
+    }
+    return _id;
 }
 void Pin::notify() {
     for(PinObserver* obs : _observers) {

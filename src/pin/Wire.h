@@ -21,6 +21,7 @@ public:
     bool operator==(const Wire&) const;
     bool operator!=(const Wire& rhs) const { return !(*this == rhs); }
 
+    inline std::pair<const Pin*, const Pin*> getPins() const { return _pins; }
 
 private:
     std::pair<Pin*, Pin*> _pins;

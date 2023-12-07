@@ -17,7 +17,9 @@ PassthroughCircuit::PassthroughCircuit(const std::string& id, size_t size, sf::V
         std::string id = std::to_string(i+1);
 
         _outputs.emplace_back("out" + id, Pin::Output, sf::Vector2f(pos.x + WIDTH, y));
+        _outputs.back().setParent(this);
         _inputs.emplace_back("in" + id, Pin::Input, sf::Vector2f(pos.x, y));
+        _inputs.back().setParent(this);
         _inputs.back().connect(this);
     }
 }

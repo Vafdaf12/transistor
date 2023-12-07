@@ -9,6 +9,10 @@ NandCircuit::NandCircuit(const std::string& id, const sf::Font& font, sf::Vector
     const sf::Vector2f pad = sf::Vector2f(PADDING, PADDING);
     _text.setStyle(sf::Text::Bold);
 
+    _in1.setParent(this);
+    _in2.setParent(this);
+    _out.setParent(this);
+
     _shape.setPosition(pos);
     _text.setPosition(pos + pad);
 
