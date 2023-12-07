@@ -1,6 +1,35 @@
 #include "GameWorld.h"
 #include "SFML/Graphics/RenderTarget.hpp"
+#include "json.hpp"
+#include <fstream>
 #include <vector>
+
+using json = nlohmann::json;
+
+bool GameWorld::loadFromFile(const std::string& path) {
+    std::ifstream file(path);
+    if (!file.is_open()) {
+        return false;
+    }
+
+    json data = json::parse(file);
+
+    size_t i = 0;
+
+    for (auto id : data["inputs"]) {
+        Pin* pin = new Pin(id.get<std::string>(), Pin::Output, sf::Vector2f(-100, i * 30));
+        _pins.emplace_back(pin);
+        i++;
+    }
+
+    i = 0;
+    for (auto id : data["outputs"]) {
+        Pin* pin = new Pin(id.get<std::string>(), Pin::Input, sf::Vector2f(100, i * 30));
+        _pins.emplace_back(pin);
+        i++;
+    }
+    return true;
+}
 
 void GameWorld::addPin(Pin* p) { _pins.emplace_back(p); }
 

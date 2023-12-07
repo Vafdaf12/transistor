@@ -18,6 +18,8 @@ public:
         SINGLE = 1 << 1,
     };
 
+    bool loadFromFile(const std::string& path);
+
     void addPin(Pin* p);
 
     void addCircuit(Circuit* c);

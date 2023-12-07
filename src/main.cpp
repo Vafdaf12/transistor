@@ -116,27 +116,8 @@ int main(int, char**) {
     andTexture.loadFromFile("assets/sprites/gate_and.png");
 
     GameWorld world;
+    world.loadFromFile("assets/world.json");
     CommandLoader loader;
-
-    size_t inputCount = 0;
-    size_t outputCount = 0;
-    loader.registerCommand("pin", [&](const std::string& params) {
-        std::stringstream stream(params);
-        char t;
-        float x, y;
-        stream >> t >> x >> y;
-        switch (t) {
-            case 'I': {
-                world.addPin(new Pin("in" + std::to_string(++inputCount), Pin::Input, {x, y}));
-                break;
-            }
-            case 'O': {
-                world.addPin(new Pin("out" + std::to_string(++outputCount), Pin::Output, {x, y}));
-                break;
-            }
-            default: break;
-        }
-    });
 
     int circuitCount = 0;
     loader.registerCommand("circuit", [&](const std::string& params) {
