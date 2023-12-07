@@ -6,8 +6,8 @@
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/System/Vector2.hpp"
 
-BinaryGate::BinaryGate(const sf::Texture& font, Func fn, sf::Vector2f pos)
-    : _sprite(font), _in1(Pin::Input), _in2(Pin::Input), _out(Pin::Output, {0, 0}, 0),
+BinaryGate::BinaryGate(const std::string& id, const sf::Texture& tex, Func fn,  sf::Vector2f pos)
+    : Circuit(id), _sprite(tex), _in1(Pin::Input), _in2(Pin::Input), _out(Pin::Output, {0, 0}, 0),
       _process(fn) {
 
     _sprite.setPosition(pos);
@@ -42,8 +42,8 @@ std::vector<sf::Transformable*> BinaryGate::getTransforms() {
 
 sf::FloatRect BinaryGate::getBoundingBox() const { return _sprite.getGlobalBounds(); }
 
-BinaryGate* BinaryGate::clone() {
-    BinaryGate* c = new BinaryGate(*_sprite.getTexture(), _process, _sprite.getPosition());
+BinaryGate* BinaryGate::clone(const std::string& newId) {
+    BinaryGate* c = new BinaryGate(newId, *_sprite.getTexture(), _process, _sprite.getPosition());
     return c;
 }
 

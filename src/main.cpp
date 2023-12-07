@@ -19,6 +19,7 @@
 #include <iterator>
 #include <list>
 #include <sstream>
+#include <string>
 #include <vector>
 
 #include "ComponentDragger.h"
@@ -134,36 +135,38 @@ int main(int, char**) {
         }
     });
 
+    int circuitCount = 0;
     loader.registerCommand("circuit", [&](const std::string& params) {
         std::stringstream stream(params);
         char t;
         float x, y;
         stream >> t >> x >> y;
+        std::string id = std::to_string(++circuitCount); 
         switch(t) {
             case 'P': {
                 int n, r, g, b;
                 stream >> n >> r >> g >> b;
                 PassthroughCircuit* c;
-                c = new PassthroughCircuit(n, {x, y});
+                c = new PassthroughCircuit("pt" + id,n, {x, y});
                 c->setColor(sf::Color(r, g, b, 255));
                 world.addCircuit(c);
 
                 break;
             }
             case 'N': {
-                world.addCircuit(new NandCircuit(font, {x, y}));
+                world.addCircuit(new NandCircuit("nand" + id, font, {x, y}));
                 break;
             }
             case 'X': {
-                world.addCircuit(new BinaryGate(xorTexture, BinaryGate::Xor, {x, y}));
+                world.addCircuit(new BinaryGate("xor" + id, xorTexture, BinaryGate::Xor, {x, y}));
                 break;
             }
             case 'O': {
-                world.addCircuit(new BinaryGate(orTexture, BinaryGate::Or, {x, y}));
+                world.addCircuit(new BinaryGate("or" + id, orTexture, BinaryGate::Or, {x, y}));
                 break;
             }
             case 'A': {
-                world.addCircuit(new BinaryGate(andTexture, BinaryGate::And, {x, y}));
+                world.addCircuit(new BinaryGate("and" + id, andTexture, BinaryGate::And, {x, y}));
                 break;
             }
             default: break;
@@ -178,7 +181,7 @@ int main(int, char**) {
     ToolState state = NONE;
 
     Circuit* dragBoard = nullptr;
-    NandCircuit* proto = new NandCircuit(font);
+    NandCircuit* proto = new NandCircuit("",font);
 
     // --- GRAPHICS COLLECTIONS ---
     sf::Vertex connectVertices[2] = {sf::Vertex({0, 0}, sf::Color::White)};
@@ -413,7 +416,7 @@ int main(int, char**) {
     worldLayer.subscribe(sf::Event::MouseMoved, [&](const sf::Event& event) {
         if (!dragBoard)
             return false;
-        Circuit* c = dragBoard->clone();
+        Circuit* c = dragBoard->clone("proto" + std::to_string(++circuitCount));
 
         sf::Vector2f pos = c->getBoundingBox().getPosition() + c->getBoundingBox().getSize() / 2.f;
 

@@ -1,7 +1,8 @@
 #include "PassthroughCircuit.h"
 #include "SFML/Graphics/RenderTarget.hpp"
 
-PassthroughCircuit::PassthroughCircuit(size_t size, sf::Vector2f pos) {
+PassthroughCircuit::PassthroughCircuit(const std::string& id, size_t size, sf::Vector2f pos)
+    : Circuit(id) {
     const float pinHeight = 2 * Pin::RADIUS + PADDING;
     const float totalHeight = pinHeight * size + PADDING;
 
@@ -10,13 +11,12 @@ PassthroughCircuit::PassthroughCircuit(size_t size, sf::Vector2f pos) {
 
     float startY = Pin::RADIUS + PADDING;
     for (size_t i = 0; i < size; i++) {
-        float y = pos.y + startY + (2 * Pin::RADIUS + PADDING)*i;
+        float y = pos.y + startY + (2 * Pin::RADIUS + PADDING) * i;
 
         _outputs.emplace_back(Pin::Output, sf::Vector2f(pos.x + WIDTH, y));
         _inputs.emplace_back(Pin::Input, sf::Vector2f(pos.x, y));
         _inputs.back().connect(this);
     }
-
 }
 
 bool PassthroughCircuit::collide(sf::Vector2f p) const {
@@ -49,27 +49,22 @@ std::vector<sf::Transformable*> PassthroughCircuit::getTransforms() {
     return components;
 }
 
-sf::FloatRect PassthroughCircuit::getBoundingBox() const {
-    return _shape.getGlobalBounds();
-}
-
+sf::FloatRect PassthroughCircuit::getBoundingBox() const { return _shape.getGlobalBounds(); }
 
 void PassthroughCircuit::draw(sf::RenderTarget& target, sf::RenderStates) const {
     target.draw(_shape);
-    for(const auto& p : _inputs) {
+    for (const auto& p : _inputs) {
         target.draw(p);
     }
-    for(const auto& p : _outputs) {
+    for (const auto& p : _outputs) {
         target.draw(p);
     }
 }
 
-void PassthroughCircuit::setColor(sf::Color color) {
-    _shape.setFillColor(color);
-}
+void PassthroughCircuit::setColor(sf::Color color) { _shape.setFillColor(color); }
 
-PassthroughCircuit* PassthroughCircuit::clone() {
-    PassthroughCircuit* circuit = new PassthroughCircuit(_inputs.size(), _shape.getPosition());
+PassthroughCircuit* PassthroughCircuit::clone(const std::string& newId) {
+    PassthroughCircuit* circuit = new PassthroughCircuit(newId, _inputs.size(), _shape.getPosition());
     circuit->setColor(_shape.getFillColor());
     return circuit;
 }

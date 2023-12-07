@@ -7,14 +7,14 @@
 
 class NandCircuit : public Circuit {
 public:
-    NandCircuit(const sf::Font& font, sf::Vector2f pos = {0, 0});
+    NandCircuit(const std::string& id, const sf::Font& font, sf::Vector2f pos = {0, 0});
 
     bool collide(sf::Vector2f) const override;
     Pin* collidePin(sf::Vector2f) override;
     std::vector<sf::Transformable*> getTransforms() override;
     sf::FloatRect getBoundingBox() const override;
 
-    NandCircuit* clone() override;
+    NandCircuit* clone(const std::string& id) override;
 
     void draw(sf::RenderTarget&, sf::RenderStates) const override;
     void update(Pin* pin) override;

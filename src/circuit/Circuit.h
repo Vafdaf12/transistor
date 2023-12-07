@@ -3,9 +3,15 @@
 #include "SFML/Graphics/Drawable.hpp"
 #include "pin/Pin.h"
 
+#include <string>
+
 class Circuit : public sf::Drawable, public PinObserver {
 public:
+    Circuit(const std::string& id) : _id(id) {}
     virtual ~Circuit() {}
+
+    inline const std::string& getId() const { return _id; }
+    inline void setId(const std::string& id) { _id = id; }
 
     /**
      * @brief Checks if a point is within the circuit's bounds
@@ -33,5 +39,15 @@ public:
 
     virtual sf::FloatRect getBoundingBox() const = 0;
 
-    virtual Circuit* clone() = 0;
+    /**
+    * @brief Clones the circuit with a new identifier
+    * 
+    * @param id New circuit identifier
+    * @return Circuit*
+    */
+    virtual Circuit* clone(const std::string& id) = 0;
+
+
+private:
+    std::string _id;
 };

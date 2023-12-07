@@ -11,7 +11,7 @@
 
 class PassthroughCircuit : public Circuit {
 public:
-    PassthroughCircuit(size_t size, sf::Vector2f pos = {0, 0});
+    PassthroughCircuit(const std::string& id, size_t size, sf::Vector2f pos = {0, 0});
 
     bool collide(sf::Vector2f) const override;
     Pin* collidePin(sf::Vector2f) override;
@@ -24,7 +24,7 @@ public:
 
     void setColor(sf::Color color);
 
-    PassthroughCircuit* clone() override;
+    PassthroughCircuit* clone(const std::string& newId) override;
 private:
     static constexpr float PADDING = 10;
     static constexpr float WIDTH = 150;

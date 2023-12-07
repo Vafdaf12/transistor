@@ -10,14 +10,14 @@ class BinaryGate : public Circuit {
 public:
     using Func = int(*)(int, int);
 
-    BinaryGate(const sf::Texture& tex, Func fn,  sf::Vector2f pos = {0, 0});
+    BinaryGate(const std::string& id, const sf::Texture& tex, Func fn,  sf::Vector2f pos = {0, 0});
 
     bool collide(sf::Vector2f) const override;
     Pin* collidePin(sf::Vector2f) override;
     std::vector<sf::Transformable*> getTransforms() override;
     sf::FloatRect getBoundingBox() const override;
 
-    BinaryGate* clone() override;
+    BinaryGate* clone(const std::string& newId) override;
 
     void draw(sf::RenderTarget&, sf::RenderStates) const override;
     void update(Pin* pin) override;

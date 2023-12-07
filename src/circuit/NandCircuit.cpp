@@ -3,8 +3,8 @@
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/System/Vector2.hpp"
 
-NandCircuit::NandCircuit(const sf::Font& font, sf::Vector2f pos)
-    : _text("NAND", font), _in1(Pin::Input), _in2(Pin::Input), _out(Pin::Output, {0, 0}, 1) {
+NandCircuit::NandCircuit(const std::string& id, const sf::Font& font, sf::Vector2f pos)
+    : Circuit(id), _text("NAND", font), _in1(Pin::Input), _in2(Pin::Input), _out(Pin::Output, {0, 0}, 1) {
     const sf::Vector2f pad = sf::Vector2f(PADDING, PADDING);
     _text.setStyle(sf::Text::Bold);
 
@@ -47,8 +47,8 @@ std::vector<sf::Transformable*> NandCircuit::getTransforms() {
 
 sf::FloatRect NandCircuit::getBoundingBox() const { return _shape.getGlobalBounds(); }
 
-NandCircuit* NandCircuit::clone() {
-    NandCircuit* c = new NandCircuit(*_text.getFont(), _shape.getPosition());
+NandCircuit* NandCircuit::clone(const std::string& id) {
+    NandCircuit* c = new NandCircuit(id, *_text.getFont(), _shape.getPosition());
     return c;
 }
 
