@@ -18,6 +18,14 @@ Wire::Wire(Pin* p1, Pin* p2) {
     p1->connect(this);
     p2->connect(this);
 }
+Wire::~Wire() {
+    if(_pins.first) {
+        _pins.first->disconnect(this);
+    }
+    if(_pins.second) {
+        _pins.second->disconnect(this);
+    }
+}
 void Wire::draw(sf::RenderTarget& target, sf::RenderStates) const {
     if (!isValid()) {
         return;

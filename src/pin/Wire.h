@@ -9,6 +9,7 @@
 class Wire : public sf::Drawable, public PinObserver {
 public:
     Wire(Pin*, Pin*);
+    ~Wire();
 
     void draw(sf::RenderTarget&, sf::RenderStates) const override;
     void update(Pin* pin) override;
