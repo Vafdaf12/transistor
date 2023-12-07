@@ -62,3 +62,10 @@ void NandCircuit::draw(sf::RenderTarget& target, sf::RenderStates) const {
 }
 
 void NandCircuit::update(Pin* pin) { _out.setState(!(_in1.getState() && _in2.getState())); }
+
+Pin* NandCircuit::queryPin(const std::string& id) {
+    if(_in1.getId() == id) return &_in1;
+    if(_in2.getId() == id) return &_in2;
+    if(_out.getId() == id) return &_out;
+    return nullptr;
+}

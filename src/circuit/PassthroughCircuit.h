@@ -25,6 +25,8 @@ public:
     void setColor(sf::Color color);
 
     PassthroughCircuit* clone(const std::string& newId) override;
+
+    Pin* queryPin(const std::string& id) override;
 private:
     static constexpr float PADDING = 10;
     static constexpr float WIDTH = 150;

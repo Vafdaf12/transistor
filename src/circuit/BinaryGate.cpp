@@ -56,6 +56,13 @@ void BinaryGate::draw(sf::RenderTarget& target, sf::RenderStates) const {
 
 void BinaryGate::update(Pin* pin) { _out.setState(_process(_in1.getState(), _in2.getState())); }
 
+Pin* BinaryGate::queryPin(const std::string& id) {
+    if(_in1.getId() == id) return &_in1;
+    if(_in2.getId() == id) return &_in2;
+    if(_out.getId() == id) return &_out;
+    return nullptr;
+}
+
 int BinaryGate::And(int x, int y) { return x && y; }
 int BinaryGate::Or(int x, int y) { return x || y; }
 int BinaryGate::Nand(int x, int y) { return !And(x, y); }

@@ -47,6 +47,7 @@ public:
     */
     virtual Circuit* clone(const std::string& id) = 0;
 
+    virtual Pin* queryPin(const std::string& id) = 0;
 
 private:
     std::string _id;

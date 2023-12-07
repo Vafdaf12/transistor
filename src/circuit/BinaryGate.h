@@ -22,6 +22,8 @@ public:
     void draw(sf::RenderTarget&, sf::RenderStates) const override;
     void update(Pin* pin) override;
 
+    Pin* queryPin(const std::string& id) override;
+
 
     static int And(int, int);
     static int Or(int, int);

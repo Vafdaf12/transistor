@@ -19,6 +19,7 @@ public:
     void draw(sf::RenderTarget&, sf::RenderStates) const override;
     void update(Pin* pin) override;
 
+    Pin* queryPin(const std::string& id) override;
 private:
     static constexpr float PADDING = 20;
     

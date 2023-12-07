@@ -79,3 +79,13 @@ void PassthroughCircuit::update(Pin* pin) {
         _outputs[i].setState(_inputs[i].getState());
     }
 }
+
+Pin* PassthroughCircuit::queryPin(const std::string& id) {
+    for(auto& pin : _inputs) {
+        if(pin.getId() == id) return &pin;
+    }
+    for(auto& pin : _outputs) {
+        if(pin.getId() == id) return &pin;
+    }
+    return nullptr;
+}
