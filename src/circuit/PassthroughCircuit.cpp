@@ -14,7 +14,7 @@ PassthroughCircuit::PassthroughCircuit(const std::string& id, size_t size, sf::V
     for (size_t i = 0; i < size; i++) {
         float y = pos.y + startY + (2 * Pin::RADIUS + PADDING) * i;
 
-        std::string id = std::to_string(i);
+        std::string id = std::to_string(i+1);
 
         _outputs.emplace_back("out" + id, Pin::Output, sf::Vector2f(pos.x + WIDTH, y));
         _inputs.emplace_back("in" + id, Pin::Input, sf::Vector2f(pos.x, y));

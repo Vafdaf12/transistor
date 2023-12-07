@@ -38,6 +38,7 @@ public:
     void draw(sf::RenderTarget&, sf::RenderStates) const override;
 
     Pin* queryPin(const std::string& path);
+    Circuit* queryCircuit(const std::string& path);
 
 private:
     std::list<Wire> _wires;

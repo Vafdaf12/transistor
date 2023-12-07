@@ -5,6 +5,7 @@
 #include "circuit/PassthroughCircuit.h"
 #include "json.hpp"
 #include <fstream>
+#include <iostream>
 #include <vector>
 
 using json = nlohmann::json;
@@ -27,14 +28,14 @@ bool GameWorld::loadFromFile(const std::string& path, const sf::Font& font) {
     size_t i = 0;
 
     for (auto id : data["inputs"]) {
-        Pin* pin = new Pin(id.get<std::string>(), Pin::Output, sf::Vector2f(-100, i * 30));
+        Pin* pin = new Pin(id.get<std::string>(), Pin::Output, sf::Vector2f(-400, i * 30));
         _pins.emplace_back(pin);
         i++;
     }
 
     i = 0;
     for (auto id : data["outputs"]) {
-        Pin* pin = new Pin(id.get<std::string>(), Pin::Input, sf::Vector2f(100, i * 30));
+        Pin* pin = new Pin(id.get<std::string>(), Pin::Input, sf::Vector2f(400, i * 30));
         _pins.emplace_back(pin);
         i++;
     }
@@ -72,6 +73,21 @@ bool GameWorld::loadFromFile(const std::string& path, const sf::Font& font) {
         }
 
     }
+    for(auto w : data["wires"]) {
+        Pin* from = queryPin(w["from"].get<std::string>());
+        if(!from) {
+            std::cout << "[ERROR] Cannot find pin \"" << w["from"].get<std::string>() << "\"" << std::endl;
+            return false;
+        }
+        Pin* to = queryPin(w["to"].get<std::string>());
+        if(!to) {
+            std::cout << "[ERROR] Cannot find pin \"" << w["to"].get<std::string>() << "\"" << std::endl;
+            return false;
+        }
+        _wires.emplace_back(from, to);
+        std::cout << "Added wire" << std::endl;
+    }
+
     return true;
 }
 
@@ -134,4 +150,37 @@ void GameWorld::draw(sf::RenderTarget& target, sf::RenderStates) const {
 
         target.draw(wire);
     }
+}
+
+Pin* GameWorld::queryPin(const std::string& path) {
+    size_t i = path.find('/');
+    if(i == std::string::npos) {
+        for (const auto& p : _pins) {
+            if(path == p->getId()) {
+                return p.get();
+            }
+        }
+        return nullptr;
+    }
+
+
+    std::string circuit = path.substr(0, i);
+    std::string pin = path.substr(i+1);
+
+    Circuit* c = queryCircuit(circuit);
+    if(!c) {
+        return nullptr;
+    }
+    Pin* p = c->queryPin(pin);
+
+    return p;
+}
+
+Circuit* GameWorld::queryCircuit(const std::string& path) {
+    for (const auto& c: _circuits) {
+        if(c->getId() == path) {
+            return c.get();
+        }
+    }
+    return nullptr;
 }
