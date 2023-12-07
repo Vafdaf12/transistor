@@ -108,55 +108,11 @@ int main(int, char**) {
     sf::Font font;
     font.loadFromFile("assets/fonts/CutiveMono-Regular.ttf");
 
-    sf::Texture xorTexture;
-    sf::Texture orTexture;
-    sf::Texture andTexture;
-    orTexture.loadFromFile("assets/sprites/gate_or.png");
-    xorTexture.loadFromFile("assets/sprites/gate_xor.png");
-    andTexture.loadFromFile("assets/sprites/gate_and.png");
-
     GameWorld world;
-    world.loadFromFile("assets/world.json");
+    world.loadFromFile("assets/world.json", font);
     CommandLoader loader;
 
     int circuitCount = 0;
-    loader.registerCommand("circuit", [&](const std::string& params) {
-        std::stringstream stream(params);
-        char t;
-        float x, y;
-        stream >> t >> x >> y;
-        std::string id = std::to_string(++circuitCount); 
-        switch(t) {
-            case 'P': {
-                int n, r, g, b;
-                stream >> n >> r >> g >> b;
-                PassthroughCircuit* c;
-                c = new PassthroughCircuit("pt" + id,n, {x, y});
-                c->setColor(sf::Color(r, g, b, 255));
-                world.addCircuit(c);
-
-                break;
-            }
-            case 'N': {
-                world.addCircuit(new NandCircuit("nand" + id, font, {x, y}));
-                break;
-            }
-            case 'X': {
-                world.addCircuit(new BinaryGate("xor" + id, xorTexture, BinaryGate::Xor, {x, y}));
-                break;
-            }
-            case 'O': {
-                world.addCircuit(new BinaryGate("or" + id, orTexture, BinaryGate::Or, {x, y}));
-                break;
-            }
-            case 'A': {
-                world.addCircuit(new BinaryGate("and" + id, andTexture, BinaryGate::And, {x, y}));
-                break;
-            }
-            default: break;
-        }
-    });
-    loader.loadFile("assets/world.txt");
     SfLayer guiLayer;
     SfLayer worldLayer;
 

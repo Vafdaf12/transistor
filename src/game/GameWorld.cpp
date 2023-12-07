@@ -1,12 +1,22 @@
 #include "GameWorld.h"
 #include "SFML/Graphics/RenderTarget.hpp"
+#include "circuit/BinaryGate.h"
+#include "circuit/NandCircuit.h"
+#include "circuit/PassthroughCircuit.h"
 #include "json.hpp"
 #include <fstream>
 #include <vector>
 
 using json = nlohmann::json;
 
-bool GameWorld::loadFromFile(const std::string& path) {
+GameWorld::GameWorld()
+{
+    _orTexture.loadFromFile("assets/sprites/gate_or.png");
+    _xorTexture.loadFromFile("assets/sprites/gate_xor.png");
+    _andTexture.loadFromFile("assets/sprites/gate_and.png");
+}
+
+bool GameWorld::loadFromFile(const std::string& path, const sf::Font& font) {
     std::ifstream file(path);
     if (!file.is_open()) {
         return false;
@@ -27,6 +37,40 @@ bool GameWorld::loadFromFile(const std::string& path) {
         Pin* pin = new Pin(id.get<std::string>(), Pin::Input, sf::Vector2f(100, i * 30));
         _pins.emplace_back(pin);
         i++;
+    }
+
+    for (auto elem : data["elements"]) {
+        std::string type = elem["type"].get<std::string>();
+        std::string id = elem["id"].get<std::string>();
+        float x = elem["position"]["x"].get<float>();
+        float y = elem["position"]["y"].get<float>();
+
+        if(type == "passthrough") {
+            size_t pins = elem["pins"].get<size_t>();
+            auto channels = elem["color"].get<std::array<uint8_t, 3>>();
+
+            auto c = new PassthroughCircuit(id, pins, {x, y});
+            c->setColor(sf::Color(channels[0], channels[1], channels[2]));
+            _circuits.emplace_back(c);
+        }
+        else if(type == "nand_gate") {
+            _circuits.emplace_back(new NandCircuit(id, font, {x, y}));
+        }
+        else if(type == "and_gate") {
+            _circuits.emplace_back(new BinaryGate(id, _andTexture, BinaryGate::And, {x, y}));
+        }
+        else if(type == "xor_gate") {
+            _circuits.emplace_back(new BinaryGate(id, _xorTexture, BinaryGate::Xor, {x, y}));
+
+        }
+        else if(type == "or_gate") {
+            _circuits.emplace_back(new BinaryGate(id, _orTexture, BinaryGate::Or, {x, y}));
+        }
+        else {
+            // Unsupported pin type
+            return false;
+        }
+
     }
     return true;
 }
