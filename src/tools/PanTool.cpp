@@ -1,6 +1,19 @@
 #include "PanTool.h"
+#include <malloc.h>
 
 PanTool::PanTool(sf::View& v, const sf::RenderWindow& w) : _view(v), _window(w) {
+    _target.bind(sf::Event::KeyPressed, [&](const sf::Event& event) {
+        if (event.key.code != sf::Keyboard::LAlt) {
+            return;
+        }
+        _active = true;
+    });
+    _target.bind(sf::Event::KeyReleased, [&](const sf::Event& event) {
+        if (event.key.code != sf::Keyboard::LAlt) {
+            return;
+        }
+        _active = false;
+    });
     _target.bind(sf::Event::MouseButtonPressed, [this](const sf::Event& event) {
         if(event.mouseButton.button != sf::Mouse::Left) {
             return;
@@ -16,7 +29,7 @@ PanTool::PanTool(sf::View& v, const sf::RenderWindow& w) : _view(v), _window(w) 
     });
 }
 void PanTool::update() {
-    if(!isActive()) {
+    if(!_isPanning) {
         return;
     }
     sf::Vector2i pos = sf::Mouse::getPosition(_window);

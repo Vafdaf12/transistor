@@ -9,13 +9,13 @@ public:
     PanTool(sf::View& v, const sf::RenderWindow& w);
 
     void update() override;
-    inline bool isActive() const override { return _isPanning; };
+    inline bool isActive() const override { return _active; };
 
 private:
     sf::View& _view;
     const sf::RenderWindow& _window;
 
     sf::Vector2i _previousPosition;
+    bool _active = false;
     bool _isPanning = false;
-    bool _enabled = true;
 };

@@ -18,6 +18,7 @@ add_executable(${BINARY}
     asset/CommandLoader.cpp
     tools/PanTool.cpp
     tools/PinConnector.cpp
+    tools/SelectionTool.cpp
 )
 target_include_directories(${BINARY}
     PUBLIC .

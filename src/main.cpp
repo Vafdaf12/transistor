@@ -6,7 +6,6 @@
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/Transformable.hpp"
-#include "SFML/Graphics/Vertex.hpp"
 #include "SFML/Graphics/View.hpp"
 #include "SFML/System/Vector2.hpp"
 #include "SFML/Window/Clipboard.hpp"
@@ -31,6 +30,7 @@
 #include "pin/Pin.h"
 #include "tools/PanTool.h"
 #include "tools/PinConnector.h"
+#include "tools/SelectionTool.h"
 #include "tools/Tool.h"
 
 using SfLayer = EventLayer<sf::Event::EventType, sf::Event>;
@@ -88,7 +88,6 @@ constexpr float WIDTH = 150;
 
 enum ToolState {
     NONE = 0,
-    SELECTING,
     DRAGGING,
 };
 
@@ -111,9 +110,19 @@ int main(int, char**) {
     SfLayer guiLayer;
     SfLayer worldLayer;
 
+    sf::View view;
+    view.setCenter({0, 0});
+    view.setSize({1280, 720});
+
     sf::Vector2i mouse = sf::Mouse::getPosition();
-    Tool* currentTool = nullptr;
+
     ToolState state = NONE;
+
+    std::list<Tool*> tools;
+    tools.push_back(new PanTool(view, window));
+    tools.push_back(new PinConnector(window, world));
+    tools.push_back(new SelectionTool(window, world));
+
 
     Circuit* dragBoard = nullptr;
     NandCircuit* proto = new NandCircuit("", assets);
@@ -142,9 +151,6 @@ int main(int, char**) {
     buttonRegister(button, guiLayer, window);
 
     // --- VIEW UPDATES ---
-    sf::View view;
-    view.setCenter({0, 0});
-    view.setSize({1280, 720});
 
     worldLayer.subscribe(sf::Event::Resized, [&](const sf::Event& event) {
         float x = event.size.width;
@@ -152,51 +158,11 @@ int main(int, char**) {
         view.setSize({x, y});
         return false;
     });
-    worldLayer.subscribe(sf::Event::KeyPressed, [&](const sf::Event& event) {
-        if(currentTool && currentTool->isActive()) {
-            return false;
-        }
-        if (event.key.code != sf::Keyboard::LAlt) {
-            return false;
-        }
-        currentTool = new PanTool(view, window);
-        std::cout << "Pan Tool assigned" << std::endl;
-        return true;
-    });
-    worldLayer.subscribe(sf::Event::KeyReleased, [&](const sf::Event& event) {
-        if (event.key.code != sf::Keyboard::LAlt) {
-            return false;
-        }
-        delete currentTool;
-        currentTool = nullptr;
-        return true;
-    });
     worldLayer.subscribe(sf::Event::MouseWheelScrolled, [&](const sf::Event& event) {
         float delta = event.mouseWheelScroll.delta;
         std::cout << delta << std::endl;
         view.zoom(1.0 - (delta * 0.1f));
         return false;
-    });
-
-    // --- PIN CONNECTION ---
-    Pin* tempPin = nullptr;
-    worldLayer.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
-        if(currentTool && currentTool->isActive()) {
-            return false;
-        }
-        if (event.mouseButton.button != sf::Mouse::Left) {
-            return false;
-        }
-        sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
-        sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
-
-        tempPin = world.collidePin(worldPos);
-        if (!tempPin) {
-            return false;
-        }
-        currentTool = new PinConnector(window, world, tempPin);
-        std::cout << "Connect Tool assigned" << std::endl;
-        return true;
     });
 
     // --- PIN TOGGLING ---
@@ -290,40 +256,11 @@ int main(int, char**) {
         return true;
     });
     // --- CIRCUIT SELECTION ---
-    sf::RectangleShape selector;
-    selector.setSize({100, 100});
-    selector.setFillColor({66, 135, 245, 100});
 
-    worldLayer.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
-        if (state != NONE)
-            return false;
-        if (event.mouseButton.button != sf::Mouse::Left) {
-            return false;
-        }
-
-        selected.clear();
-
-        sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
-        sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
-
-        selector.setPosition(worldPos);
-        selector.setSize({0, 0});
-        state = SELECTING;
-        return true;
-    });
-    worldLayer.subscribe(sf::Event::MouseMoved, [&](const sf::Event& event) {
-        if (state != SELECTING)
-            return false;
-        selected = world.collideCircuit(selector.getGlobalBounds());
-        return true;
-    });
-
-    worldLayer.subscribe(sf::Event::MouseButtonReleased, [&](const sf::Event& event) {
-        if (state != SELECTING)
-            return false;
-        state = NONE;
-        return true;
-    });
+    auto onSelect = [&](const std::vector<Circuit*>& circuits) {
+        selected = circuits;
+    };
+    ((SelectionTool*)tools.back())->setOnSelect(onSelect);
 
     // --- DRAG DROP ---
     worldLayer.subscribe(sf::Event::MouseMoved, [&](const sf::Event& event) {
@@ -356,9 +293,11 @@ int main(int, char**) {
         return true;
     });
 
+    Tool* activeTool = nullptr;
     // --- EVENT LOOP ---
     while (window.isOpen()) {
         std::list<sf::Event> events;
+
         for (sf::Event e; window.pollEvent(e);)
             events.push_back(e);
         for (sf::Event e : events) {
@@ -366,8 +305,12 @@ int main(int, char**) {
                 window.close();
             }
             window.setView(view);
-            if (currentTool) {
-                currentTool->getEventTarget()->post(e);
+            for(Tool* tool : tools) {
+                tool->getEventTarget()->post(e);
+                if(tool->isActive()) {
+                    activeTool = tool;
+                    break;
+                }
             }
         }
 
@@ -386,18 +329,8 @@ int main(int, char**) {
 
         sf::Vector2i newPos = sf::Mouse::getPosition(window);
         sf::Vector2f newWorldPos = window.mapPixelToCoords(newPos);
-        if (currentTool) {
-            currentTool->update();
-        }
-
-        switch (state) {
-
-        case SELECTING: {
-            sf::Vector2f pos = newWorldPos - selector.getPosition();
-            selector.setSize(pos);
-            break;
-        }
-        default: break;
+        if (activeTool) {
+            activeTool->update();
         }
 
         dragger.update(newWorldPos);
@@ -409,21 +342,8 @@ int main(int, char**) {
         window.setView(view);
         window.draw(world);
 
-        if (state == SELECTING) {
-            window.draw(selector);
-        }
-        for (const Circuit* c : selected) {
-            sf::RectangleShape outline;
-            sf::FloatRect rect = c->getBoundingBox();
-            outline.setSize(rect.getSize());
-            outline.setPosition(rect.getPosition());
-            outline.setFillColor(sf::Color::Transparent);
-            outline.setOutlineColor({66, 135, 245, 150});
-            outline.setOutlineThickness(5);
-            window.draw(outline);
-        }
-        if (currentTool) {
-            window.draw(*currentTool);
+        if (activeTool) {
+            window.draw(*activeTool);
         }
         // --- GUI VIEW ---
         window.setView(window.getDefaultView());
