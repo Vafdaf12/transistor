@@ -3,6 +3,7 @@
 #include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/Texture.hpp"
 
+#include "asset/AssetSystem.h"
 #include "pin/Pin.h"
 #include "circuit/Circuit.h"
 
@@ -10,7 +11,7 @@ class BinaryGate : public Circuit {
 public:
     using Func = int(*)(int, int);
 
-    BinaryGate(const std::string& id, const sf::Texture& tex, Func fn,  sf::Vector2f pos = {0, 0});
+    BinaryGate(const std::string& id, const Assets& assets, Func fn,  sf::Vector2f pos = {0, 0});
 
     bool collide(sf::Vector2f) const override;
     Pin* collidePin(sf::Vector2f) override;
@@ -35,6 +36,8 @@ public:
 
 private:
     static constexpr float PADDING = 20;
+
+    const Assets& _assets;
 
     sf::Sprite _sprite;
     

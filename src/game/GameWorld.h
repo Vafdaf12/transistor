@@ -9,6 +9,7 @@
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/Rect.hpp"
 #include "SFML/System/Vector2.hpp"
+#include "asset/AssetSystem.h"
 #include "circuit/Circuit.h"
 #include "pin/Wire.h"
 
@@ -18,9 +19,7 @@ public:
         CIRCUIT = 1 << 0,
         SINGLE = 1 << 1,
     };
-    GameWorld();
-
-    bool loadFromFile(const std::string& path, const sf::Font& font);
+    bool loadFromFile(const std::string& path, const Assets& assets);
     bool saveToFile(const std::string& path);
 
     void addPin(Pin* p);
@@ -45,8 +44,4 @@ private:
     std::list<Wire> _wires;
     std::vector<std::unique_ptr<Pin>> _pins;
     std::vector<std::unique_ptr<Circuit>> _circuits;
-
-    sf::Texture _xorTexture;
-    sf::Texture _orTexture;
-    sf::Texture _andTexture;
 };

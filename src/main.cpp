@@ -1,42 +1,36 @@
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Drawable.hpp"
-#include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/Rect.hpp"
 #include "SFML/Graphics/RectangleShape.hpp"
-#include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Transformable.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 #include "SFML/Graphics/View.hpp"
 #include "SFML/System/Vector2.hpp"
+#include "SFML/Window/Clipboard.hpp"
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/Keyboard.hpp"
-#include "SFML/Window/Clipboard.hpp"
 
 #include <algorithm>
 #include <iostream>
 #include <iterator>
 #include <list>
-#include <sstream>
 #include <string>
 #include <vector>
 
 #include "ComponentDragger.h"
 #include "EventLayer.h"
+#include "asset/AssetSystem.h"
 #include "circuit/Circuit.h"
 #include "circuit/NandCircuit.h"
-#include "circuit/PassthroughCircuit.h"
-#include "circuit/BinaryGate.h"
 #include "game/GameWorld.h"
 #include "io/CommandLoader.h"
 #include "pin/Pin.h"
 
-
 #include "SFML/Window/WindowBase.hpp"
 
 #include "SFML/Graphics/Texture.hpp"
-#include "SFML/Graphics/Sprite.hpp"
 #include "tools/PanTool.h"
 #include "tools/Tool.h"
 
@@ -92,7 +86,6 @@ constexpr float RADIUS = 10.0f;
 constexpr float SEP = 2 * RADIUS;
 constexpr float WIDTH = 150;
 
-
 enum ToolState {
     NONE = 0,
     SELECTING,
@@ -105,11 +98,14 @@ int main(int, char**) {
     sf::RenderWindow window({1280, 720}, "Transistor");
     window.setKeyRepeatEnabled(false);
 
-    sf::Font font;
-    font.loadFromFile("assets/fonts/CutiveMono-Regular.ttf");
+    Assets assets;
+    assets.fonts.load("default", "assets/fonts/CutiveMono-Regular.ttf");
+    assets.textures.load("gate_or", "assets/sprites/gate_or.png");
+    assets.textures.load("gate_xor", "assets/sprites/gate_xor.png");
+    assets.textures.load("gate_and", "assets/sprites/gate_and.png");
 
     GameWorld world;
-    world.loadFromFile("assets/world.json", font);
+    world.loadFromFile("assets/world.json", assets);
     CommandLoader loader;
 
     int circuitCount = 0;
@@ -121,7 +117,7 @@ int main(int, char**) {
     ToolState state = NONE;
 
     Circuit* dragBoard = nullptr;
-    NandCircuit* proto = new NandCircuit("",font);
+    NandCircuit* proto = new NandCircuit("", assets);
 
     // --- GRAPHICS COLLECTIONS ---
     sf::Vertex connectVertices[2] = {sf::Vertex({0, 0}, sf::Color::White)};
@@ -161,7 +157,7 @@ int main(int, char**) {
         return false;
     });
     worldLayer.subscribe(sf::Event::KeyPressed, [&](const sf::Event& event) {
-        if(event.key.code != sf::Keyboard::LAlt) {
+        if (event.key.code != sf::Keyboard::LAlt) {
             return false;
         }
         currentTool = new PanTool(view, window);
@@ -169,7 +165,7 @@ int main(int, char**) {
         return true;
     });
     worldLayer.subscribe(sf::Event::KeyReleased, [&](const sf::Event& event) {
-        if(event.key.code != sf::Keyboard::LAlt) {
+        if (event.key.code != sf::Keyboard::LAlt) {
             return false;
         }
         delete currentTool;
@@ -392,7 +388,7 @@ int main(int, char**) {
             if (e.type == sf::Event::Closed) {
                 window.close();
             }
-            if(currentTool) {
+            if (currentTool) {
                 currentTool->getEventTarget()->post(e);
             }
         }
@@ -463,6 +459,6 @@ int main(int, char**) {
         window.draw(buttonShape);
         window.display();
     }
-    world.saveToFile("world.json");
+    world.saveToFile("assets/world.json");
     return 0;
 }

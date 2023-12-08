@@ -2,6 +2,7 @@
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/System/Vector2.hpp"
+#include "asset/AssetSystem.h"
 #include "circuit/BinaryGate.h"
 #include "circuit/NandCircuit.h"
 #include "circuit/PassthroughCircuit.h"
@@ -13,14 +14,7 @@
 
 using json = nlohmann::json;
 
-GameWorld::GameWorld()
-{
-    _orTexture.loadFromFile("assets/sprites/gate_or.png");
-    _xorTexture.loadFromFile("assets/sprites/gate_xor.png");
-    _andTexture.loadFromFile("assets/sprites/gate_and.png");
-}
-
-bool GameWorld::loadFromFile(const std::string& path, const sf::Font& font) {
+bool GameWorld::loadFromFile(const std::string& path, const Assets& assets) {
     std::ifstream file(path);
     if (!file.is_open()) {
         return false;
@@ -58,17 +52,17 @@ bool GameWorld::loadFromFile(const std::string& path, const sf::Font& font) {
             _circuits.emplace_back(c);
         }
         else if(type == "nand_gate") {
-            _circuits.emplace_back(new NandCircuit(id, font, {x, y}));
+            _circuits.emplace_back(new NandCircuit(id, assets, {x, y}));
         }
         else if(type == "and_gate") {
-            _circuits.emplace_back(new BinaryGate(id, _andTexture, BinaryGate::And, {x, y}));
+            _circuits.emplace_back(new BinaryGate(id, assets, BinaryGate::And, {x, y}));
         }
         else if(type == "xor_gate") {
-            _circuits.emplace_back(new BinaryGate(id, _xorTexture, BinaryGate::Xor, {x, y}));
+            _circuits.emplace_back(new BinaryGate(id, assets, BinaryGate::Xor, {x, y}));
 
         }
         else if(type == "or_gate") {
-            _circuits.emplace_back(new BinaryGate(id, _orTexture, BinaryGate::Or, {x, y}));
+            _circuits.emplace_back(new BinaryGate(id, assets, BinaryGate::Or, {x, y}));
         }
         else {
             // Unsupported pin type

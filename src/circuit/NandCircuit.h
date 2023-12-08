@@ -4,10 +4,11 @@
 #include "SFML/Graphics/RectangleShape.hpp"
 #include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/Font.hpp"
+#include "asset/AssetSystem.h"
 
 class NandCircuit : public Circuit {
 public:
-    NandCircuit(const std::string& id, const sf::Font& font, sf::Vector2f pos = {0, 0});
+    NandCircuit(const std::string& id, const Assets& assets, sf::Vector2f pos = {0, 0});
 
     bool collide(sf::Vector2f) const override;
     Pin* collidePin(sf::Vector2f) override;
@@ -22,6 +23,8 @@ public:
     Pin* queryPin(const std::string& id) override;
 private:
     static constexpr float PADDING = 20;
+
+    const Assets& _assets;
     
     sf::RectangleShape _shape;
     sf::Text _text;

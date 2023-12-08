@@ -3,9 +3,9 @@
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/System/Vector2.hpp"
 
-NandCircuit::NandCircuit(const std::string& id, const sf::Font& font, sf::Vector2f pos)
-    : Circuit(id), _text("NAND", font), _in1("in1", Pin::Input), _in2("in2", Pin::Input),
-      _out("out", Pin::Output, {0, 0}, 1) {
+NandCircuit::NandCircuit(const std::string& id, const Assets& assets, sf::Vector2f pos)
+    : Circuit(id), _text("NAND", assets.fonts.get("default")), _in1("in1", Pin::Input),
+      _in2("in2", Pin::Input), _out("out", Pin::Output, {0, 0}, 1), _assets(assets) {
     const sf::Vector2f pad = sf::Vector2f(PADDING, PADDING);
     _text.setStyle(sf::Text::Bold);
 
@@ -53,7 +53,7 @@ std::vector<sf::Transformable*> NandCircuit::getTransforms() {
 sf::FloatRect NandCircuit::getBoundingBox() const { return _shape.getGlobalBounds(); }
 
 NandCircuit* NandCircuit::clone(const std::string& id) {
-    NandCircuit* c = new NandCircuit(id, *_text.getFont(), _shape.getPosition());
+    NandCircuit* c = new NandCircuit(id, _assets, _shape.getPosition());
     return c;
 }
 
@@ -68,8 +68,11 @@ void NandCircuit::draw(sf::RenderTarget& target, sf::RenderStates) const {
 void NandCircuit::update(Pin* pin) { _out.setState(!(_in1.getState() && _in2.getState())); }
 
 Pin* NandCircuit::queryPin(const std::string& id) {
-    if(_in1.getId() == id) return &_in1;
-    if(_in2.getId() == id) return &_in2;
-    if(_out.getId() == id) return &_out;
+    if (_in1.getId() == id)
+        return &_in1;
+    if (_in2.getId() == id)
+        return &_in2;
+    if (_out.getId() == id)
+        return &_out;
     return nullptr;
 }

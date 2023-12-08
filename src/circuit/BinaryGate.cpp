@@ -6,9 +6,16 @@
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/System/Vector2.hpp"
 
-BinaryGate::BinaryGate(const std::string& id, const sf::Texture& tex, Func fn, sf::Vector2f pos)
-    : Circuit(id), _sprite(tex), _in1("in1", Pin::Input), _in2("in2", Pin::Input),
-      _out("out", Pin::Output, {0, 0}, 0), _process(fn) {
+BinaryGate::BinaryGate(const std::string& id, const Assets& assets, Func fn, sf::Vector2f pos)
+    : Circuit(id), _in1("in1", Pin::Input), _in2("in2", Pin::Input),
+      _assets(assets), _out("out", Pin::Output, {0, 0}, 0), _process(fn) {
+    if (fn == And) {
+        _sprite.setTexture(assets.textures.get("gate_and"));
+    } else if (fn == Xor) {
+        _sprite.setTexture(assets.textures.get("gate_xor"));
+    } else if (fn == Or) {
+        _sprite.setTexture(assets.textures.get("gate_or"));
+    }
 
     _in1.setParent(this);
     _in2.setParent(this);
@@ -47,7 +54,7 @@ std::vector<sf::Transformable*> BinaryGate::getTransforms() {
 sf::FloatRect BinaryGate::getBoundingBox() const { return _sprite.getGlobalBounds(); }
 
 BinaryGate* BinaryGate::clone(const std::string& newId) {
-    BinaryGate* c = new BinaryGate(newId, *_sprite.getTexture(), _process, _sprite.getPosition());
+    BinaryGate* c = new BinaryGate(newId, _assets, _process, _sprite.getPosition());
     return c;
 }
 
@@ -61,9 +68,12 @@ void BinaryGate::draw(sf::RenderTarget& target, sf::RenderStates) const {
 void BinaryGate::update(Pin* pin) { _out.setState(_process(_in1.getState(), _in2.getState())); }
 
 Pin* BinaryGate::queryPin(const std::string& id) {
-    if(_in1.getId() == id) return &_in1;
-    if(_in2.getId() == id) return &_in2;
-    if(_out.getId() == id) return &_out;
+    if (_in1.getId() == id)
+        return &_in1;
+    if (_in2.getId() == id)
+        return &_in2;
+    if (_out.getId() == id)
+        return &_out;
     return nullptr;
 }
 
