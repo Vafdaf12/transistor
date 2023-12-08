@@ -4,6 +4,7 @@
 #include "SFML/Graphics/RectangleShape.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
+#include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/Transformable.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 #include "SFML/Graphics/View.hpp"
@@ -11,6 +12,7 @@
 #include "SFML/Window/Clipboard.hpp"
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/Keyboard.hpp"
+#include "SFML/Window/WindowBase.hpp"
 
 #include <algorithm>
 #include <iostream>
@@ -22,15 +24,11 @@
 #include "ComponentDragger.h"
 #include "EventLayer.h"
 #include "asset/AssetSystem.h"
+#include "asset/CommandLoader.h"
 #include "circuit/Circuit.h"
 #include "circuit/NandCircuit.h"
 #include "game/GameWorld.h"
-#include "io/CommandLoader.h"
 #include "pin/Pin.h"
-
-#include "SFML/Window/WindowBase.hpp"
-
-#include "SFML/Graphics/Texture.hpp"
 #include "tools/PanTool.h"
 #include "tools/Tool.h"
 
@@ -42,6 +40,7 @@ struct Button {
     std::function<void(const sf::Event&)> onMouseMove;
     std::function<void(const sf::Event&)> onMouseUp;
 };
+
 
 void buttonRegister(const Button& b, SfLayer& emitter, const sf::RenderTarget& target) {
     emitter.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
