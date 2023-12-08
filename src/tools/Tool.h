@@ -9,6 +9,7 @@ public:
 
     virtual void update() {}
     virtual bool isActive() const = 0;
+    virtual void setEnabled(bool enabled) {}
 
 
 protected:

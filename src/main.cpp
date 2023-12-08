@@ -30,6 +30,7 @@
 #include "game/GameWorld.h"
 #include "pin/Pin.h"
 #include "tools/PanTool.h"
+#include "tools/PinConnector.h"
 #include "tools/Tool.h"
 
 using SfLayer = EventLayer<sf::Event::EventType, sf::Event>;
@@ -88,7 +89,6 @@ constexpr float WIDTH = 150;
 enum ToolState {
     NONE = 0,
     SELECTING,
-    CONNECTING,
     DRAGGING,
 };
 
@@ -117,9 +117,6 @@ int main(int, char**) {
 
     Circuit* dragBoard = nullptr;
     NandCircuit* proto = new NandCircuit("", assets);
-
-    // --- GRAPHICS COLLECTIONS ---
-    sf::Vertex connectVertices[2] = {sf::Vertex({0, 0}, sf::Color::White)};
 
     // --- GUI UPDATES ---
     sf::RectangleShape buttonShape;
@@ -156,11 +153,14 @@ int main(int, char**) {
         return false;
     });
     worldLayer.subscribe(sf::Event::KeyPressed, [&](const sf::Event& event) {
+        if(currentTool && currentTool->isActive()) {
+            return false;
+        }
         if (event.key.code != sf::Keyboard::LAlt) {
             return false;
         }
         currentTool = new PanTool(view, window);
-        std::cout << "Tool assigned" << std::endl;
+        std::cout << "Pan Tool assigned" << std::endl;
         return true;
     });
     worldLayer.subscribe(sf::Event::KeyReleased, [&](const sf::Event& event) {
@@ -181,8 +181,9 @@ int main(int, char**) {
     // --- PIN CONNECTION ---
     Pin* tempPin = nullptr;
     worldLayer.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
-        if (state != NONE)
+        if(currentTool && currentTool->isActive()) {
             return false;
+        }
         if (event.mouseButton.button != sf::Mouse::Left) {
             return false;
         }
@@ -193,31 +194,8 @@ int main(int, char**) {
         if (!tempPin) {
             return false;
         }
-        connectVertices[0].position = tempPin->getCenter();
-        state = CONNECTING;
-        return true;
-    });
-    worldLayer.subscribe(sf::Event::MouseButtonReleased, [&](const sf::Event& event) {
-        if (state != CONNECTING)
-            return false;
-        if (event.mouseButton.button != sf::Mouse::Left) {
-            return false;
-        }
-        sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
-        sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
-
-        Pin* nextPin = world.collidePin(worldPos);
-
-        if (!nextPin || nextPin == tempPin || !tempPin->canConnect(*nextPin)) {
-            tempPin = nullptr;
-            state = NONE;
-            return true;
-        }
-
-        world.connectPins(tempPin, nextPin);
-
-        tempPin = nullptr;
-        state = NONE;
+        currentTool = new PinConnector(window, world, tempPin);
+        std::cout << "Connect Tool assigned" << std::endl;
         return true;
     });
 
@@ -387,6 +365,7 @@ int main(int, char**) {
             if (e.type == sf::Event::Closed) {
                 window.close();
             }
+            window.setView(view);
             if (currentTool) {
                 currentTool->getEventTarget()->post(e);
             }
@@ -418,9 +397,6 @@ int main(int, char**) {
             selector.setSize(pos);
             break;
         }
-        case CONNECTING: {
-            connectVertices[1] = window.mapPixelToCoords(mouse);
-        }
         default: break;
         }
 
@@ -433,9 +409,6 @@ int main(int, char**) {
         window.setView(view);
         window.draw(world);
 
-        if (state == CONNECTING) {
-            window.draw(connectVertices, 2, sf::Lines);
-        }
         if (state == SELECTING) {
             window.draw(selector);
         }
@@ -452,7 +425,6 @@ int main(int, char**) {
         if (currentTool) {
             window.draw(*currentTool);
         }
-
         // --- GUI VIEW ---
         window.setView(window.getDefaultView());
         window.draw(buttonShape);

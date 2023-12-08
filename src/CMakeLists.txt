@@ -17,6 +17,7 @@ add_executable(${BINARY}
     game/GameWorld.cpp
     asset/CommandLoader.cpp
     tools/PanTool.cpp
+    tools/PinConnector.cpp
 )
 target_include_directories(${BINARY}
     PUBLIC .

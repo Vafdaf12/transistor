@@ -17,4 +17,5 @@ private:
 
     sf::Vector2i _previousPosition;
     bool _isPanning = false;
+    bool _enabled = true;
 };
