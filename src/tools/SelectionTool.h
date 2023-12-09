@@ -22,6 +22,7 @@ public:
     bool isActive() const override { return _active; }
 
     void setOnSelect(Callback&& cb) { _onSelect = cb; }
+    void clearSelection() { _selection.clear();}
 private:
 
     bool _active = false;

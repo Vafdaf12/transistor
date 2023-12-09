@@ -5,7 +5,6 @@
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Texture.hpp"
-#include "SFML/Graphics/Transformable.hpp"
 #include "SFML/Graphics/View.hpp"
 #include "SFML/System/Vector2.hpp"
 #include "SFML/Window/Clipboard.hpp"
@@ -13,14 +12,11 @@
 #include "SFML/Window/Keyboard.hpp"
 #include "SFML/Window/WindowBase.hpp"
 
-#include <algorithm>
 #include <iostream>
-#include <iterator>
 #include <list>
 #include <string>
 #include <vector>
 
-#include "ComponentDragger.h"
 #include "EventLayer.h"
 #include "asset/AssetSystem.h"
 #include "asset/CommandLoader.h"
@@ -28,6 +24,7 @@
 #include "circuit/NandCircuit.h"
 #include "game/GameWorld.h"
 #include "pin/Pin.h"
+#include "tools/CircuitDragger.h"
 #include "tools/PanTool.h"
 #include "tools/PinConnector.h"
 #include "tools/SelectionTool.h"
@@ -121,8 +118,12 @@ int main(int, char**) {
     std::list<Tool*> tools;
     tools.push_back(new PanTool(view));
     tools.push_back(new PinConnector(world));
-    tools.push_back(new SelectionTool(world));
 
+    CircuitDragger* dragger = new CircuitDragger();
+    tools.push_back(dragger);
+
+    SelectionTool* selector = new SelectionTool(world);
+    tools.push_back(selector);
 
     Circuit* dragBoard = nullptr;
     NandCircuit* proto = new NandCircuit("", assets);
@@ -165,62 +166,14 @@ int main(int, char**) {
         return false;
     });
 
-    // --- CIRCUIT DRAGGING ---
-    ComponentDragger dragger;
-    std::vector<Circuit*> selected;
-
-    worldLayer.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
-        if (state != NONE)
-            return false;
-        if (event.mouseButton.button != sf::Mouse::Left) {
-            return false;
-        }
-        sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
-        sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
-
-        std::vector<sf::Transformable*> components;
-        if (selected.empty()) {
-            Circuit* hovered = world.collideCircuit(worldPos);
-            if (hovered) {
-                std::vector<sf::Transformable*> children = hovered->getTransforms();
-                std::copy(children.begin(), children.end(), std::back_inserter(components));
-            }
-        } else {
-            for (Circuit* c : selected) {
-                std::vector<sf::Transformable*> children = c->getTransforms();
-                std::copy(children.begin(), children.end(), std::back_inserter(components));
-            }
-        }
-        if (components.empty()) {
-            return false;
-        }
-
-        dragger.beginDrag(components, worldPos);
-        state = DRAGGING;
-        return true;
-    });
-    worldLayer.subscribe(sf::Event::MouseButtonReleased, [&](const sf::Event& event) {
-        if (state != DRAGGING)
-            return false;
-        dragger.endDrag();
-
-        sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
-        sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
-        for (Circuit* c : selected) {
-            if (c->collide(worldPos)) {
-                return false;
-            }
-        }
-        selected.clear();
-        state = NONE;
-        return true;
-    });
     // --- CIRCUIT SELECTION ---
 
+    std::vector<Circuit*> selected;
     auto onSelect = [&](const std::vector<Circuit*>& circuits) {
+        dragger->setSelection(circuits);
         selected = circuits;
     };
-    ((SelectionTool*)tools.back())->setOnSelect(onSelect);
+    selector->setOnSelect(onSelect);
 
     // --- DRAG DROP ---
     worldLayer.subscribe(sf::Event::MouseMoved, [&](const sf::Event& event) {
@@ -230,7 +183,7 @@ int main(int, char**) {
 
         sf::Vector2f pos = c->getBoundingBox().getPosition() + c->getBoundingBox().getSize() / 2.f;
 
-        dragger.beginDrag(c->getTransforms(), pos);
+        dragger->setSelection({c});
         world.addCircuit(c);
         state = DRAGGING;
         dragBoard = nullptr;
@@ -249,6 +202,8 @@ int main(int, char**) {
             world.removeCircuit(s);
         }
 
+        dragger->setSelection({});
+        selector->clearSelection();
         selected.clear();
         return true;
     });
@@ -294,7 +249,6 @@ int main(int, char**) {
             activeTool->update(window);
         }
 
-        dragger.update(newWorldPos);
         mouse = newPos;
 
         window.clear();
