@@ -119,9 +119,9 @@ int main(int, char**) {
     ToolState state = NONE;
 
     std::list<Tool*> tools;
-    tools.push_back(new PanTool(view, window));
-    tools.push_back(new PinConnector(window, world));
-    tools.push_back(new SelectionTool(window, world));
+    tools.push_back(new PanTool(view));
+    tools.push_back(new PinConnector(world));
+    tools.push_back(new SelectionTool(world));
 
 
     Circuit* dragBoard = nullptr;
@@ -267,7 +267,7 @@ int main(int, char**) {
             window.setView(view);
             world.onEvent(window, e);
             for(Tool* tool : tools) {
-                tool->getEventTarget()->post(e);
+                tool->onEvent(window, e);
                 if(tool->isActive()) {
                     activeTool = tool;
                     break;
@@ -291,7 +291,7 @@ int main(int, char**) {
         sf::Vector2i newPos = sf::Mouse::getPosition(window);
         sf::Vector2f newWorldPos = window.mapPixelToCoords(newPos);
         if (activeTool) {
-            activeTool->update();
+            activeTool->update(window);
         }
 
         dragger.update(newWorldPos);
@@ -304,7 +304,7 @@ int main(int, char**) {
         world.draw(window);
 
         if (activeTool) {
-            window.draw(*activeTool);
+            activeTool->draw(window);
         }
         // --- GUI VIEW ---
         window.setView(window.getDefaultView());

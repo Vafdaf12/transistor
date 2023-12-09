@@ -12,14 +12,17 @@ class SelectionTool : public Tool{
 public:
     using Callback = std::function<void(const std::vector<Circuit*>&)>;
 
-    SelectionTool(const sf::RenderWindow& window, GameWorld& world);
+    SelectionTool(GameWorld& world);
 
-    void update() override;
+    void onEvent(const sf::RenderWindow&, const sf::Event&) override;
+    void update(const sf::RenderWindow&) override;
+    void draw(sf::RenderWindow&) const override;
+
+
     bool isActive() const override { return _active; }
 
     void setOnSelect(Callback&& cb) { _onSelect = cb; }
 private:
-    void draw(sf::RenderTarget&, sf::RenderStates) const override;
 
     bool _active = false;
 
@@ -28,5 +31,4 @@ private:
     GameWorld& _world;
 
     sf::RectangleShape _selector;
-    const sf::RenderWindow& _window;
 };

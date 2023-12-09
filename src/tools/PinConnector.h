@@ -8,18 +8,18 @@
 
 class PinConnector : public Tool {
 public:
-    PinConnector(const sf::RenderWindow& window, GameWorld& world, Pin* pin = nullptr);
+    PinConnector(GameWorld& world);
 
-    void update() override;
     bool isActive() const override { return _firstPin; }
-    
+
+    void onEvent(const sf::RenderWindow&, const sf::Event&) override;
+    void update(const sf::RenderWindow&) override;
+    void draw(sf::RenderWindow&) const override;
+
 private:
-    void draw(sf::RenderTarget&, sf::RenderStates) const override;
-
-
-    Pin* _firstPin;
     GameWorld& _world;
 
-    const sf::RenderWindow& _window;
+    Pin* _firstPin = nullptr;
+
     sf::Vertex _vertices[2] = {sf::Vertex({0, 0}, sf::Color::White)};
 };

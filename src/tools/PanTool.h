@@ -6,14 +6,15 @@
 
 class PanTool : public Tool {
 public:
-    PanTool(sf::View& v, const sf::RenderWindow& w);
+    PanTool(sf::View& v);
 
-    void update() override;
     inline bool isActive() const override { return _active; };
+
+    void onEvent(const sf::RenderWindow&, const sf::Event&) override;
+    void update(const sf::RenderWindow&) override;
 
 private:
     sf::View& _view;
-    const sf::RenderWindow& _window;
 
     sf::Vector2i _previousPosition;
     bool _active = false;

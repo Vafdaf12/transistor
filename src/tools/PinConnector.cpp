@@ -1,59 +1,49 @@
 #include "PinConnector.h"
 
-#include <iostream>
+PinConnector::PinConnector(GameWorld& world) : _world(world) {}
 
-PinConnector::PinConnector(const sf::RenderWindow& window, GameWorld& world, Pin* pin)
-    : _world(world), _window(window), _firstPin(pin) {
-
-    if(!pin) {
-        _target.bind(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
-            if (event.mouseButton.button != sf::Mouse::Left) {
-                return;
-            }
-            sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
-            sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
-
-            _firstPin = world.collidePin(worldPos);
-            if(_firstPin) {
-                _vertices[0].position = _firstPin->getCenter();
-            }
-        });
+void PinConnector::update(const sf::RenderWindow& window) {
+    if (isActive()) {
+        sf::Vector2i pos = sf::Mouse::getPosition(window);
+        _vertices[1].position = window.mapPixelToCoords(pos);
     }
-    else {
-        _vertices[0].position = _firstPin->getCenter();
-    }
+}
 
-
-    _target.bind(sf::Event::MouseButtonReleased, [&](const sf::Event& event) {
-        std::cout << "Disconnected" << std::endl;
+void PinConnector::onEvent(const sf::RenderWindow& window, const sf::Event& event) {
+    if (event.type == sf::Event::MouseButtonPressed) {
         if (event.mouseButton.button != sf::Mouse::Left) {
             return;
         }
         sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
         sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
 
-        Pin* nextPin = world.collidePin(worldPos);
+        _firstPin = _world.collidePin(worldPos);
+        if (_firstPin) {
+            _vertices[0].position = _firstPin->getCenter();
+        }
+    }
+    if (event.type == sf::Event::MouseButtonReleased) {
+        if (event.mouseButton.button != sf::Mouse::Left) {
+            return;
+        }
+        sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
+        sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
+
+        Pin* nextPin = _world.collidePin(worldPos);
 
         if (!nextPin || nextPin == _firstPin || !_firstPin->canConnect(*nextPin)) {
             _firstPin = nullptr;
             return;
         }
-        world.connectPins(_firstPin, nextPin);
+        _world.connectPins(_firstPin, nextPin);
 
         _firstPin = nullptr;
         return;
-    });
-    }
-
-void PinConnector::update() {
-    if(isActive()) {
-        sf::Vector2i pos = sf::Mouse::getPosition(_window);
-        _vertices[1].position = _window.mapPixelToCoords(pos);
     }
 }
 
-void PinConnector::draw(sf::RenderTarget& target, sf::RenderStates) const {
-    if(isActive()) {
-        target.draw(_vertices, 2, sf::Lines);
+void PinConnector::draw(sf::RenderWindow& window) const {
+    if (isActive()) {
+        window.draw(_vertices, 2, sf::Lines);
     }
 }

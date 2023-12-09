@@ -1,17 +1,16 @@
 #pragma once
 
-#include "SFML/Graphics/Drawable.hpp"
-#include "event/EventTarget.h"
+#include "SFML/Graphics/RenderWindow.hpp"
+#include "SFML/Window/Event.hpp"
 
-class Tool : public sf::Drawable {
+class Tool  {
 public:
-    inline const EventTarget* getEventTarget() const { return &_target; }
+    virtual ~Tool() {}
 
-    virtual void update() {}
     virtual bool isActive() const = 0;
 
-protected:
-    virtual void draw(sf::RenderTarget&, sf::RenderStates) const override {}
+    virtual void update(const sf::RenderWindow&) {}
+    virtual void onEvent(const sf::RenderWindow&, const sf::Event&) {}
+    virtual void draw(sf::RenderWindow&) const {}
 
-    EventTarget _target;
 };

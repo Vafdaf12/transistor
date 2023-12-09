@@ -1,8 +1,12 @@
 #include "SelectionTool.h"
+#include "SFML/Graphics/RenderWindow.hpp"
 
-SelectionTool::SelectionTool(const sf::RenderWindow& window, GameWorld& world) : _window(window), _world(world) {
+SelectionTool::SelectionTool( GameWorld& world) : _world(world) {
     _selector.setFillColor({66, 135, 245, 100});
-    _target.bind(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
+}
+
+void SelectionTool::onEvent(const sf::RenderWindow& window, const sf::Event& event) {
+    if(event.type == sf::Event::MouseButtonPressed) {
         if (event.mouseButton.button != sf::Mouse::Left) {
             return;
         }
@@ -15,34 +19,35 @@ SelectionTool::SelectionTool(const sf::RenderWindow& window, GameWorld& world) :
         _selector.setPosition(worldPos);
         _selector.setSize({0, 0});
         _active = true;
-    });
-    _target.bind(sf::Event::MouseMoved, [&](const sf::Event& event) {
+    }
+    if(event.type == sf::Event::MouseMoved) {
         if (!_active) {
             return;
         }
-        _selection = world.collideCircuit(_selector.getGlobalBounds());
-    });
+        _selection = _world.collideCircuit(_selector.getGlobalBounds());
+    }
 
-    _target.bind(sf::Event::MouseButtonReleased, [&](const sf::Event& event) {
+    if(event.type == sf::Event::MouseButtonReleased) {
         if(_onSelect)  {
             _onSelect(_selection);
         }
         _active = false;
-    });
+    }
+    
 }
 
-void SelectionTool::update() {
+void SelectionTool::update(const sf::RenderWindow& window) {
     if(_active) {
-        sf::Vector2i pos = sf::Mouse::getPosition(_window);
-        sf::Vector2f worldPos = _window.mapPixelToCoords(pos);
+        sf::Vector2i pos = sf::Mouse::getPosition(window);
+        sf::Vector2f worldPos = window.mapPixelToCoords(pos);
         sf::Vector2f size = worldPos - _selector.getPosition();
         _selector.setSize(size);
     }
 }
 
-void SelectionTool::draw(sf::RenderTarget& target, sf::RenderStates) const {
+void SelectionTool::draw(sf::RenderWindow& window) const {
     if(_active) {
-        target.draw(_selector);
+        window.draw(_selector);
     }
     for (const Circuit* c : _selection) {
         sf::RectangleShape outline;
@@ -52,6 +57,6 @@ void SelectionTool::draw(sf::RenderTarget& target, sf::RenderStates) const {
         outline.setFillColor(sf::Color::Transparent);
         outline.setOutlineColor({66, 135, 245, 150});
         outline.setOutlineThickness(5);
-        target.draw(outline);
+        window.draw(outline);
     }
 }
