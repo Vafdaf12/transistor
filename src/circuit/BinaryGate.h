@@ -1,7 +1,6 @@
 #pragma once
 
 #include "SFML/Graphics/Sprite.hpp"
-#include "SFML/Graphics/Texture.hpp"
 
 #include "asset/AssetSystem.h"
 #include "pin/Pin.h"
@@ -20,7 +19,7 @@ public:
 
     BinaryGate* clone(const std::string& newId) override;
 
-    void draw(sf::RenderTarget&, sf::RenderStates) const override;
+    void draw(sf::RenderWindow& window) const override;
     void update(Pin* pin) override;
 
     Pin* queryPin(const std::string& id) override;

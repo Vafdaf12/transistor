@@ -1,9 +1,7 @@
 #include "BinaryGate.h"
 
-#include "SFML/Graphics/Texture.hpp"
-
+#include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Rect.hpp"
-#include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/System/Vector2.hpp"
 
 BinaryGate::BinaryGate(const std::string& id, const Assets& assets, Func fn, sf::Vector2f pos)
@@ -58,14 +56,14 @@ BinaryGate* BinaryGate::clone(const std::string& newId) {
     return c;
 }
 
-void BinaryGate::draw(sf::RenderTarget& target, sf::RenderStates) const {
-    target.draw(_sprite);
-    target.draw(_in1);
-    target.draw(_in2);
-    target.draw(_out);
+void BinaryGate::draw(sf::RenderWindow& window) const {
+    window.draw(_sprite);
+    _in1.draw(window);
+    _in2.draw(window);
+    _out.draw(window);
 }
 
-void BinaryGate::update(Pin* pin) { _out.setState(_process(_in1.getState(), _in2.getState())); }
+void BinaryGate::update(Pin* pin) { _out.setValue(_process(_in1.getValue(), _in2.getValue())); }
 
 Pin* BinaryGate::queryPin(const std::string& id) {
     if (_in1.getId() == id)

@@ -1,5 +1,5 @@
 #include "PassthroughCircuit.h"
-#include "SFML/Graphics/RenderTarget.hpp"
+
 #include <string>
 
 PassthroughCircuit::PassthroughCircuit(const std::string& id, size_t size, sf::Vector2f pos)
@@ -56,13 +56,13 @@ std::vector<sf::Transformable*> PassthroughCircuit::getTransforms() {
 
 sf::FloatRect PassthroughCircuit::getBoundingBox() const { return _shape.getGlobalBounds(); }
 
-void PassthroughCircuit::draw(sf::RenderTarget& target, sf::RenderStates) const {
-    target.draw(_shape);
+void PassthroughCircuit::draw(sf::RenderWindow& window) const {
+    window.draw(_shape);
     for (const auto& p : _inputs) {
-        target.draw(p);
+        p.draw(window);
     }
     for (const auto& p : _outputs) {
-        target.draw(p);
+        p.draw(window);
     }
 }
 
@@ -78,7 +78,7 @@ PassthroughCircuit* PassthroughCircuit::clone(const std::string& newId) {
 void PassthroughCircuit::update(Pin* pin) {
     size_t minPins = std::min(_outputs.size(), _inputs.size());
     for (size_t i = 0; i < minPins; i++) {
-        _outputs[i].setState(_inputs[i].getState());
+        _outputs[i].setValue(_inputs[i].getValue());
     }
 }
 

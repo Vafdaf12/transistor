@@ -1,7 +1,6 @@
 #pragma once
 
 #include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/Drawable.hpp"
 #include "SFML/Graphics/RectangleShape.hpp"
 #include "SFML/Graphics/Transformable.hpp"
 
@@ -19,7 +18,7 @@ public:
     std::vector<sf::Transformable*> getTransforms() override;
     sf::FloatRect getBoundingBox() const override;
 
-    void draw(sf::RenderTarget&, sf::RenderStates) const override;
+    void draw(sf::RenderWindow& window) const override;
     void update(Pin* pin) override;
 
     void setColor(sf::Color color);

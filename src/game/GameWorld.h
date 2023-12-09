@@ -5,15 +5,14 @@
 #include <memory>
 #include <vector>
 
-#include "SFML/Graphics/Drawable.hpp"
-#include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/Rect.hpp"
+#include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/System/Vector2.hpp"
 #include "asset/AssetSystem.h"
 #include "circuit/Circuit.h"
 #include "pin/Wire.h"
 
-class GameWorld : public sf::Drawable {
+class GameWorld  {
 public:
     enum PinTag {
         CIRCUIT = 1 << 0,
@@ -35,7 +34,8 @@ public:
     Circuit* collideCircuit(sf::Vector2f pos);
     std::vector<Circuit*> collideCircuit(sf::FloatRect rect);
 
-    void draw(sf::RenderTarget&, sf::RenderStates) const override;
+    void onEvent(sf::RenderWindow&, const sf::Event&);
+    void draw(sf::RenderWindow&) const;
 
     Pin* queryPin(const std::string& path);
     Circuit* queryCircuit(const std::string& path);

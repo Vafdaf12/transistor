@@ -165,46 +165,6 @@ int main(int, char**) {
         return false;
     });
 
-    // --- PIN TOGGLING ---
-    Pin* clickedPin = nullptr;
-    worldLayer.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
-        if (event.mouseButton.button != sf::Mouse::Left) {
-            return false;
-        }
-        sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
-        sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
-
-        clickedPin = world.collidePin(worldPos, GameWorld::SINGLE);
-        if (clickedPin && clickedPin->type != Pin::Output) {
-            clickedPin = nullptr;
-        }
-        return false;
-    });
-    worldLayer.subscribe(sf::Event::MouseMoved, [&](const sf::Event& event) {
-        if (!clickedPin) {
-            return false;
-        }
-        sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
-        sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
-        if (clickedPin->collide(worldPos)) {
-            return false;
-        }
-        clickedPin = nullptr;
-        return true;
-    });
-    worldLayer.subscribe(sf::Event::MouseButtonReleased, [&](const sf::Event& event) {
-        if (event.mouseButton.button != sf::Mouse::Left) {
-            return false;
-        }
-        if (!clickedPin) {
-            return false;
-        }
-        clickedPin->setState(!clickedPin->getState());
-        clickedPin = nullptr;
-
-        return true;
-    });
-
     // --- CIRCUIT DRAGGING ---
     ComponentDragger dragger;
     std::vector<Circuit*> selected;
@@ -305,6 +265,7 @@ int main(int, char**) {
                 window.close();
             }
             window.setView(view);
+            world.onEvent(window, e);
             for(Tool* tool : tools) {
                 tool->getEventTarget()->post(e);
                 if(tool->isActive()) {
@@ -340,7 +301,7 @@ int main(int, char**) {
 
         // --- WORLD VIEW ---
         window.setView(view);
-        window.draw(world);
+        world.draw(window);
 
         if (activeTool) {
             window.draw(*activeTool);

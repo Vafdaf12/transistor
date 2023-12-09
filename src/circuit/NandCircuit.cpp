@@ -1,6 +1,5 @@
 #include "NandCircuit.h"
 #include "SFML/Graphics/Rect.hpp"
-#include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/System/Vector2.hpp"
 
 NandCircuit::NandCircuit(const std::string& id, const Assets& assets, sf::Vector2f pos)
@@ -57,15 +56,15 @@ NandCircuit* NandCircuit::clone(const std::string& id) {
     return c;
 }
 
-void NandCircuit::draw(sf::RenderTarget& target, sf::RenderStates) const {
-    target.draw(_shape);
-    target.draw(_text);
-    target.draw(_in1);
-    target.draw(_in2);
-    target.draw(_out);
+void NandCircuit::draw(sf::RenderWindow& window) const {
+    window.draw(_shape);
+    window.draw(_text);
+    _in1.draw(window);
+    _in2.draw(window);
+    _out.draw(window);
 }
 
-void NandCircuit::update(Pin* pin) { _out.setState(!(_in1.getState() && _in2.getState())); }
+void NandCircuit::update(Pin* pin) { _out.setValue(!(_in1.getValue() && _in2.getValue())); }
 
 Pin* NandCircuit::queryPin(const std::string& id) {
     if (_in1.getId() == id)

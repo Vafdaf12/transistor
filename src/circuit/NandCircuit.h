@@ -3,7 +3,6 @@
 
 #include "SFML/Graphics/RectangleShape.hpp"
 #include "SFML/Graphics/Text.hpp"
-#include "SFML/Graphics/Font.hpp"
 #include "asset/AssetSystem.h"
 
 class NandCircuit : public Circuit {
@@ -17,7 +16,7 @@ public:
 
     NandCircuit* clone(const std::string& id) override;
 
-    void draw(sf::RenderTarget&, sf::RenderStates) const override;
+    void draw(sf::RenderWindow& window) const override;
     void update(Pin* pin) override;
 
     Pin* queryPin(const std::string& id) override;

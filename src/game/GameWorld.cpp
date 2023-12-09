@@ -1,6 +1,5 @@
 #include "GameWorld.h"
 #include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/System/Vector2.hpp"
 #include "asset/AssetSystem.h"
 #include "circuit/BinaryGate.h"
@@ -26,6 +25,7 @@ bool GameWorld::loadFromFile(const std::string& path, const Assets& assets) {
 
     for (auto id : data["inputs"]) {
         Pin* pin = new Pin(id.get<std::string>(), Pin::Output, sf::Vector2f(-400, i * 30));
+        pin->setEditable(true);
         _pins.emplace_back(pin);
         i++;
     }
@@ -96,7 +96,7 @@ bool GameWorld::saveToFile(const std::string& path) {
 
     json data;
     for(const auto& p : _pins) {
-        switch (p->type) {
+        switch (p->getType()) {
 
         case Pin::Input: {
             data["outputs"].push_back(p->getId());
@@ -199,16 +199,21 @@ std::vector<Circuit*> GameWorld::collideCircuit(sf::FloatRect rect) {
     return contained;
 }
 
-void GameWorld::draw(sf::RenderTarget& target, sf::RenderStates) const {
+void GameWorld::onEvent(sf::RenderWindow& w, const sf::Event& e) {
+    for(auto& p : _pins) {
+        p->onEvent(w, e);
+    }
+}
+
+void GameWorld::draw(sf::RenderWindow& window) const {
     for (const auto& c : _circuits) {
-        target.draw(*c);
+        c->draw(window);
     }
     for (const auto& pin : _pins) {
-        target.draw(*pin);
+        pin->draw(window);
     }
     for (const auto& wire : _wires) {
-
-        target.draw(wire);
+        window.draw(wire);
     }
 }
 

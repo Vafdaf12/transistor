@@ -8,11 +8,11 @@ Wire::Wire(Pin* p1, Pin* p2) {
     } else {
         _pins = {p2, p1};
     }
-    if (p1->type == Pin::Output) {
-        p2->setState(p1->getState());
+    if (p1->getType() == Pin::Output) {
+        p2->setValue(p1->getValue());
     }
-    if (p2->type == Pin::Output) {
-        p1->setState(p2->getState());
+    if (p2->getType() == Pin::Output) {
+        p1->setValue(p2->getValue());
     }
 
     p1->connect(this);
@@ -33,7 +33,7 @@ void Wire::draw(sf::RenderTarget& target, sf::RenderStates) const {
     sf::Vertex edge[2] = {sf::Vertex({0, 0}, sf::Color::White)};
     edge[0].position = _pins.first->getCenter();
     edge[1].position = _pins.second->getCenter();
-    if (_pins.first->getState()) {
+    if (_pins.first->getValue()) {
         edge[0].color = sf::Color::Red;
         edge[1].color = sf::Color::Red;
     }
@@ -45,11 +45,11 @@ void Wire::update(Pin* pin) {
     if (!isValid()) {
         return;
     }
-    int state = pin->getState();
+    int state = pin->getValue();
     if (_pins.first == pin) {
-        _pins.second->setState(state);
+        _pins.second->setValue(state);
     } else {
-        _pins.first->setState(state);
+        _pins.first->setValue(state);
     }
 }
 

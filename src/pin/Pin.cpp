@@ -1,88 +1,92 @@
 #include "Pin.h"
 
 #include "SFML/Graphics/Rect.hpp"
-#include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/System/Vector2.hpp"
 
+#include "SFML/Window/Event.hpp"
 #include "circuit/Circuit.h"
 
-Pin::Pin(const std::string& id, PinType type, sf::Vector2f pos, int state) : type(type), _state(state), _id(id) {
-    _shape.setPosition(pos - sf::Vector2f(RADIUS, RADIUS));
-    _shape.setFillColor(sf::Color::Black);
-    _shape.setOutlineThickness(1);
-    _shape.setRadius(10);
+Pin::Pin(const std::string& id, PinType type, sf::Vector2f pos, int state)
+    : _type(type), _value(state), _id(id) {
+    _graphic.setPosition(pos - sf::Vector2f(RADIUS, RADIUS));
+    _graphic.setFillColor(sf::Color::Black);
+    _graphic.setOutlineThickness(1);
+    _graphic.setRadius(10);
 
     switch (type) {
-    case Input: _shape.setOutlineColor(sf::Color(0x888888ff)); break;
-    case Output: _shape.setOutlineColor(sf::Color::White); break;
+    case Input: _graphic.setOutlineColor(sf::Color(0x888888ff)); break;
+    case Output: _graphic.setOutlineColor(sf::Color::White); break;
     }
-    if (_state) {
-        _shape.setFillColor(sf::Color::Red);
+    if (_value) {
+        _graphic.setFillColor(sf::Color::Red);
     } else {
-        _shape.setFillColor(sf::Color::Black);
+        _graphic.setFillColor(sf::Color::Black);
     }
 }
-Pin::~Pin()
-{
-    for(PinObserver* obs : _observers) {
+Pin::~Pin() {
+    for (PinObserver* obs : _observers) {
         obs->onRemove(this);
     }
 }
-void Pin::setState(int s) {
-    if (_state == s) {
+void Pin::onEvent(const sf::RenderWindow& w, const sf::Event& e) {
+    if (!_editable) {
         return;
     }
-    _state = s;
-    if (_state) {
-        _shape.setFillColor(sf::Color::Red);
+    if (e.type != sf::Event::MouseButtonReleased) {
+        return;
+    }
+    if(e.mouseButton.button != sf::Mouse::Left) {
+        return;
+    }
+    sf::Vector2i pos = {e.mouseButton.x, e.mouseButton.y};
+    sf::Vector2f worldPos = w.mapPixelToCoords(pos);
+
+    if(_graphic.getGlobalBounds().contains(worldPos)) {
+        setValue(!getValue());
+    }
+}
+void Pin::setValue(bool value) {
+    if (_value == value) {
+        return;
+    }
+    _value = value;
+    if (_value) {
+        _graphic.setFillColor(sf::Color::Red);
     } else {
-        _shape.setFillColor(sf::Color::Black);
+        _graphic.setFillColor(sf::Color::Black);
     }
     notify();
 }
-int Pin::getState() const { return _state; }
 
 sf::Vector2f Pin::getCenter() const {
-    float r = _shape.getRadius();
-    return _shape.getPosition() + sf::Vector2f(r, r);
+    float r = _graphic.getRadius();
+    return _graphic.getPosition() + sf::Vector2f(r, r);
 }
 void Pin::setCenter(sf::Vector2f pos) {
-    float r = _shape.getRadius();
-    _shape.setPosition(pos - sf::Vector2f(r, r));
+    float r = _graphic.getRadius();
+    _graphic.setPosition(pos - sf::Vector2f(r, r));
 }
 bool Pin::canConnect(const Pin& other) const {
-    switch (type) {
-    case Input: return other.type == Output;
-    case Output: return other.type == Input;
+    switch (_type) {
+    case Input: return other._type == Output;
+    case Output: return other._type == Input;
     }
     return false;
 }
-bool Pin::collide(sf::Vector2f pos) const {
-    return _shape.getGlobalBounds().contains(pos);
-}
-sf::Transformable& Pin::getTransform() {
-    return _shape;
-}
-void Pin::draw(sf::RenderTarget& target, sf::RenderStates) const {
-    target.draw(_shape);
-}
+bool Pin::collide(sf::Vector2f pos) const { return _graphic.getGlobalBounds().contains(pos); }
+sf::Transformable& Pin::getTransform() { return _graphic; }
+void Pin::draw(sf::RenderWindow& window) const { window.draw(_graphic); }
 
-bool Pin::connect(PinObserver* obs) {
-    return _observers.insert(obs).second;
-}
-bool Pin::disconnect(PinObserver* obs) {
-    return _observers.erase(obs) > 0;
-
-}
+bool Pin::connect(PinObserver* obs) { return _observers.insert(obs).second; }
+bool Pin::disconnect(PinObserver* obs) { return _observers.erase(obs) > 0; }
 std::string Pin::getFullPath() const {
-    if(_parent) {
+    if (_parent) {
         return _parent->getId() + "/" + _id;
     }
     return _id;
 }
 void Pin::notify() {
-    for(PinObserver* obs : _observers) {
+    for (PinObserver* obs : _observers) {
         obs->update(this);
     }
-
 }

@@ -1,11 +1,11 @@
 #pragma once
 
-#include "SFML/Graphics/Drawable.hpp"
+#include "SFML/Graphics/RenderWindow.hpp"
 #include "pin/Pin.h"
 
 #include <string>
 
-class Circuit : public sf::Drawable, public PinObserver {
+class Circuit : public PinObserver {
 public:
     Circuit(const std::string& id) : _id(id) {}
     virtual ~Circuit() {}
@@ -48,6 +48,8 @@ public:
     virtual Circuit* clone(const std::string& id) = 0;
 
     virtual Pin* queryPin(const std::string& id) = 0;
+
+    virtual void draw(sf::RenderWindow& window) const = 0;
 
 private:
     std::string _id;
