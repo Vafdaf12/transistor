@@ -4,19 +4,20 @@
 #include "SFML/Graphics/View.hpp"
 #include "Tool.h"
 
-class PanTool : public Tool {
+class NavigationTool : public Tool {
 public:
-    PanTool(sf::View& v);
+    NavigationTool(sf::View& v);
 
-    inline bool isActive() const override { return _active; };
+    inline bool isActive() const override { return _state != None; };
 
     void onEvent(const sf::RenderWindow&, const sf::Event&) override;
     void update(const sf::RenderWindow&) override;
 
 private:
+    enum State { None, Panning };
+
     sf::View& _view;
 
-    sf::Vector2i _previousPosition;
-    bool _active = false;
-    bool _isPanning = false;
+    sf::Vector2i _prevMousePosition;
+    State _state = None;
 };

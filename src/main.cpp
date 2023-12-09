@@ -25,7 +25,7 @@
 #include "game/GameWorld.h"
 #include "pin/Pin.h"
 #include "tools/CircuitDragger.h"
-#include "tools/PanTool.h"
+#include "tools/NavigationTool.h"
 #include "tools/PinConnector.h"
 #include "tools/SelectionTool.h"
 #include "tools/Tool.h"
@@ -116,7 +116,7 @@ int main(int, char**) {
     ToolState state = NONE;
 
     std::list<Tool*> tools;
-    tools.push_back(new PanTool(view));
+    tools.push_back(new NavigationTool(view));
     tools.push_back(new PinConnector(world));
 
     CircuitDragger* dragger = new CircuitDragger();
@@ -150,21 +150,6 @@ int main(int, char**) {
     };
 
     buttonRegister(button, guiLayer, window);
-
-    // --- VIEW UPDATES ---
-
-    worldLayer.subscribe(sf::Event::Resized, [&](const sf::Event& event) {
-        float x = event.size.width;
-        float y = event.size.height;
-        view.setSize({x, y});
-        return false;
-    });
-    worldLayer.subscribe(sf::Event::MouseWheelScrolled, [&](const sf::Event& event) {
-        float delta = event.mouseWheelScroll.delta;
-        std::cout << delta << std::endl;
-        view.zoom(1.0 - (delta * 0.1f));
-        return false;
-    });
 
     // --- CIRCUIT SELECTION ---
 
