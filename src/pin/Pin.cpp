@@ -23,11 +23,6 @@ Pin::Pin(const std::string& id, PinType type, sf::Vector2f pos, int state)
         _graphic.setFillColor(sf::Color::Black);
     }
 }
-Pin::~Pin() {
-    for (PinObserver* obs : _observers) {
-        obs->onRemove(this);
-    }
-}
 void Pin::onEvent(const sf::RenderWindow& w, const sf::Event& e) {
     if (!_editable) {
         return;
@@ -55,7 +50,7 @@ void Pin::setValue(bool value) {
     } else {
         _graphic.setFillColor(sf::Color::Black);
     }
-    notify();
+    changed();
 }
 
 sf::Vector2f Pin::getCenter() const {
@@ -77,16 +72,17 @@ bool Pin::collide(sf::Vector2f pos) const { return _graphic.getGlobalBounds().co
 sf::Transformable& Pin::getTransform() { return _graphic; }
 void Pin::draw(sf::RenderWindow& window) const { window.draw(_graphic); }
 
-bool Pin::connect(PinObserver* obs) { return _observers.insert(obs).second; }
-bool Pin::disconnect(PinObserver* obs) { return _observers.erase(obs) > 0; }
+bool Pin::connect(bool* obs) { return _dirtyFlags.insert(obs).second; }
+bool Pin::disconnect(bool* obs) { return _dirtyFlags.erase(obs) > 0; }
+
 std::string Pin::getFullPath() const {
     if (_parent) {
         return _parent->getId() + "/" + _id;
     }
     return _id;
 }
-void Pin::notify() {
-    for (PinObserver* obs : _observers) {
-        obs->update(this);
+void Pin::changed() {
+    for (bool* flag : _dirtyFlags) {
+        *flag = !*flag;
     }
 }

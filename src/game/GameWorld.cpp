@@ -217,6 +217,16 @@ void GameWorld::draw(sf::RenderWindow& window) const {
     }
 }
 
+void GameWorld::update(sf::RenderWindow& w) {
+    for(auto& wire : _wires) {
+        wire.update( w);
+    }
+    for(auto& c : _circuits) {
+        c->update(w);
+    }
+    
+}
+
 Pin* GameWorld::queryPin(const std::string& path) {
     size_t i = path.find('/');
     if(i == std::string::npos) {

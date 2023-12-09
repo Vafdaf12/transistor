@@ -15,16 +15,8 @@ Wire::Wire(Pin* p1, Pin* p2) {
         p1->setValue(p2->getValue());
     }
 
-    p1->connect(this);
-    p2->connect(this);
-}
-Wire::~Wire() {
-    if(_pins.first) {
-        _pins.first->disconnect(this);
-    }
-    if(_pins.second) {
-        _pins.second->disconnect(this);
-    }
+    p1->connect(_flags);
+    p2->connect(_flags + 1);
 }
 void Wire::draw(sf::RenderTarget& target, sf::RenderStates) const {
     if (!isValid()) {
@@ -41,25 +33,16 @@ void Wire::draw(sf::RenderTarget& target, sf::RenderStates) const {
     target.draw(edge, 2, sf::Lines);
 }
 
-void Wire::update(Pin* pin) {
-    if (!isValid()) {
-        return;
+void Wire::update(const sf::RenderWindow&) {
+    if(_flags[0]) {
+        _pins.second->setValue(_pins.first->getValue());
+        _flags[0] = false;
     }
-    int state = pin->getValue();
-    if (_pins.first == pin) {
-        _pins.second->setValue(state);
-    } else {
-        _pins.first->setValue(state);
+    else if(_flags[1]) {
+        _pins.first->setValue(_pins.second->getValue());
+        _flags[1] = false;
     }
-}
 
-void Wire::onRemove(Pin* pin) {
-    if (_pins.first == pin) {
-        _pins.first = nullptr;
-    }
-    if (_pins.second == pin) {
-        _pins.second = nullptr;
-    }
 }
 
 bool Wire::isEndpoint(const Pin* pin) const { return _pins.first == pin || _pins.second == pin; }

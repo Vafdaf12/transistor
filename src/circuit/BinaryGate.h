@@ -19,8 +19,8 @@ public:
 
     BinaryGate* clone(const std::string& newId) override;
 
+    void update(const sf::RenderWindow&) override;
     void draw(sf::RenderWindow& window) const override;
-    void update(Pin* pin) override;
 
     Pin* queryPin(const std::string& id) override;
 
@@ -39,9 +39,9 @@ private:
     const Assets& _assets;
 
     sf::Sprite _sprite;
-    
-    Pin _in1, _in2;
-    Pin _out;
 
+    Pin _in1, _in2, _out;
+    bool _flags[2] = {false};
+    
     Func _process;
 };

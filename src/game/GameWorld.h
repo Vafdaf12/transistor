@@ -36,6 +36,7 @@ public:
 
     void onEvent(sf::RenderWindow&, const sf::Event&);
     void draw(sf::RenderWindow&) const;
+    void update(sf::RenderWindow&);
 
     Pin* queryPin(const std::string& path);
     Circuit* queryCircuit(const std::string& path);

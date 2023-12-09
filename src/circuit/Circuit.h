@@ -5,7 +5,7 @@
 
 #include <string>
 
-class Circuit : public PinObserver {
+class Circuit {
 public:
     Circuit(const std::string& id) : _id(id) {}
     virtual ~Circuit() {}
@@ -50,6 +50,7 @@ public:
     virtual Pin* queryPin(const std::string& id) = 0;
 
     virtual void draw(sf::RenderWindow& window) const = 0;
+    virtual void update(const sf::RenderWindow&) {}
 
 private:
     std::string _id;

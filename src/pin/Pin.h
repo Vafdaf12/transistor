@@ -7,42 +7,13 @@
 #include <set>
 #include <string>
 
-class Pin;
 class Circuit;
-
-class PinObserver {
-public:
-    virtual void update(Pin* pin) = 0;
-    virtual void onRemove(Pin* pin) {}
-};
-
-class Pin2 {
-public:
-    enum PinType { Input, Output };
-
-    Pin2(const std::string& id, PinType type);
-
-
-
-    sf::Vector2f getCenter() const;
-    void setCenter(sf::Vector2f);
-
-private:
-    std::string _id;
-    PinType _type;
-
-    bool _value = 0;
-    bool _editable = false;
-
-    sf::CircleShape _graphic;
-};
 
 class Pin {
 public:
     enum PinType { Input, Output };
 
     Pin(const std::string& id, PinType type, sf::Vector2f pos = {0, 0}, int state = 0);
-    ~Pin();
 
     void onEvent(const sf::RenderWindow&, const sf::Event& event);
     void update(const sf::RenderWindow&);
@@ -54,8 +25,8 @@ public:
 
     sf::Transformable& getTransform();
 
-    bool connect(PinObserver* obs);
-    bool disconnect(PinObserver* obs);
+    bool connect(bool* obs);
+    bool disconnect(bool* obs);
 
     std::string getFullPath() const;
 
@@ -75,15 +46,15 @@ public:
     static constexpr float RADIUS = 10.f;
 
 private:
-    void notify();
+    void changed();
 
+    std::string _id;
 
     bool _value = 0;
     bool _editable = false;
     PinType _type;
 
-    std::set<PinObserver*> _observers;
-    std::string _id;
+    std::set<bool*> _dirtyFlags;
 
     Circuit* _parent = nullptr;
 

@@ -11,17 +11,24 @@ PassthroughCircuit::PassthroughCircuit(const std::string& id, size_t size, sf::V
     _shape.setSize({WIDTH, totalHeight});
 
     float startY = Pin::RADIUS + PADDING;
+    _flags = new bool[size];
     for (size_t i = 0; i < size; i++) {
         float y = pos.y + startY + (2 * Pin::RADIUS + PADDING) * i;
 
         std::string id = std::to_string(i+1);
 
+        _flags[i] = false;
         _outputs.emplace_back("out" + id, Pin::Output, sf::Vector2f(pos.x + WIDTH, y));
         _outputs.back().setParent(this);
         _inputs.emplace_back("in" + id, Pin::Input, sf::Vector2f(pos.x, y));
         _inputs.back().setParent(this);
-        _inputs.back().connect(this);
+        _inputs.back().connect(_flags + i);
     }
+}
+
+PassthroughCircuit::~PassthroughCircuit()
+{
+    delete[] _flags;
 }
 
 bool PassthroughCircuit::collide(sf::Vector2f p) const {
@@ -75,10 +82,12 @@ PassthroughCircuit* PassthroughCircuit::clone(const std::string& newId) {
     return circuit;
 }
 
-void PassthroughCircuit::update(Pin* pin) {
-    size_t minPins = std::min(_outputs.size(), _inputs.size());
-    for (size_t i = 0; i < minPins; i++) {
-        _outputs[i].setValue(_inputs[i].getValue());
+void PassthroughCircuit::update(const sf::RenderWindow&) {
+    for (size_t i = 0; i < _inputs.size(); i++) {
+        if(_flags[i]) {
+            _outputs[i].setValue(_inputs[i].getValue());
+            _flags[i] = false;
+        }
     }
 }
 

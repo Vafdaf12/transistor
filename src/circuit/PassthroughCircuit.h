@@ -11,6 +11,7 @@
 class PassthroughCircuit : public Circuit {
 public:
     PassthroughCircuit(const std::string& id, size_t size, sf::Vector2f pos = {0, 0});
+    ~PassthroughCircuit();
 
     bool collide(sf::Vector2f) const override;
     Pin* collidePin(sf::Vector2f) override;
@@ -19,7 +20,7 @@ public:
     sf::FloatRect getBoundingBox() const override;
 
     void draw(sf::RenderWindow& window) const override;
-    void update(Pin* pin) override;
+    void update(const sf::RenderWindow&) override;
 
     void setColor(sf::Color color);
     inline sf::Color getColor() const { return _shape.getFillColor(); }
@@ -37,4 +38,5 @@ private:
 
     std::vector<Pin> _inputs;
     std::vector<Pin> _outputs;
+    bool* _flags;
 };

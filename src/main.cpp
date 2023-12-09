@@ -227,6 +227,7 @@ int main(int, char**) {
         }
 
         window.setView(view);
+        world.update(window);
 
         sf::Vector2i newPos = sf::Mouse::getPosition(window);
         sf::Vector2f newWorldPos = window.mapPixelToCoords(newPos);

@@ -17,7 +17,7 @@ public:
     NandCircuit* clone(const std::string& id) override;
 
     void draw(sf::RenderWindow& window) const override;
-    void update(Pin* pin) override;
+    void update(const sf::RenderWindow&) override;
 
     Pin* queryPin(const std::string& id) override;
 private:
@@ -30,4 +30,6 @@ private:
 
     Pin _in1, _in2;
     Pin _out;
+
+    bool _flags[2] = {false};
 };
