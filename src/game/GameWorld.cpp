@@ -25,15 +25,17 @@ bool GameWorld::loadFromFile(const std::string& path, const Assets& assets) {
 
     for (auto id : data["inputs"]) {
         Pin* pin = new Pin(id.get<std::string>(), Pin::Output, sf::Vector2f(-400, i * 30));
+        pin->setView(&_guiView);
         pin->setEditable(true);
-        _pins.emplace_back(pin);
+        _inputs.emplace_back(pin);
         i++;
     }
 
     i = 0;
     for (auto id : data["outputs"]) {
         Pin* pin = new Pin(id.get<std::string>(), Pin::Input, sf::Vector2f(400, i * 30));
-        _pins.emplace_back(pin);
+        pin->setView(&_guiView);
+        _outputs.emplace_back(pin);
         i++;
     }
 
@@ -95,19 +97,11 @@ bool GameWorld::saveToFile(const std::string& path) {
     }
 
     json data;
-    for(const auto& p : _pins) {
-        switch (p->getType()) {
-
-        case Pin::Input: {
-            data["outputs"].push_back(p->getId());
-            break;
-        }
-
-        case Pin::Output: {
-            data["inputs"].push_back(p->getId());
-            break;
-        }
-        }
+    for(const auto& p : _inputs) {
+        data["inputs"].push_back(p->getId());
+    }
+    for(const auto& p : _outputs) {
+        data["outputs"].push_back(p->getId());
     }
     for(const auto& circuit : _circuits) {
         json elem;
@@ -151,7 +145,17 @@ bool GameWorld::saveToFile(const std::string& path) {
     return true;
 }
 
-void GameWorld::addPin(Pin* p) { _pins.emplace_back(p); }
+void GameWorld::addPin(Pin* p) {
+    switch (p->getType()) {
+
+    case Pin::Input:
+        _outputs.emplace_back(p);
+        break;
+    case Pin::Output:
+        _inputs.emplace_back(p);
+        break;
+    }
+}
 
 void GameWorld::addCircuit(Circuit* c) { _circuits.emplace_back(c); }
 void GameWorld::removeCircuit(Circuit* circuit) {
@@ -164,7 +168,12 @@ void GameWorld::removeCircuit(Circuit* circuit) {
 void GameWorld::connectPins(Pin* p1, Pin* p2) { _wires.emplace_back(p1, p2); }
 Pin* GameWorld::collidePin(sf::Vector2f pos, uint8_t filter) {
     if (filter & SINGLE) {
-        for (const auto& p : _pins) {
+        for (const auto& p : _inputs) {
+            if (p->collide(pos)) {
+                return p.get();
+            }
+        }
+        for (const auto& p : _outputs) {
             if (p->collide(pos)) {
                 return p.get();
             }
@@ -178,6 +187,31 @@ Pin* GameWorld::collidePin(sf::Vector2f pos, uint8_t filter) {
         }
     }
     return nullptr;
+}
+
+Pin* GameWorld::collidePin(const sf::RenderWindow& window, sf::Vector2i pos, uint8_t filter) {
+    if (filter & SINGLE) {
+        for (const auto& p : _inputs) {
+            if (p->collide(window, pos)) {
+                return p.get();
+            }
+        }
+        for (const auto& p : _outputs) {
+            if (p->collide(window, pos)) {
+                return p.get();
+            }
+        }
+    }
+    sf::Vector2f worldSpace = window.mapPixelToCoords(pos);
+    if (filter & CIRCUIT) {
+        for (const auto& c : _circuits) {
+            if (Pin* p = c->collidePin(worldSpace)) {
+                return p;
+            }
+        }
+    }
+    return nullptr;
+    
 }
 Circuit* GameWorld::collideCircuit(sf::Vector2f pos) {
     for (const auto& c : _circuits) {
@@ -200,7 +234,10 @@ std::vector<Circuit*> GameWorld::collideCircuit(sf::FloatRect rect) {
 }
 
 void GameWorld::onEvent(sf::RenderWindow& w, const sf::Event& e) {
-    for(auto& p : _pins) {
+    for(auto& p : _inputs) {
+        p->onEvent(w, e);
+    }
+    for(auto& p : _outputs) {
         p->onEvent(w, e);
     }
 }
@@ -209,12 +246,18 @@ void GameWorld::draw(sf::RenderWindow& window) const {
     for (const auto& c : _circuits) {
         c->draw(window);
     }
-    for (const auto& pin : _pins) {
-        pin->draw(window);
-    }
     for (const auto& wire : _wires) {
         window.draw(wire);
     }
+    sf::View view = window.getView();
+    window.setView(_guiView);
+    for (const auto& pin : _outputs) {
+        pin->draw(window);
+    }
+    for (const auto& pin : _inputs) {
+        pin->draw(window);
+    }
+    window.setView(view);
 }
 
 void GameWorld::update(sf::RenderWindow& w) {
@@ -224,13 +267,22 @@ void GameWorld::update(sf::RenderWindow& w) {
     for(auto& c : _circuits) {
         c->update(w);
     }
-    
+    sf::Vector2u size = w.getSize();
+    _guiView.setSize(size.x, size.y);
+    _guiView.setCenter(size.x/2.f, size.y/2.f);
+
+    layoutPins(w);
 }
 
 Pin* GameWorld::queryPin(const std::string& path) {
     size_t i = path.find('/');
     if(i == std::string::npos) {
-        for (const auto& p : _pins) {
+        for (const auto& p : _inputs) {
+            if(path == p->getId()) {
+                return p.get();
+            }
+        }
+        for (const auto& p : _outputs) {
             if(path == p->getId()) {
                 return p.get();
             }
@@ -258,4 +310,31 @@ Circuit* GameWorld::queryCircuit(const std::string& path) {
         }
     }
     return nullptr;
+}
+
+void GameWorld::layoutPins(const sf::RenderWindow& window) {
+    static constexpr float pinPadding = 30;
+    static constexpr float pinMargin = 20;
+    static constexpr float pinStep = 2*Pin::RADIUS + pinPadding;
+
+    float inputHeight = _inputs.size() * pinStep - pinPadding;
+    float outputHeight = _outputs.size() * pinStep - pinPadding;
+
+
+    sf::Vector2u size = window.getSize();
+    sf::Vector2f inputBase = window.mapPixelToCoords({
+        int(Pin::RADIUS + pinMargin),
+        int((size.y - inputHeight)/2)
+    }, _guiView);
+    sf::Vector2f outputBase =  window.mapPixelToCoords({
+        int(size.x - Pin::RADIUS - pinMargin),
+        int((size.y - outputHeight)/2.f)
+    }, _guiView);
+
+    for (size_t i = 0; i < _inputs.size(); i++) {
+        _inputs[i]->setCenter(inputBase + sf::Vector2f(0, i*pinStep));
+    }
+    for (size_t i = 0; i < _outputs.size(); i++) {
+        _outputs[i]->setCenter(outputBase + sf::Vector2f(0, i*pinStep));
+    }
 }

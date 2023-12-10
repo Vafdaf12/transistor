@@ -7,6 +7,7 @@
 
 #include "SFML/Graphics/Rect.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
+#include "SFML/Graphics/View.hpp"
 #include "SFML/System/Vector2.hpp"
 #include "asset/AssetSystem.h"
 #include "circuit/Circuit.h"
@@ -30,6 +31,7 @@ public:
     void connectPins(Pin* p1, Pin* p2);
 
     Pin* collidePin(sf::Vector2f pos, uint8_t filter = CIRCUIT | SINGLE);
+    Pin* collidePin(const sf::RenderWindow& window, sf::Vector2i pos, uint8_t filter = CIRCUIT | SINGLE);
 
     Circuit* collideCircuit(sf::Vector2f pos);
     std::vector<Circuit*> collideCircuit(sf::FloatRect rect);
@@ -42,7 +44,12 @@ public:
     Circuit* queryCircuit(const std::string& path);
 
 private:
+    void layoutPins(const sf::RenderWindow&);
+
+    sf::View _guiView;
+
     std::list<Wire> _wires;
-    std::vector<std::unique_ptr<Pin>> _pins;
+    std::vector<std::unique_ptr<Pin>> _inputs;
+    std::vector<std::unique_ptr<Pin>> _outputs;
     std::vector<std::unique_ptr<Circuit>> _circuits;
 };

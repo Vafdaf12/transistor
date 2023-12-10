@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SFML/Graphics/CircleShape.hpp"
+#include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Transformable.hpp"
 #include "SFML/System/Vector2.hpp"
@@ -27,6 +28,7 @@ public:
 
     bool canConnect(const Pin& other) const;
     bool collide(sf::Vector2f) const;
+    bool collide(const sf::RenderTarget& target, sf::Vector2i) const;
 
     sf::Transformable& getTransform();
 
@@ -40,6 +42,7 @@ public:
     inline void setEditable(bool val) { _editable = val; }
     inline void setType(PinType val) { _type = val; }
     inline void setId(const std::string& id) { _id = id; }
+    inline void setView(const sf::View* view) { _view = view; }
     void setValue(bool val);
     void setCenter(sf::Vector2f pos);
 
@@ -47,6 +50,8 @@ public:
     inline PinType getType() const { return _type; }
     inline const std::string& getId() const { return _id; }
     sf::Vector2f getCenter() const;
+
+    sf::Vector2f getWorldSpacePosition(const sf::RenderTarget&) const;
 
     static constexpr float RADIUS = 10.f;
 
@@ -64,4 +69,5 @@ private:
     Circuit* _parent = nullptr;
 
     sf::CircleShape _graphic;
+    const sf::View* _view = nullptr;
 };

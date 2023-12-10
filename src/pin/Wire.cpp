@@ -31,8 +31,9 @@ void Wire::draw(sf::RenderTarget& target, sf::RenderStates) const {
         return;
     }
     sf::Vertex edge[2] = {sf::Vertex({0, 0}, sf::Color::White)};
-    edge[0].position = _pins.first->getCenter();
-    edge[1].position = _pins.second->getCenter();
+
+    edge[0].position = _pins.first->getWorldSpacePosition(target);
+    edge[1].position = _pins.second->getWorldSpacePosition(target);
     if (_pins.first->getValue()) {
         edge[0].color = sf::Color::Red;
         edge[1].color = sf::Color::Red;

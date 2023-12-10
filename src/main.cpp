@@ -5,6 +5,7 @@
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Texture.hpp"
+#include "SFML/Graphics/Transform.hpp"
 #include "SFML/Graphics/View.hpp"
 #include "SFML/System/Vector2.hpp"
 #include "SFML/Window/Clipboard.hpp"
@@ -99,6 +100,11 @@ int main(int, char**) {
     assets.textures.load("gate_xor", "assets/sprites/gate_xor.png");
     assets.textures.load("gate_and", "assets/sprites/gate_and.png");
 
+    sf::View view;
+    sf::Transform x;
+    view.setCenter({0, 0});
+    view.setSize({1280, 720});
+
     GameWorld world;
     world.loadFromFile("assets/world.json", assets);
     CommandLoader loader;
@@ -106,10 +112,6 @@ int main(int, char**) {
     int circuitCount = 0;
     SfLayer guiLayer;
     SfLayer worldLayer;
-
-    sf::View view;
-    view.setCenter({0, 0});
-    view.setSize({1280, 720});
 
     sf::Vector2i mouse = sf::Mouse::getPosition();
 
@@ -174,6 +176,7 @@ int main(int, char**) {
         dragBoard = nullptr;
         return true;
     });
+    window.mapPixelToCoords({2, 2});
 
     // --- CIRCUIT DELETION ---
     worldLayer.subscribe(sf::Event::KeyReleased, [&](const sf::Event& event) {

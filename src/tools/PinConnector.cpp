@@ -15,11 +15,9 @@ void PinConnector::onEvent(const sf::RenderWindow& window, const sf::Event& even
             return;
         }
         sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
-        sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
-
-        _firstPin = _world.collidePin(worldPos);
+        _firstPin = _world.collidePin(window, mousePos);
         if (_firstPin) {
-            _vertices[0].position = _firstPin->getCenter();
+            _vertices[0].position = _firstPin->getWorldSpacePosition(window);
         }
     }
     if (event.type == sf::Event::MouseButtonReleased) {
