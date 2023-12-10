@@ -23,6 +23,12 @@ Pin::Pin(const std::string& id, PinType type, sf::Vector2f pos, int state)
         _graphic.setFillColor(sf::Color::Black);
     }
 }
+Pin::~Pin()
+{
+    for (PinFlag* flag : _flags) {
+        *flag = Dead;
+    }
+}
 void Pin::onEvent(const sf::RenderWindow& w, const sf::Event& e) {
     if (!_editable) {
         return;
@@ -72,8 +78,8 @@ bool Pin::collide(sf::Vector2f pos) const { return _graphic.getGlobalBounds().co
 sf::Transformable& Pin::getTransform() { return _graphic; }
 void Pin::draw(sf::RenderWindow& window) const { window.draw(_graphic); }
 
-bool Pin::connect(bool* obs) { return _dirtyFlags.insert(obs).second; }
-bool Pin::disconnect(bool* obs) { return _dirtyFlags.erase(obs) > 0; }
+bool Pin::connect(PinFlag* obs) { return _flags.insert(obs).second; }
+bool Pin::disconnect(PinFlag* obs) { return _flags.erase(obs) > 0; }
 
 std::string Pin::getFullPath() const {
     if (_parent) {
@@ -82,7 +88,12 @@ std::string Pin::getFullPath() const {
     return _id;
 }
 void Pin::changed() {
-    for (bool* flag : _dirtyFlags) {
-        *flag = !*flag;
+    for (PinFlag* flag : _flags) {
+        if(*flag == Dirty) {
+            *flag = None;
+        }
+        if(*flag == None) {
+            *flag = Dirty;
+        }
     }
 }

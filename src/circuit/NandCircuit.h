@@ -8,6 +8,7 @@
 class NandCircuit : public Circuit {
 public:
     NandCircuit(const std::string& id, const Assets& assets, sf::Vector2f pos = {0, 0});
+    ~NandCircuit();
 
     bool collide(sf::Vector2f) const override;
     Pin* collidePin(sf::Vector2f) override;
@@ -31,5 +32,5 @@ private:
     Pin _in1, _in2;
     Pin _out;
 
-    bool _flags[2] = {false};
+    Pin::PinFlag _flags[2] = {Pin::None};
 };

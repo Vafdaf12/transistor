@@ -11,6 +11,7 @@ public:
     using Func = int(*)(int, int);
 
     BinaryGate(const std::string& id, const Assets& assets, Func fn,  sf::Vector2f pos = {0, 0});
+    ~BinaryGate();
 
     bool collide(sf::Vector2f) const override;
     Pin* collidePin(sf::Vector2f) override;
@@ -41,7 +42,7 @@ private:
     sf::Sprite _sprite;
 
     Pin _in1, _in2, _out;
-    bool _flags[2] = {false};
+    Pin::PinFlag _flags[2] = {Pin::None};
     
     Func _process;
 };

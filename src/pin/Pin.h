@@ -12,21 +12,26 @@ class Circuit;
 class Pin {
 public:
     enum PinType { Input, Output };
+    enum PinFlag {
+        None = 0,
+        Dirty = 1,
+        Dead = 2
+    };
 
     Pin(const std::string& id, PinType type, sf::Vector2f pos = {0, 0}, int state = 0);
+    ~Pin();
 
     void onEvent(const sf::RenderWindow&, const sf::Event& event);
     void update(const sf::RenderWindow&);
     void draw(sf::RenderWindow&) const;
-
 
     bool canConnect(const Pin& other) const;
     bool collide(sf::Vector2f) const;
 
     sf::Transformable& getTransform();
 
-    bool connect(bool* obs);
-    bool disconnect(bool* obs);
+    bool connect(PinFlag* obs);
+    bool disconnect(PinFlag* obs);
 
     std::string getFullPath() const;
 
@@ -54,7 +59,7 @@ private:
     bool _editable = false;
     PinType _type;
 
-    std::set<bool*> _dirtyFlags;
+    std::set<PinFlag*> _flags;
 
     Circuit* _parent = nullptr;
 

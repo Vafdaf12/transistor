@@ -18,6 +18,14 @@ Wire::Wire(Pin* p1, Pin* p2) {
     p1->connect(_flags);
     p2->connect(_flags + 1);
 }
+Wire::~Wire() {
+    if(_flags[0] != Pin::Dead) {
+        _pins.first->disconnect(_flags);
+    }
+    if(_flags[1] != Pin::Dead) {
+        _pins.second->disconnect(_flags + 1);
+    }
+}
 void Wire::draw(sf::RenderTarget& target, sf::RenderStates) const {
     if (!isValid()) {
         return;
@@ -34,20 +42,18 @@ void Wire::draw(sf::RenderTarget& target, sf::RenderStates) const {
 }
 
 void Wire::update(const sf::RenderWindow&) {
-    if(_flags[0]) {
+    if (_flags[0] == Pin::Dirty) {
         _pins.second->setValue(_pins.first->getValue());
-        _flags[0] = false;
-    }
-    else if(_flags[1]) {
+        _flags[0] = Pin::None;
+    } else if (_flags[1] == Pin::Dirty) {
         _pins.first->setValue(_pins.second->getValue());
-        _flags[1] = false;
+        _flags[1] = Pin::None;
     }
-
 }
 
 bool Wire::isEndpoint(const Pin* pin) const { return _pins.first == pin || _pins.second == pin; }
 
-bool Wire::isValid() const { return _pins.first && _pins.second; }
+bool Wire::isValid() const { return _flags[0] != Pin::Dead && _flags[1] != Pin::Dead; }
 
 bool Wire::operator==(const Wire& rhs) const {
     return _pins.first == rhs._pins.first && _pins.second == rhs._pins.second;

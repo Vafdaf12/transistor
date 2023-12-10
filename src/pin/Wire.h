@@ -9,6 +9,7 @@
 class Wire : public sf::Drawable {
 public:
     Wire(Pin*, Pin*);
+    ~Wire();
 
     void draw(sf::RenderTarget&, sf::RenderStates) const override;
     void update(const sf::RenderWindow&);
@@ -23,5 +24,5 @@ public:
 
 private:
     std::pair<Pin*, Pin*> _pins;
-    bool _flags[2] = {false};
+    Pin::PinFlag _flags[2] = {Pin::None};
 };

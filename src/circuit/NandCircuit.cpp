@@ -33,6 +33,10 @@ NandCircuit::NandCircuit(const std::string& id, const Assets& assets, sf::Vector
     _in1.connect(_flags);
     _in2.connect(_flags + 1);
 }
+NandCircuit::~NandCircuit() {
+    _in1.disconnect(_flags);
+    _in2.disconnect(_flags + 1);
+}
 bool NandCircuit::collide(sf::Vector2f v) const { return _shape.getGlobalBounds().contains(v); }
 
 Pin* NandCircuit::collidePin(sf::Vector2f v) {
@@ -65,10 +69,10 @@ void NandCircuit::draw(sf::RenderWindow& window) const {
 }
 
 void NandCircuit::update(const sf::RenderWindow&) {
-    if(_flags[0] || _flags[1]) {
+    if(_flags[0] == Pin::Dirty || _flags[1] == Pin::Dirty) {
         _out.setValue(!(_in1.getValue() && _in2.getValue()));
-        _flags[0] = false;
-        _flags[1] = false;
+        _flags[0] = Pin::None;
+        _flags[1] = Pin::None;
     }
 }
 

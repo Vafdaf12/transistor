@@ -11,13 +11,13 @@ PassthroughCircuit::PassthroughCircuit(const std::string& id, size_t size, sf::V
     _shape.setSize({WIDTH, totalHeight});
 
     float startY = Pin::RADIUS + PADDING;
-    _flags = new bool[size];
+    _flags = new Pin::PinFlag[size];
     for (size_t i = 0; i < size; i++) {
         float y = pos.y + startY + (2 * Pin::RADIUS + PADDING) * i;
 
         std::string id = std::to_string(i+1);
 
-        _flags[i] = false;
+        _flags[i] = Pin::None;
         _outputs.emplace_back("out" + id, Pin::Output, sf::Vector2f(pos.x + WIDTH, y));
         _outputs.back().setParent(this);
         _inputs.emplace_back("in" + id, Pin::Input, sf::Vector2f(pos.x, y));
@@ -28,6 +28,9 @@ PassthroughCircuit::PassthroughCircuit(const std::string& id, size_t size, sf::V
 
 PassthroughCircuit::~PassthroughCircuit()
 {
+    for (size_t i = 0; i < _inputs.size(); i++) {
+        _inputs[i].disconnect(_flags + i);
+    }
     delete[] _flags;
 }
 
@@ -84,9 +87,9 @@ PassthroughCircuit* PassthroughCircuit::clone(const std::string& newId) {
 
 void PassthroughCircuit::update(const sf::RenderWindow&) {
     for (size_t i = 0; i < _inputs.size(); i++) {
-        if(_flags[i]) {
+        if(_flags[i] == Pin::Dirty) {
             _outputs[i].setValue(_inputs[i].getValue());
-            _flags[i] = false;
+            _flags[i] = Pin::None;
         }
     }
 }

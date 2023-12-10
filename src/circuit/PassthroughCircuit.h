@@ -38,5 +38,5 @@ private:
 
     std::vector<Pin> _inputs;
     std::vector<Pin> _outputs;
-    bool* _flags;
+    Pin::PinFlag* _flags;
 };

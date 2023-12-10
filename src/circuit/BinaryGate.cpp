@@ -33,6 +33,10 @@ BinaryGate::BinaryGate(const std::string& id, const Assets& assets, Func fn, sf:
     _in1.connect(_flags);
     _in2.connect(_flags+1);
 }
+BinaryGate::~BinaryGate() {
+    _in1.disconnect(_flags);
+    _in2.disconnect(_flags + 1);
+}
 bool BinaryGate::collide(sf::Vector2f v) const { return _sprite.getGlobalBounds().contains(v); }
 
 Pin* BinaryGate::collidePin(sf::Vector2f v) {
@@ -57,10 +61,10 @@ BinaryGate* BinaryGate::clone(const std::string& newId) {
 }
 
 void BinaryGate::update(const sf::RenderWindow&) {
-    if(_flags[0] || _flags[1]) {
+    if(_flags[0] == Pin::Dirty || _flags[1] == Pin::Dirty) {
         _out.setValue(_process(_in1.getValue(), _in2.getValue()));
-        _flags[0] = false;
-        _flags[1] = false;
+        _flags[0] = Pin::None;
+        _flags[1] = Pin::None;
     }
 }
 
