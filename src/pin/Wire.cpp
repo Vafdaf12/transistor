@@ -46,8 +46,10 @@ void Wire::update(const sf::RenderWindow&) {
     if (_flags[0] == Pin::Dirty) {
         _pins.second->setValue(_pins.first->getValue());
         _flags[0] = Pin::None;
+        _flags[1] = Pin::None;
     } else if (_flags[1] == Pin::Dirty) {
         _pins.first->setValue(_pins.second->getValue());
+        _flags[0] = Pin::None;
         _flags[1] = Pin::None;
     }
 }
