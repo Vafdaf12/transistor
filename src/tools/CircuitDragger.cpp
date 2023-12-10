@@ -3,36 +3,42 @@
 #include <iostream>
 #include <ostream>
 
-bool CircuitDragger::isActive() const {
-    return _dragger.isDragging();
-}
+CircuitDragger::CircuitDragger(GameWorld& world) : _world(world) {}
 
+bool CircuitDragger::isActive() const { return _dragger.isDragging(); }
 
 void CircuitDragger::onEvent(const sf::RenderWindow& window, const sf::Event& e) {
-    if(e.type == sf::Event::MouseButtonPressed && e.mouseButton.button == sf::Mouse::Left) {
+    if (e.type == sf::Event::MouseButtonPressed && e.mouseButton.button == sf::Mouse::Left) {
         sf::Vector2i mousePos = {e.mouseButton.x, e.mouseButton.y};
         sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
 
         bool canDrag = false;
         for (const Circuit* c : _selected) {
-            if(c->collide(worldPos)) {
+            if (c->collide(worldPos)) {
                 canDrag = true;
                 break;
             }
         }
-        if(canDrag) {
-            std::vector<sf::Transformable*> components;
+        std::vector<sf::Transformable*> components;
+        if (canDrag) {
             for (Circuit* c : _selected) {
                 std::vector<sf::Transformable*> children = c->getTransforms();
                 std::copy(children.begin(), children.end(), std::back_inserter(components));
             }
 
+        } else {
+            Circuit* c = _world.collideCircuit(worldPos);
+            if (c) {
+                components = c->getTransforms();
+            }
+        }
+        if(!components.empty()) {
             _dragger.beginDrag(components, worldPos);
             std::cout << "Begin" << std::endl;
         }
 
     }
-    if(e.type == sf::Event::MouseButtonReleased && e.mouseButton.button == sf::Mouse::Left) {
+    if (e.type == sf::Event::MouseButtonReleased && e.mouseButton.button == sf::Mouse::Left) {
         _dragger.endDrag();
     }
 }

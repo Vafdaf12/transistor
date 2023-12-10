@@ -119,7 +119,7 @@ int main(int, char**) {
     tools.push_back(new NavigationTool(view));
     tools.push_back(new PinConnector(world));
 
-    CircuitDragger* dragger = new CircuitDragger();
+    CircuitDragger* dragger = new CircuitDragger(world);
     tools.push_back(dragger);
 
     SelectionTool* selector = new SelectionTool(world);
@@ -243,8 +243,8 @@ int main(int, char**) {
         window.setView(view);
         world.draw(window);
 
-        if (activeTool) {
-            activeTool->draw(window);
+        for(const Tool* tool : tools) {
+            tool->draw(window);
         }
         // --- GUI VIEW ---
         window.setView(window.getDefaultView());
