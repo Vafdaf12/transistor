@@ -2,8 +2,6 @@
 
 #include "SFML/Graphics/Drawable.hpp"
 
-#include <utility>
-
 #include "Pin.h"
 
 class Wire : public sf::Drawable {
@@ -15,14 +13,17 @@ public:
     void update(const sf::RenderWindow&);
 
     bool isEndpoint(const Pin* pin) const;
-    bool isValid() const;
 
     bool operator==(const Wire&) const;
     bool operator!=(const Wire& rhs) const { return !(*this == rhs); }
 
-    inline std::pair<const Pin*, const Pin*> getPins() const { return _pins; }
+
+    inline const Pin* getFrom() const { return _from; }
+    inline const Pin* getTo() const { return _to; }
+    inline bool isValid() const { return _flag != Pin::Dead; }
 
 private:
-    std::pair<Pin*, Pin*> _pins;
-    Pin::PinFlag _flags[2] = {Pin::None};
+    Pin *_from;
+    Pin *_to;
+    Pin::PinFlag _flag = Pin::None;
 };

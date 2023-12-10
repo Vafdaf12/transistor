@@ -113,9 +113,8 @@ bool GameWorld::saveToFile(const std::string& path) {
     }
     for (const auto& w : _wires) {
         json elem;
-        auto [from, to] = w.getPins();
-        elem["from"] = from->getFullPath();
-        elem["to"] = to->getFullPath();
+        elem["from"] = w.getFrom()->getFullPath();
+        elem["to"] = w.getTo()->getFullPath();
         data["wires"].push_back(elem);
     }
     file << std::setw(4) << data;
