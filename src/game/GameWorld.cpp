@@ -45,42 +45,38 @@ bool GameWorld::loadFromFile(const std::string& path, const Assets& assets) {
         float x = elem["position"]["x"].get<float>();
         float y = elem["position"]["y"].get<float>();
 
-        if(type == "passthrough") {
+        if (type == "passthrough") {
             size_t pins = elem["pins"].get<size_t>();
             auto channels = elem["color"].get<std::array<uint8_t, 3>>();
 
             auto c = new PassthroughCircuit(id, pins, {x, y});
             c->setColor(sf::Color(channels[0], channels[1], channels[2]));
             _circuits.emplace_back(c);
-        }
-        else if(type == "nand_gate") {
+        } else if (type == "nand_gate") {
             _circuits.emplace_back(new NandCircuit(id, assets, {x, y}));
-        }
-        else if(type == "and_gate") {
+        } else if (type == "and_gate") {
             _circuits.emplace_back(new BinaryGate(id, assets, BinaryGate::And, {x, y}));
-        }
-        else if(type == "xor_gate") {
+        } else if (type == "xor_gate") {
             _circuits.emplace_back(new BinaryGate(id, assets, BinaryGate::Xor, {x, y}));
 
-        }
-        else if(type == "or_gate") {
+        } else if (type == "or_gate") {
             _circuits.emplace_back(new BinaryGate(id, assets, BinaryGate::Or, {x, y}));
-        }
-        else {
+        } else {
             // Unsupported pin type
             return false;
         }
-
     }
-    for(auto w : data["wires"]) {
+    for (auto w : data["wires"]) {
         Pin* from = queryPin(w["from"].get<std::string>());
-        if(!from) {
-            std::cout << "[ERROR] Cannot find pin \"" << w["from"].get<std::string>() << "\"" << std::endl;
+        if (!from) {
+            std::cout << "[ERROR] Cannot find pin \"" << w["from"].get<std::string>() << "\""
+                      << std::endl;
             return false;
         }
         Pin* to = queryPin(w["to"].get<std::string>());
-        if(!to) {
-            std::cout << "[ERROR] Cannot find pin \"" << w["to"].get<std::string>() << "\"" << std::endl;
+        if (!to) {
+            std::cout << "[ERROR] Cannot find pin \"" << w["to"].get<std::string>() << "\""
+                      << std::endl;
             return false;
         }
         _wires.emplace_back(from, to);
@@ -92,18 +88,18 @@ bool GameWorld::loadFromFile(const std::string& path, const Assets& assets) {
 
 bool GameWorld::saveToFile(const std::string& path) {
     std::ofstream file(path);
-    if(!file.is_open()) {
+    if (!file.is_open()) {
         return false;
     }
 
     json data;
-    for(const auto& p : _inputs) {
+    for (const auto& p : _inputs) {
         data["inputs"].push_back(p->getId());
     }
-    for(const auto& p : _outputs) {
+    for (const auto& p : _outputs) {
         data["outputs"].push_back(p->getId());
     }
-    for(const auto& circuit : _circuits) {
+    for (const auto& circuit : _circuits) {
         json elem;
         elem["id"] = circuit->getId();
 
@@ -111,30 +107,25 @@ bool GameWorld::saveToFile(const std::string& path) {
         elem["position"]["x"] = pos.x;
         elem["position"]["y"] = pos.y;
 
-        if(auto c = dynamic_cast<const PassthroughCircuit*>(circuit.get())) {
+        if (auto c = dynamic_cast<const PassthroughCircuit*>(circuit.get())) {
             elem["type"] = "passthrough";
             sf::Color color = c->getColor();
             elem["pins"] = c->getSize();
             elem["color"] = {color.r, color.g, color.b};
-        }
-        else if(dynamic_cast<NandCircuit*>(circuit.get())) {
+        } else if (dynamic_cast<NandCircuit*>(circuit.get())) {
             elem["type"] = "nand_gate";
-        }
-        else if(auto c = dynamic_cast<const BinaryGate*>(circuit.get())) {
-            if(c->getFunc() == BinaryGate::And) {
+        } else if (auto c = dynamic_cast<const BinaryGate*>(circuit.get())) {
+            if (c->getFunc() == BinaryGate::And) {
                 elem["type"] = "and_gate";
-            }
-            else if(c->getFunc() == BinaryGate::Or) {
+            } else if (c->getFunc() == BinaryGate::Or) {
                 elem["type"] = "or_gate";
-            }
-            else if(c->getFunc() == BinaryGate::Xor) {
+            } else if (c->getFunc() == BinaryGate::Xor) {
                 elem["type"] = "xor_gate";
             }
-
         }
         data["elements"].push_back(elem);
     }
-    for(const auto& w : _wires) {
+    for (const auto& w : _wires) {
         json elem;
         auto [from, to] = w.getPins();
         elem["from"] = from->getFullPath();
@@ -148,12 +139,8 @@ bool GameWorld::saveToFile(const std::string& path) {
 void GameWorld::addPin(Pin* p) {
     switch (p->getType()) {
 
-    case Pin::Input:
-        _outputs.emplace_back(p);
-        break;
-    case Pin::Output:
-        _inputs.emplace_back(p);
-        break;
+    case Pin::Input: _outputs.emplace_back(p); break;
+    case Pin::Output: _inputs.emplace_back(p); break;
     }
 }
 
@@ -165,6 +152,23 @@ void GameWorld::removeCircuit(Circuit* circuit) {
     // Remove Wires
     std::erase_if(_wires, [&](const Wire& w) { return !w.isValid(); });
 }
+
+void GameWorld::removeWire(const Wire* wire) {
+    std::erase_if(_wires, [&](const Wire& w) { return &w == wire; });
+}
+
+const Wire* GameWorld::getConnectedWire(const Pin* pin) {
+    if (!pin) {
+        return nullptr;
+    }
+    for (const auto& wire : _wires) {
+        if (wire.isEndpoint(pin)) {
+            return &wire;
+        }
+    }
+    return nullptr;
+}
+
 void GameWorld::connectPins(Pin* p1, Pin* p2) { _wires.emplace_back(p1, p2); }
 Pin* GameWorld::collidePin(sf::Vector2f pos, uint8_t filter) {
     if (filter & SINGLE) {
@@ -211,7 +215,14 @@ Pin* GameWorld::collidePin(const sf::RenderWindow& window, sf::Vector2i pos, uin
         }
     }
     return nullptr;
-    
+}
+
+bool GameWorld::isPinConnected(const Pin* pin) const {
+    for (const auto& wire : _wires) {
+        if (wire.isEndpoint(pin))
+            return true;
+    }
+    return false;
 }
 Circuit* GameWorld::collideCircuit(sf::Vector2f pos) {
     for (const auto& c : _circuits) {
@@ -234,10 +245,10 @@ std::vector<Circuit*> GameWorld::collideCircuit(sf::FloatRect rect) {
 }
 
 void GameWorld::onEvent(sf::RenderWindow& w, const sf::Event& e) {
-    for(auto& p : _inputs) {
+    for (auto& p : _inputs) {
         p->onEvent(w, e);
     }
-    for(auto& p : _outputs) {
+    for (auto& p : _outputs) {
         p->onEvent(w, e);
     }
 }
@@ -261,41 +272,40 @@ void GameWorld::draw(sf::RenderWindow& window) const {
 }
 
 void GameWorld::update(sf::RenderWindow& w) {
-    for(auto& wire : _wires) {
-        wire.update( w);
+    for (auto& wire : _wires) {
+        wire.update(w);
     }
-    for(auto& c : _circuits) {
+    for (auto& c : _circuits) {
         c->update(w);
     }
     sf::Vector2u size = w.getSize();
     _guiView.setSize(size.x, size.y);
-    _guiView.setCenter(size.x/2.f, size.y/2.f);
+    _guiView.setCenter(size.x / 2.f, size.y / 2.f);
 
     layoutPins(w);
 }
 
 Pin* GameWorld::queryPin(const std::string& path) {
     size_t i = path.find('/');
-    if(i == std::string::npos) {
+    if (i == std::string::npos) {
         for (const auto& p : _inputs) {
-            if(path == p->getId()) {
+            if (path == p->getId()) {
                 return p.get();
             }
         }
         for (const auto& p : _outputs) {
-            if(path == p->getId()) {
+            if (path == p->getId()) {
                 return p.get();
             }
         }
         return nullptr;
     }
 
-
     std::string circuit = path.substr(0, i);
-    std::string pin = path.substr(i+1);
+    std::string pin = path.substr(i + 1);
 
     Circuit* c = queryCircuit(circuit);
-    if(!c) {
+    if (!c) {
         return nullptr;
     }
     Pin* p = c->queryPin(pin);
@@ -304,8 +314,8 @@ Pin* GameWorld::queryPin(const std::string& path) {
 }
 
 Circuit* GameWorld::queryCircuit(const std::string& path) {
-    for (const auto& c: _circuits) {
-        if(c->getId() == path) {
+    for (const auto& c : _circuits) {
+        if (c->getId() == path) {
             return c.get();
         }
     }
@@ -315,26 +325,23 @@ Circuit* GameWorld::queryCircuit(const std::string& path) {
 void GameWorld::layoutPins(const sf::RenderWindow& window) {
     static constexpr float pinPadding = 30;
     static constexpr float pinMargin = 20;
-    static constexpr float pinStep = 2*Pin::RADIUS + pinPadding;
+    static constexpr float pinStep = 2 * Pin::RADIUS + pinPadding;
 
     float inputHeight = _inputs.size() * pinStep - pinPadding;
     float outputHeight = _outputs.size() * pinStep - pinPadding;
 
-
     sf::Vector2u size = window.getSize();
-    sf::Vector2f inputBase = window.mapPixelToCoords({
-        int(Pin::RADIUS + pinMargin),
-        int((size.y - inputHeight)/2)
-    }, _guiView);
-    sf::Vector2f outputBase =  window.mapPixelToCoords({
-        int(size.x - Pin::RADIUS - pinMargin),
-        int((size.y - outputHeight)/2.f)
-    }, _guiView);
+    sf::Vector2f inputBase = window.mapPixelToCoords(
+        {int(Pin::RADIUS + pinMargin), int((size.y - inputHeight) / 2)}, _guiView
+    );
+    sf::Vector2f outputBase = window.mapPixelToCoords(
+        {int(size.x - Pin::RADIUS - pinMargin), int((size.y - outputHeight) / 2.f)}, _guiView
+    );
 
     for (size_t i = 0; i < _inputs.size(); i++) {
-        _inputs[i]->setCenter(inputBase + sf::Vector2f(0, i*pinStep));
+        _inputs[i]->setCenter(inputBase + sf::Vector2f(0, i * pinStep));
     }
     for (size_t i = 0; i < _outputs.size(); i++) {
-        _outputs[i]->setCenter(outputBase + sf::Vector2f(0, i*pinStep));
+        _outputs[i]->setCenter(outputBase + sf::Vector2f(0, i * pinStep));
     }
 }

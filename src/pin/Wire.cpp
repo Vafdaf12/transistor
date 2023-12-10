@@ -21,9 +21,15 @@ Wire::Wire(Pin* p1, Pin* p2) {
 Wire::~Wire() {
     if(_flags[0] != Pin::Dead) {
         _pins.first->disconnect(_flags);
+        if(_pins.first->getType() == Pin::Input) {
+            _pins.first->setValue(0);
+        }
     }
     if(_flags[1] != Pin::Dead) {
         _pins.second->disconnect(_flags + 1);
+        if(_pins.second->getType() == Pin::Input) {
+            _pins.second->setValue(0);
+        }
     }
 }
 void Wire::draw(sf::RenderTarget& target, sf::RenderStates) const {

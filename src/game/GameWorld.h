@@ -27,11 +27,15 @@ public:
     void addCircuit(Circuit* c);
 
     void removeCircuit(Circuit* c);
+    void removeWire(const Wire* w);
+    const Wire* getConnectedWire(const Pin* pin);
 
     void connectPins(Pin* p1, Pin* p2);
 
     Pin* collidePin(sf::Vector2f pos, uint8_t filter = CIRCUIT | SINGLE);
     Pin* collidePin(const sf::RenderWindow& window, sf::Vector2i pos, uint8_t filter = CIRCUIT | SINGLE);
+
+    bool isPinConnected(const Pin* pin) const;
 
     Circuit* collideCircuit(sf::Vector2f pos);
     std::vector<Circuit*> collideCircuit(sf::FloatRect rect);

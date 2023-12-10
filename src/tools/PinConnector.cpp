@@ -16,7 +16,20 @@ void PinConnector::onEvent(const sf::RenderWindow& window, const sf::Event& even
         }
         sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
         _firstPin = _world.collidePin(window, mousePos);
-        if (_firstPin) {
+        const Wire* wire = _world.getConnectedWire(_firstPin);
+
+        if(_firstPin && _firstPin->getType() == Pin::Input && wire) {
+            auto pins = wire->getPins();
+            _world.removeWire(wire);
+
+            if(pins.first == _firstPin) {
+                _firstPin = const_cast<Pin*>(pins.second);
+            }
+            else if(pins.second == _firstPin) {
+                _firstPin = const_cast<Pin*>(pins.first);
+            }
+        }
+        if(_firstPin) {
             _vertices[0].position = _firstPin->getWorldSpacePosition(window);
         }
     }
@@ -27,9 +40,13 @@ void PinConnector::onEvent(const sf::RenderWindow& window, const sf::Event& even
         sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
         sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
 
-        Pin* nextPin = _world.collidePin(worldPos);
+        Pin* nextPin = _world.collidePin(window, mousePos);
 
         if (!nextPin || nextPin == _firstPin || !_firstPin->canConnect(*nextPin)) {
+            _firstPin = nullptr;
+            return;
+        }
+        if (nextPin && nextPin->getType() == Pin::Input && _world.isPinConnected(nextPin)) {
             _firstPin = nullptr;
             return;
         }
