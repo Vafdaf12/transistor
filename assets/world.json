@@ -3,90 +3,34 @@
     "outputs": ["out"],
     "elements": [
         {
-            "type": "passthrough",
-            "id": "pt3",
-            "position": {
-                "x": -200,
-                "y": 0
-            },
-            "pins": 3,
-            "color": [0, 255, 0]
-        },
-        {
-            "type": "passthrough",
-            "id": "pt1",
-            "position": {
-                "x": -200,
-                "y": 400
-            },
-            "pins": 1,
-            "color": [255, 0, 0]
-        },
-        {
-            "type": "nand_gate",
             "id": "nand",
-            "position": {
-                "x": 100,
-                "y": 0
-            }
+            "type": "nand_gate",
+            "position": { "x": -96, "y": 13 }
         },
         {
             "type": "xor_gate",
             "id": "xor",
-            "position": {
-                "x": 300,
-                "y": -200
-            }
+            "position": { "x": 122, "y": -57 }
         },
         {
-            "type": "or_gate",
             "id": "or",
-            "position": {
-                "x": 300,
-                "y": 150
-            }
+            "type": "or_gate",
+            "position": { "x": -293, "y": -47 }
         },
         {
-            "type": "and_gate",
             "id": "and",
-            "position": {
-                "x": 300,
-                "y": 300
-            }
+            "type": "and_gate",
+            "position": { "x": -101, "y": -104 }
         }
     ],
     "wires": [
         {
-            "from": "in1",
-            "to": "pt3/in2"
-        },
-        {
-            "from": "in2",
-            "to": "pt1/in1"
-        },
-        {
-            "from": "pt1/out1",
-            "to": "pt3/in3"
-        },
-        {
-            "from": "xor/out",
-            "to": "out"
-        },
-        {
-            "from": "xor/out",
-            "to": "out"
-        },
-        {
-            "from": "and/out",
-            "to": "xor/in1"
+            "from": "xor/in1",
+            "to": "and/out"
         },
         {
             "from": "nand/out",
             "to": "xor/in2"
-        },
-        {
-            "from": "pt3/out2",
-            "to": "and/in1"
         },
         {
             "from": "or/out",
@@ -97,16 +41,24 @@
             "to": "nand/in1"
         },
         {
-            "from": "pt3/out3",
-            "to": "nand/in2"
+            "from": "in3",
+            "to": "or/in2"
         },
         {
-            "from": "pt3/out2",
+            "from": "in2",
             "to": "or/in1"
         },
         {
-            "from": "pt3/out3",
-            "to": "or/in2"
+            "from": "in1",
+            "to": "and/in1"
+        },
+        {
+            "from": "out",
+            "to": "xor/out"
+        },
+        {
+            "from": "in3",
+            "to": "nand/in2"
         }
     ]
 }

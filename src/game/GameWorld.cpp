@@ -1,10 +1,8 @@
 #include "GameWorld.h"
-#include "SFML/Graphics/Color.hpp"
 #include "SFML/System/Vector2.hpp"
 #include "asset/AssetSystem.h"
 #include "circuit/BinaryGate.h"
 #include "circuit/NandCircuit.h"
-#include "circuit/PassthroughCircuit.h"
 #include "json.hpp"
 #include <fstream>
 #include <iomanip>
@@ -45,14 +43,7 @@ bool GameWorld::loadFromFile(const std::string& path, const Assets& assets) {
         float x = elem["position"]["x"].get<float>();
         float y = elem["position"]["y"].get<float>();
 
-        if (type == "passthrough") {
-            size_t pins = elem["pins"].get<size_t>();
-            auto channels = elem["color"].get<std::array<uint8_t, 3>>();
-
-            auto c = new PassthroughCircuit(id, pins, {x, y});
-            c->setColor(sf::Color(channels[0], channels[1], channels[2]));
-            _circuits.emplace_back(c);
-        } else if (type == "nand_gate") {
+        if (type == "nand_gate") {
             _circuits.emplace_back(new NandCircuit(id, assets, {x, y}));
         } else if (type == "and_gate") {
             _circuits.emplace_back(new BinaryGate(id, assets, BinaryGate::And, {x, y}));
@@ -107,12 +98,7 @@ bool GameWorld::saveToFile(const std::string& path) {
         elem["position"]["x"] = pos.x;
         elem["position"]["y"] = pos.y;
 
-        if (auto c = dynamic_cast<const PassthroughCircuit*>(circuit.get())) {
-            elem["type"] = "passthrough";
-            sf::Color color = c->getColor();
-            elem["pins"] = c->getSize();
-            elem["color"] = {color.r, color.g, color.b};
-        } else if (dynamic_cast<NandCircuit*>(circuit.get())) {
+        if (dynamic_cast<NandCircuit*>(circuit.get())) {
             elem["type"] = "nand_gate";
         } else if (auto c = dynamic_cast<const BinaryGate*>(circuit.get())) {
             if (c->getFunc() == BinaryGate::And) {
