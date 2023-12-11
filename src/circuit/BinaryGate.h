@@ -18,7 +18,7 @@ public:
     std::vector<sf::Transformable*> getTransforms() override;
     sf::FloatRect getBoundingBox() const override;
 
-    BinaryGate* clone(const std::string& newId) override;
+    BinaryGate* clone(const std::string& id) const override;
 
     void update(const sf::RenderWindow&) override;
     void draw(sf::RenderWindow& window) const override;

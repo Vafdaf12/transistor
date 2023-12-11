@@ -55,8 +55,8 @@ std::vector<sf::Transformable*> NandCircuit::getTransforms() {
 
 sf::FloatRect NandCircuit::getBoundingBox() const { return _shape.getGlobalBounds(); }
 
-NandCircuit* NandCircuit::clone(const std::string& id) {
-    NandCircuit* c = new NandCircuit(id, _assets, _shape.getPosition());
+NandCircuit* NandCircuit::clone(const std::string& newId) const {
+    NandCircuit* c = new NandCircuit(newId, _assets, _shape.getPosition());
     return c;
 }
 

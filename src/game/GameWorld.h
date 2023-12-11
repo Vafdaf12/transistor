@@ -47,6 +47,8 @@ public:
     Pin* queryPin(const std::string& path);
     Circuit* queryCircuit(const std::string& path);
 
+    inline const sf::View& getScreenView() { return _guiView; }
+
 private:
     void layoutPins(const sf::RenderWindow&);
 

@@ -50,12 +50,12 @@ Pin* BinaryGate::collidePin(sf::Vector2f v) {
 }
 
 std::vector<sf::Transformable*> BinaryGate::getTransforms() {
-    return {&_sprite, &_sprite, &_in1.getTransform(), &_in2.getTransform(), &_out.getTransform()};
+    return {&_sprite, &_in1.getTransform(), &_in2.getTransform(), &_out.getTransform()};
 }
 
 sf::FloatRect BinaryGate::getBoundingBox() const { return _sprite.getGlobalBounds(); }
 
-BinaryGate* BinaryGate::clone(const std::string& newId) {
+BinaryGate* BinaryGate::clone(const std::string& newId) const {
     BinaryGate* c = new BinaryGate(newId, _assets, _process, _sprite.getPosition());
     return c;
 }

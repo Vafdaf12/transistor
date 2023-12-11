@@ -23,6 +23,7 @@
 #include "asset/CommandLoader.h"
 #include "circuit/Circuit.h"
 #include "circuit/NandCircuit.h"
+#include "circuit/BinaryGate.h"
 #include "game/GameWorld.h"
 #include "pin/Pin.h"
 #include "tools/CircuitDragger.h"
@@ -30,6 +31,8 @@
 #include "tools/PinConnector.h"
 #include "tools/SelectionTool.h"
 #include "tools/Tool.h"
+
+#include "CircuitButton.h"
 
 using SfLayer = EventLayer<sf::Event::EventType, sf::Event>;
 
@@ -128,30 +131,38 @@ int main(int, char**) {
     tools.push_back(selector);
 
     Circuit* dragBoard = nullptr;
-    NandCircuit* proto = new NandCircuit("", assets);
+
+    NandCircuit* proto = new NandCircuit("proto_nand", assets);
+    BinaryGate* proto2 = new BinaryGate("proto_and", assets, BinaryGate::And);
+    BinaryGate* proto3 = new BinaryGate("proto_or", assets, BinaryGate::Or);
+    BinaryGate* proto4 = new BinaryGate("proto_xor", assets, BinaryGate::Xor);
 
     // --- GUI UPDATES ---
-    sf::RectangleShape buttonShape;
+    std::vector<CircuitButton> circuitButtons;
 
-    buttonShape.setSize({200, 75});
-    buttonShape.setPosition({10, 10});
-    buttonShape.setFillColor(sf::Color::White);
+    circuitButtons.emplace_back(world, *proto);
+    circuitButtons.back().setView(&world.getScreenView());
+    circuitButtons.back().getShape().setFillColor(sf::Color::White);
+    circuitButtons.back().getShape().setPosition({10, 10});
+    circuitButtons.back().getShape().setSize({200, 75});
 
-    Button button = {buttonShape.getGlobalBounds()};
-    button.onMouseDown = [&](const sf::Event& e) {
-        if (e.mouseButton.button != sf::Mouse::Left)
-            return;
-        std::cout << "Pressed" << std::endl;
-        dragBoard = proto;
-    };
-    button.onMouseUp = [&](const sf::Event& e) {
-        if (e.mouseButton.button != sf::Mouse::Left)
-            return;
-        std::cout << "Released" << std::endl;
-        dragBoard = nullptr;
-    };
+    circuitButtons.emplace_back(world, *proto2);
+    circuitButtons.back().setView(&world.getScreenView());
+    circuitButtons.back().getShape().setFillColor(sf::Color::Yellow);
+    circuitButtons.back().getShape().setPosition({10, 100});
+    circuitButtons.back().getShape().setSize({100, 50});
 
-    buttonRegister(button, guiLayer, window);
+    circuitButtons.emplace_back(world, *proto3);
+    circuitButtons.back().setView(&world.getScreenView());
+    circuitButtons.back().getShape().setFillColor(sf::Color::Blue);
+    circuitButtons.back().getShape().setPosition({10, 160});
+    circuitButtons.back().getShape().setSize({100, 50});
+    
+    circuitButtons.emplace_back(world, *proto4);
+    circuitButtons.back().setView(&world.getScreenView());
+    circuitButtons.back().getShape().setFillColor(sf::Color::Magenta);
+    circuitButtons.back().getShape().setPosition({10, 220});
+    circuitButtons.back().getShape().setSize({100, 50});
 
     // --- CIRCUIT SELECTION ---
 
@@ -199,14 +210,27 @@ int main(int, char**) {
     Tool* activeTool = nullptr;
     // --- EVENT LOOP ---
     while (window.isOpen()) {
-        std::list<sf::Event> events;
-
-        for (sf::Event e; window.pollEvent(e);)
-            events.push_back(e);
-        for (sf::Event e : events) {
+        for (sf::Event e; window.pollEvent(e);) {
             if (e.type == sf::Event::Closed) {
                 window.close();
             }
+            window.setView(window.getDefaultView());
+            if (guiLayer.handle(e.type, e))
+                continue;
+
+            window.setView(view);
+
+            bool handled = false;
+            for(auto& btn : circuitButtons) {
+                btn.onEvent(window, e);
+                handled = handled || btn.isActive();
+            }
+            if(handled) {
+                continue;
+            }
+
+            worldLayer.handle(e.type, e);
+
             window.setView(view);
             world.onEvent(window, e);
             for(Tool* tool : tools) {
@@ -218,19 +242,11 @@ int main(int, char**) {
             }
         }
 
-        // GUI Events
-        for (sf::Event e : events) {
-            window.setView(window.getDefaultView());
-            if (guiLayer.handle(e.type, e))
-                continue;
-
-            window.setView(view);
-            if (worldLayer.handle(e.type, e))
-                continue;
-        }
-
         window.setView(view);
         world.update(window);
+        for(auto& btn : circuitButtons) {
+            btn.update(window);
+        }
 
         sf::Vector2i newPos = sf::Mouse::getPosition(window);
         sf::Vector2f newWorldPos = window.mapPixelToCoords(newPos);
@@ -250,8 +266,10 @@ int main(int, char**) {
             tool->draw(window);
         }
         // --- GUI VIEW ---
-        window.setView(window.getDefaultView());
-        window.draw(buttonShape);
+        window.setView(world.getScreenView());
+        for(const auto& btn : circuitButtons) {
+            btn.draw(window);
+        }
         window.display();
     }
     world.saveToFile("assets/world.json");

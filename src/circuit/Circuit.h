@@ -45,7 +45,7 @@ public:
     * @param id New circuit identifier
     * @return Circuit*
     */
-    virtual Circuit* clone(const std::string& id) = 0;
+    virtual Circuit* clone(const std::string& id) const = 0;
 
     virtual Pin* queryPin(const std::string& id) = 0;
 
