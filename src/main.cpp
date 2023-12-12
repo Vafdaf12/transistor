@@ -24,6 +24,7 @@
 #include "circuit/Circuit.h"
 #include "circuit/NandCircuit.h"
 #include "circuit/BinaryGate.h"
+#include "circuit/NotGate.h"
 #include "game/GameWorld.h"
 #include "pin/Pin.h"
 #include "tools/CircuitDragger.h"
@@ -55,6 +56,7 @@ int main(int, char**) {
     assets.textures.load("gate_or", "assets/sprites/gate_or.png");
     assets.textures.load("gate_xor", "assets/sprites/gate_xor.png");
     assets.textures.load("gate_and", "assets/sprites/gate_and.png");
+    assets.textures.load("gate_not", "assets/sprites/gate_not.png");
 
     sf::View view;
     sf::Transform x;
@@ -89,6 +91,7 @@ int main(int, char**) {
     BinaryGate* proto2 = new BinaryGate("proto_and", assets, BinaryGate::And);
     BinaryGate* proto3 = new BinaryGate("proto_or", assets, BinaryGate::Or);
     BinaryGate* proto4 = new BinaryGate("proto_xor", assets, BinaryGate::Xor);
+    Circuit* proto5 = new NotGate("proto_not", assets);
 
     // --- GUI UPDATES ---
     std::vector<CircuitButton> circuitButtons;
@@ -116,6 +119,13 @@ int main(int, char**) {
     circuitButtons.back().getShape().setFillColor(sf::Color::Magenta);
     circuitButtons.back().getShape().setPosition({10, 220});
     circuitButtons.back().getShape().setSize({100, 50});
+
+    circuitButtons.emplace_back(world, *proto5);
+    circuitButtons.back().setView(&world.getScreenView());
+    circuitButtons.back().getShape().setFillColor(sf::Color::Red);
+    circuitButtons.back().getShape().setPosition({10, 290});
+    circuitButtons.back().getShape().setSize({100, 50});
+
 
     // --- CIRCUIT SELECTION ---
 

@@ -12,6 +12,7 @@ add_executable(${BINARY}
     CircuitButton.cpp
     circuit/NandCircuit.cpp
     circuit/BinaryGate.cpp
+    circuit/NotGate.cpp
     pin/Pin.cpp
     pin/Wire.cpp
     game/GameWorld.cpp

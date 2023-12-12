@@ -3,6 +3,7 @@
 #include "asset/AssetSystem.h"
 #include "circuit/BinaryGate.h"
 #include "circuit/NandCircuit.h"
+#include "circuit/NotGate.h"
 #include "json.hpp"
 #include <fstream>
 #include <iomanip>
@@ -52,6 +53,8 @@ bool GameWorld::loadFromFile(const std::string& path, const Assets& assets) {
 
         } else if (type == "or_gate") {
             _circuits.emplace_back(new BinaryGate(id, assets, BinaryGate::Or, {x, y}));
+        } else if (type == "not_gate") {
+            _circuits.emplace_back(new NotGate(id, assets, {x, y}));
         } else {
             // Unsupported pin type
             return false;
@@ -100,6 +103,8 @@ bool GameWorld::saveToFile(const std::string& path) {
 
         if (dynamic_cast<NandCircuit*>(circuit.get())) {
             elem["type"] = "nand_gate";
+        } else if (dynamic_cast<NotGate*>(circuit.get())) {
+            elem["type"] = "not_gate";
         } else if (auto c = dynamic_cast<const BinaryGate*>(circuit.get())) {
             if (c->getFunc() == BinaryGate::And) {
                 elem["type"] = "and_gate";

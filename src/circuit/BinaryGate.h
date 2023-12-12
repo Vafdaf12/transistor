@@ -42,7 +42,7 @@ private:
     sf::Sprite _sprite;
 
     Pin _in1, _in2, _out;
-    Pin::PinFlag _flags[2] = {Pin::None};
+    Pin::PinFlag _flags[2] = {Pin::Dirty};
     
     Func _process;
 };
