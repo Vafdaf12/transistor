@@ -13,12 +13,17 @@ Wire::Wire(Pin* p1, Pin* p2) {
         _to = p2;
         break;
     }
-    _from->connect(&_flag);
+    _from->connect(&_flags[0]);
     _to->setValue(_from->getValue());
+    _to->connect(&_flags[1]);
 }
 Wire::~Wire() {
-    if (_flag != Pin::Dead) {
-        _from->disconnect(&_flag);
+    if (_flags[0] != Pin::Dead) {
+        _from->disconnect(&_flags[0]);
+    }
+    if (_flags[1] != Pin::Dead) {
+        _to->disconnect(&_flags[1]);
+        _to->setValue(false);
     }
 }
 void Wire::draw(sf::RenderTarget& target, sf::RenderStates) const {
@@ -38,9 +43,10 @@ void Wire::draw(sf::RenderTarget& target, sf::RenderStates) const {
 }
 
 void Wire::update(const sf::RenderWindow&) {
-    if (_flag == Pin::Dirty) {
+    if (_flags[0] == Pin::Dirty) {
         _to->setValue(_from->getValue());
-        _flag = Pin::None;
+        _flags[0] = Pin::None;
+        _flags[1] = Pin::None;
     }
 }
 

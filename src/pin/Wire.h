@@ -20,10 +20,10 @@ public:
 
     inline const Pin* getFrom() const { return _from; }
     inline const Pin* getTo() const { return _to; }
-    inline bool isValid() const { return _flag != Pin::Dead; }
+    inline bool isValid() const { return _flags[0] != Pin::Dead && _flags[1] != Pin::Dead; }
 
 private:
     Pin *_from;
     Pin *_to;
-    Pin::PinFlag _flag = Pin::None;
+    Pin::PinFlag _flags[2] = {Pin::None};
 };

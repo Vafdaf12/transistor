@@ -36,53 +36,6 @@
 
 using SfLayer = EventLayer<sf::Event::EventType, sf::Event>;
 
-struct Button {
-    sf::FloatRect bounds;
-    std::function<void(const sf::Event&)> onMouseDown;
-    std::function<void(const sf::Event&)> onMouseMove;
-    std::function<void(const sf::Event&)> onMouseUp;
-};
-
-
-void buttonRegister(const Button& b, SfLayer& emitter, const sf::RenderTarget& target) {
-    emitter.subscribe(sf::Event::MouseButtonPressed, [&](const sf::Event& event) {
-        sf::Vector2i pos = {event.mouseButton.x, event.mouseButton.y};
-        sf::Vector2f worldPos = target.mapPixelToCoords(pos);
-
-        if (!b.bounds.contains(worldPos)) {
-            return false;
-        }
-        if (b.onMouseDown) {
-            b.onMouseDown(event);
-        }
-        return true;
-    });
-    emitter.subscribe(sf::Event::MouseButtonReleased, [&](const sf::Event& event) {
-        sf::Vector2i pos = {event.mouseButton.x, event.mouseButton.y};
-        sf::Vector2f worldPos = target.mapPixelToCoords(pos);
-
-        if (!b.bounds.contains(worldPos)) {
-            return false;
-        }
-        if (b.onMouseUp) {
-            b.onMouseUp(event);
-        }
-        return true;
-    });
-    emitter.subscribe(sf::Event::MouseMoved, [&](const sf::Event& event) {
-        sf::Vector2i pos = {event.mouseMove.x, event.mouseMove.y};
-        sf::Vector2f worldPos = target.mapPixelToCoords(pos);
-
-        if (!b.bounds.contains(worldPos)) {
-            return false;
-        }
-        if (b.onMouseMove) {
-            b.onMouseMove(event);
-        }
-        return true;
-    });
-}
-
 constexpr float RADIUS = 10.0f;
 constexpr float SEP = 2 * RADIUS;
 constexpr float WIDTH = 150;
@@ -172,22 +125,6 @@ int main(int, char**) {
         selected = circuits;
     };
     selector->setOnSelect(onSelect);
-
-    // --- DRAG DROP ---
-    worldLayer.subscribe(sf::Event::MouseMoved, [&](const sf::Event& event) {
-        if (!dragBoard)
-            return false;
-        Circuit* c = dragBoard->clone("proto" + std::to_string(++circuitCount));
-
-        sf::Vector2f pos = c->getBoundingBox().getPosition() + c->getBoundingBox().getSize() / 2.f;
-
-        dragger->setSelection({c});
-        world.addCircuit(c);
-        state = DRAGGING;
-        dragBoard = nullptr;
-        return true;
-    });
-    window.mapPixelToCoords({2, 2});
 
     // --- CIRCUIT DELETION ---
     worldLayer.subscribe(sf::Event::KeyReleased, [&](const sf::Event& event) {
