@@ -49,6 +49,7 @@ public:
 
     inline const sf::View& getScreenView() { return _guiView; }
 
+    std::string assignCircuitId(const std::string& id) const;
 private:
     void layoutPins(const sf::RenderWindow&);
 

@@ -29,12 +29,12 @@ void CircuitButton::update(const sf::RenderWindow& w) {
         _state ^= HOVER;
         if(_state & DRAGGING) {
             worldPos = w.mapPixelToCoords(pos);
-            Circuit* c = _circuit.clone(_circuit.getId() + "1");
+            Circuit* c = _circuit.clone(_world.assignCircuitId(_circuit.getId()));
             for(sf::Transformable* t : c->getTransforms()) {
                 t->move(worldPos);
             }
             _world.addCircuit(c);
-            std::cout << "Spawn circuit in preview mode" << std::endl;
+            std::cout << "Spawn circuit in preview mode:" << c->getId() << std::endl;
         }
     }
 }

@@ -330,3 +330,16 @@ void GameWorld::layoutPins(const sf::RenderWindow& window) {
         _outputs[i]->setCenter(outputBase + sf::Vector2f(0, i * pinStep));
     }
 }
+
+std::string GameWorld::assignCircuitId(const std::string& id) const {
+    int count = 0;
+    for(const auto& c : _circuits) {
+        std::string cid = c->getId().substr(0, id.size());
+        count++;
+    }
+    if(count == 0) {
+        return id;
+    }
+    return id + std::to_string(count);
+
+}
