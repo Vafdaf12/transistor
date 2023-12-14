@@ -53,7 +53,7 @@ int main(int, char**) {
     window.setKeyRepeatEnabled(false);
 
     Assets assets;
-    assets.fonts.load("default", "assets/fonts/CutiveMono-Regular.ttf");
+    assets.fonts.load("default", "assets/fonts/Iosevka-Regular.ttc");
     assets.textures.load("gate_or", "assets/sprites/gate_or.png");
     assets.textures.load("gate_xor", "assets/sprites/gate_xor.png");
     assets.textures.load("gate_and", "assets/sprites/gate_and.png");

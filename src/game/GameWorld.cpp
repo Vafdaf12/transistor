@@ -203,8 +203,13 @@ bool GameWorld::isPinConnected(const Pin* pin) const {
 }
 Circuit* GameWorld::collideCircuit(sf::Vector2f pos) {
     for (const auto& c : _circuits) {
-        if (c->collide(pos)) {
+        if (!c->collide(pos)) {
+            continue;
+        }
+        if(!c->collidePin(pos)){
             return c.get();
+        } else {
+            return nullptr;
         }
     }
     return nullptr;
