@@ -48,9 +48,9 @@ void CircuitButton::onEvent(const sf::RenderWindow& w, const sf::Event& e) {
     }
     if(e.type == sf::Event::MouseButtonReleased && e.mouseButton.button == sf::Mouse::Left) {
         if((_state ^ DRAGGING) == 0) {
-            _state = 0;
             std::cout << "Place circuit in world" << std::endl;
         }
+        _state &= !DRAGGING;
     }
 }
 void CircuitButton::draw(sf::RenderWindow& window) const {
