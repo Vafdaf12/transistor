@@ -12,7 +12,7 @@
 
 using json = nlohmann::json;
 
-bool GameWorld::loadFromFile(const std::string& path, const Assets& assets) {
+bool GameWorld::loadFromFile(const std::string& path, const CircuitRegistry<std::string>& registry) {
     std::ifstream file(path);
     if (!file.is_open()) {
         return false;
@@ -40,25 +40,12 @@ bool GameWorld::loadFromFile(const std::string& path, const Assets& assets) {
 
     for (auto elem : data["elements"]) {
         std::string type = elem["type"].get<std::string>();
-        std::string id = elem["id"].get<std::string>();
-        float x = elem["position"]["x"].get<float>();
-        float y = elem["position"]["y"].get<float>();
-
-        if (type == "nand_gate") {
-            _circuits.emplace_back(new NandCircuit(id, assets, {x, y}));
-        } else if (type == "and_gate") {
-            _circuits.emplace_back(new BinaryGate(id, assets, BinaryGate::And, {x, y}));
-        } else if (type == "xor_gate") {
-            _circuits.emplace_back(new BinaryGate(id, assets, BinaryGate::Xor, {x, y}));
-
-        } else if (type == "or_gate") {
-            _circuits.emplace_back(new BinaryGate(id, assets, BinaryGate::Or, {x, y}));
-        } else if (type == "not_gate") {
-            _circuits.emplace_back(new NotGate(id, assets, {x, y}));
-        } else {
-            // Unsupported pin type
-            return false;
+        Circuit* circuit = registry.create(type, elem);
+        if(!circuit) {
+            std::cout  << "Unsupported circuit type: \"" << type << "\". Ignoring" << std::endl;
+            continue;
         }
+        _circuits.emplace_back(circuit);
     }
     for (auto w : data["wires"]) {
         Pin* from = queryPin(w["from"].get<std::string>());

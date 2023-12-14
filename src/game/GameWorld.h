@@ -9,7 +9,7 @@
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/View.hpp"
 #include "SFML/System/Vector2.hpp"
-#include "asset/AssetSystem.h"
+#include "asset/CircuitRegistry.h"
 #include "circuit/Circuit.h"
 #include "pin/Wire.h"
 
@@ -19,7 +19,7 @@ public:
         CIRCUIT = 1 << 0,
         SINGLE = 1 << 1,
     };
-    bool loadFromFile(const std::string& path, const Assets& assets);
+    bool loadFromFile(const std::string& path, const CircuitRegistry<std::string>& registry);
     bool saveToFile(const std::string& path);
 
     void addPin(Pin* p);

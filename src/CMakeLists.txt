@@ -17,6 +17,7 @@ add_executable(${BINARY}
     pin/Wire.cpp
     game/GameWorld.cpp
     asset/CommandLoader.cpp
+    asset/deserialize.cpp
     tools/NavigationTool.cpp
     tools/PinConnector.cpp
     tools/SelectionTool.cpp

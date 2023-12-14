@@ -20,6 +20,7 @@
 
 #include "EventLayer.h"
 #include "asset/AssetSystem.h"
+#include "asset/deserialize.h"
 #include "asset/CommandLoader.h"
 #include "circuit/Circuit.h"
 #include "circuit/NandCircuit.h"
@@ -58,6 +59,13 @@ int main(int, char**) {
     assets.textures.load("gate_and", "assets/sprites/gate_and.png");
     assets.textures.load("gate_not", "assets/sprites/gate_not.png");
 
+    CircuitRegistry registry;
+    registry.add("or_gate", [&assets](const json& j) { return serde::createOr(j, assets); });
+    registry.add("xor_gate", [&assets](const json& j) { return serde::createXor(j, assets); });
+    registry.add("and_gate", [&assets](const json& j) { return serde::createAnd(j, assets); });
+    registry.add("nand_gate", [&assets](const json& j) { return serde::createNand(j, assets); });
+    registry.add("not_gate", [&assets](const json& j) { return serde::createNot(j, assets); });
+
     DragBoard board;
 
     sf::View view;
@@ -66,7 +74,7 @@ int main(int, char**) {
     view.setSize({1280, 720});
 
     GameWorld world;
-    world.loadFromFile("assets/world.json", assets);
+    world.loadFromFile("assets/world.json", registry);
     CommandLoader loader;
 
     int circuitCount = 0;
