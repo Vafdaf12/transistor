@@ -5,13 +5,14 @@
 #include "SFML/System/Vector2.hpp"
 
 #include "circuit/Circuit.h"
+#include "tools/CircuitDragger.h"
 #include "game/GameWorld.h"
 
 #include <stdint.h>
 
 class CircuitButton {
 public:
-    CircuitButton(GameWorld& world, const Circuit& circuit);
+    CircuitButton(GameWorld& world, const Circuit& circuit, CircuitDragger& dragger);
 
     // Detect when drag leaves the button
     void update(const sf::RenderWindow&);
@@ -35,6 +36,7 @@ private:
     };
 
     GameWorld& _world;
+    CircuitDragger& _dragger;
     const Circuit& _circuit;
 
     sf::RectangleShape _shape;

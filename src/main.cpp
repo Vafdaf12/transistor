@@ -58,6 +58,8 @@ int main(int, char**) {
     assets.textures.load("gate_and", "assets/sprites/gate_and.png");
     assets.textures.load("gate_not", "assets/sprites/gate_not.png");
 
+    DragBoard board;
+
     sf::View view;
     sf::Transform x;
     view.setCenter({0, 0});
@@ -79,67 +81,58 @@ int main(int, char**) {
     tools.push_back(new NavigationTool(view));
     tools.push_back(new PinConnector(world));
 
-    CircuitDragger* dragger = new CircuitDragger(world);
+    CircuitDragger* dragger = new CircuitDragger(world, board);
     tools.push_back(dragger);
 
-    SelectionTool* selector = new SelectionTool(world);
+    SelectionTool* selector = new SelectionTool(world, board);
     tools.push_back(selector);
 
     Circuit* dragBoard = nullptr;
 
-    NandCircuit* proto = new NandCircuit("proto_nand", assets);
-    BinaryGate* proto2 = new BinaryGate("proto_and", assets, BinaryGate::And);
-    BinaryGate* proto3 = new BinaryGate("proto_or", assets, BinaryGate::Or);
-    BinaryGate* proto4 = new BinaryGate("proto_xor", assets, BinaryGate::Xor);
-    Circuit* proto5 = new NotGate("proto_not", assets);
+    NandCircuit* proto = new NandCircuit("nand", assets);
+    BinaryGate* proto2 = new BinaryGate("and", assets, BinaryGate::And);
+    BinaryGate* proto3 = new BinaryGate("or", assets, BinaryGate::Or);
+    BinaryGate* proto4 = new BinaryGate("xor", assets, BinaryGate::Xor);
+    Circuit* proto5 = new NotGate("not", assets);
 
     // --- GUI UPDATES ---
     std::vector<CircuitButton> circuitButtons;
 
-    circuitButtons.emplace_back(world, *proto);
+    circuitButtons.emplace_back(world, *proto, *dragger);
     circuitButtons.back().setView(&world.getScreenView());
     circuitButtons.back().getShape().setFillColor(sf::Color::White);
     circuitButtons.back().getShape().setPosition({10, 10});
     circuitButtons.back().getShape().setSize({200, 75});
 
-    circuitButtons.emplace_back(world, *proto2);
+    circuitButtons.emplace_back(world, *proto2, *dragger);
     circuitButtons.back().setView(&world.getScreenView());
     circuitButtons.back().getShape().setFillColor(sf::Color::Yellow);
     circuitButtons.back().getShape().setPosition({10, 100});
     circuitButtons.back().getShape().setSize({100, 50});
 
-    circuitButtons.emplace_back(world, *proto3);
+    circuitButtons.emplace_back(world, *proto3, *dragger);
     circuitButtons.back().setView(&world.getScreenView());
     circuitButtons.back().getShape().setFillColor(sf::Color::Blue);
     circuitButtons.back().getShape().setPosition({10, 160});
     circuitButtons.back().getShape().setSize({100, 50});
     
-    circuitButtons.emplace_back(world, *proto4);
+    circuitButtons.emplace_back(world, *proto4, *dragger);
     circuitButtons.back().setView(&world.getScreenView());
     circuitButtons.back().getShape().setFillColor(sf::Color::Magenta);
     circuitButtons.back().getShape().setPosition({10, 220});
     circuitButtons.back().getShape().setSize({100, 50});
 
-    circuitButtons.emplace_back(world, *proto5);
+    circuitButtons.emplace_back(world, *proto5, *dragger);
     circuitButtons.back().setView(&world.getScreenView());
     circuitButtons.back().getShape().setFillColor(sf::Color::Red);
     circuitButtons.back().getShape().setPosition({10, 290});
     circuitButtons.back().getShape().setSize({100, 50});
 
-
-    // --- CIRCUIT SELECTION ---
-
-    std::vector<Circuit*> selected;
-    auto onSelect = [&](const std::vector<Circuit*>& circuits) {
-        dragger->setSelection(circuits);
-        selected = circuits;
-    };
-    selector->setOnSelect(onSelect);
-
     // --- CIRCUIT DELETION ---
     worldLayer.subscribe(sf::Event::KeyReleased, [&](const sf::Event& event) {
         if (event.key.code != sf::Keyboard::Delete)
             return false;
+        std::vector<Circuit*> selected = board.getSelection();
         if (selected.empty()) {
             std::cout << "Nothing to delete" << std::endl;
             return false;
@@ -148,13 +141,10 @@ int main(int, char**) {
             world.removeCircuit(s);
         }
 
-        dragger->setSelection({});
-        selector->clearSelection();
-        selected.clear();
+        board.clearSelection();
         return true;
     });
 
-    Tool* activeTool = nullptr;
     // --- EVENT LOOP ---
     while (window.isOpen()) {
         for (sf::Event e; window.pollEvent(e);) {
@@ -182,10 +172,6 @@ int main(int, char**) {
             world.onEvent(window, e);
             for(Tool* tool : tools) {
                 tool->onEvent(window, e);
-                if(tool->isActive()) {
-                    activeTool = tool;
-                    break;
-                }
             }
         }
 
@@ -197,8 +183,8 @@ int main(int, char**) {
 
         sf::Vector2i newPos = sf::Mouse::getPosition(window);
         sf::Vector2f newWorldPos = window.mapPixelToCoords(newPos);
-        if (activeTool) {
-            activeTool->update(window);
+        for(Tool* tool : tools) {
+            tool->update(window);
         }
 
         mouse = newPos;

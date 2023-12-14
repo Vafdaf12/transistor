@@ -3,7 +3,7 @@
 #include <iostream>
 #include <ostream>
 
-CircuitDragger::CircuitDragger(GameWorld& world) : _world(world) {}
+CircuitDragger::CircuitDragger(GameWorld& world, const DragBoard& board) : _world(world), _board(board) {}
 
 bool CircuitDragger::isActive() const { return _dragger.isDragging(); }
 
@@ -13,30 +13,20 @@ void CircuitDragger::onEvent(const sf::RenderWindow& window, const sf::Event& e)
         sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
 
         bool canDrag = false;
-        for (const Circuit* c : _selected) {
+        for (const Circuit* c : _board.getSelection()) {
             if (c->collide(worldPos)) {
                 canDrag = true;
                 break;
             }
         }
-        std::vector<sf::Transformable*> components;
-        if (canDrag) {
-            for (Circuit* c : _selected) {
-                std::vector<sf::Transformable*> children = c->getTransforms();
-                std::copy(children.begin(), children.end(), std::back_inserter(components));
-            }
-
-        } else {
+        if (!canDrag) {
             Circuit* c = _world.collideCircuit(worldPos);
             if (c) {
-                components = c->getTransforms();
+                startDragging(window, {c});
             }
+        } else {
+            startDragging(window, _board.getSelection());
         }
-        if(!components.empty()) {
-            _dragger.beginDrag(components, worldPos);
-            std::cout << "Begin" << std::endl;
-        }
-
     }
     if (e.type == sf::Event::MouseButtonReleased && e.mouseButton.button == sf::Mouse::Left) {
         _dragger.endDrag();
@@ -49,7 +39,19 @@ void CircuitDragger::update(const sf::RenderWindow& window) {
     _dragger.update(worldPos);
 }
 
-void CircuitDragger::setSelection(std::vector<Circuit*> circuits) {
-    _selected = circuits;
-    std::cout << "Selection" << std::endl;
+void CircuitDragger::startDragging(const sf::RenderWindow& window, const std::vector<Circuit*> selection) {
+    sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+    sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
+
+    std::vector<sf::Transformable*> components;
+    for (Circuit* c : selection) {
+        std::vector<sf::Transformable*> children = c->getTransforms();
+        std::copy(children.begin(), children.end(), std::back_inserter(components));
+    }
+    if(components.empty()) {
+        std::cout << "Nothing to drag" << std::endl;
+        return;
+    }
+    std::cout << "Begin Drag" << std::endl;
+    _dragger.beginDrag(components, worldPos);
 }

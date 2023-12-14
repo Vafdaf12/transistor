@@ -21,6 +21,7 @@ add_executable(${BINARY}
     tools/PinConnector.cpp
     tools/SelectionTool.cpp
     tools/CircuitDragger.cpp
+    util/DragBoard.cpp
 )
 target_include_directories(${BINARY}
     PUBLIC .

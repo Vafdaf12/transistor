@@ -12,8 +12,8 @@
 
 #include <iostream>
 
-CircuitButton::CircuitButton(GameWorld& world, const Circuit& circuit)
-    : _circuit(circuit), _world(world) {
+CircuitButton::CircuitButton(GameWorld& world, const Circuit& circuit, CircuitDragger& dragger)
+    : _circuit(circuit), _world(world), _dragger(dragger) {
     _shape.setSize({100, 100});
 }
 
@@ -30,10 +30,12 @@ void CircuitButton::update(const sf::RenderWindow& w) {
         if(_state & DRAGGING) {
             worldPos = w.mapPixelToCoords(pos);
             Circuit* c = _circuit.clone(_world.assignCircuitId(_circuit.getId()));
+            worldPos -= c->getBoundingBox().getSize()/2.f;
             for(sf::Transformable* t : c->getTransforms()) {
                 t->move(worldPos);
             }
             _world.addCircuit(c);
+            _dragger.startDragging(w, {c});
             std::cout << "Spawn circuit in preview mode:" << c->getId() << std::endl;
         }
     }

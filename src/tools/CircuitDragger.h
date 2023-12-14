@@ -5,17 +5,20 @@
 #include "pin/Pin.h"
 #include "tools/Tool.h"
 
+#include "util/DragBoard.h"
+
 class CircuitDragger : public Tool {
 public:
-    CircuitDragger(GameWorld& world);
+    CircuitDragger(GameWorld& world, const DragBoard& board);
     bool isActive() const override;
 
     void onEvent(const sf::RenderWindow&, const sf::Event&) override;
     void update(const sf::RenderWindow&) override;
-    void setSelection(std::vector<Circuit*> circuits);
+    void startDragging(const sf::RenderWindow& window, const std::vector<Circuit*> selection);
 
 private:
-    std::vector<Circuit*> _selected;
     ComponentDragger _dragger;
+
     GameWorld& _world;
+    const DragBoard& _board;
 };

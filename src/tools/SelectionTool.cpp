@@ -1,7 +1,7 @@
 #include "SelectionTool.h"
 #include "SFML/Graphics/RenderWindow.hpp"
 
-SelectionTool::SelectionTool( GameWorld& world) : _world(world) {
+SelectionTool::SelectionTool( GameWorld& world, DragBoard& board) : _world(world), _board(board) {
     _selector.setFillColor({66, 135, 245, 100});
 }
 
@@ -11,26 +11,25 @@ void SelectionTool::onEvent(const sf::RenderWindow& window, const sf::Event& eve
             return;
         }
 
-        _selection.clear();
+        _board.clearSelection();
 
         sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
         sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
 
-        _selector.setPosition(worldPos);
-        _selector.setSize({0, 0});
-        _active = true;
+        if(!_world.collideCircuit(worldPos) && !_world.collidePin(worldPos)) {
+            _selector.setPosition(worldPos);
+            _selector.setSize({0, 0});
+            _active = true;
+        }
     }
     if(event.type == sf::Event::MouseMoved) {
         if (!_active) {
             return;
         }
-        _selection = _world.collideCircuit(_selector.getGlobalBounds());
+        _board.setSelection(_world.collideCircuit(_selector.getGlobalBounds()));
     }
 
     if(event.type == sf::Event::MouseButtonReleased) {
-        if(_onSelect)  {
-            _onSelect(_selection);
-        }
         _active = false;
     }
     
@@ -49,7 +48,7 @@ void SelectionTool::draw(sf::RenderWindow& window) const {
     if(_active) {
         window.draw(_selector);
     }
-    for (const Circuit* c : _selection) {
+    for (const Circuit* c : _board.getSelection()) {
         sf::RectangleShape outline;
         sf::FloatRect rect = c->getBoundingBox();
         outline.setSize(rect.getSize());
