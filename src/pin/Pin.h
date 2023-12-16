@@ -12,6 +12,11 @@ class Circuit;
 
 class Pin {
 public:
+    static constexpr uint32_t COLOR_ACTIVE = 0xff0000ff;
+    static constexpr uint32_t COLOR_INACTIVE = 0x000000ff;
+    static constexpr uint32_t COLOR_OUTLINE = 0xffffffff;
+    static constexpr int COLOR_MUL = 70;
+
     enum PinType { Input, Output };
     enum PinFlag {
         None = 0,

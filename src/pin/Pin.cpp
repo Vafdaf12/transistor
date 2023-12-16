@@ -6,21 +6,20 @@
 #include "SFML/Window/Event.hpp"
 #include "circuit/Circuit.h"
 
+#include <cmath>
+
+
 Pin::Pin(const std::string& id, PinType type, sf::Vector2f pos, int state)
     : _type(type), _value(state), _id(id) {
     _graphic.setPosition(pos - sf::Vector2f(RADIUS, RADIUS));
-    _graphic.setFillColor(sf::Color::Black);
+    _graphic.setOutlineColor(sf::Color(COLOR_OUTLINE));
     _graphic.setOutlineThickness(1);
     _graphic.setRadius(10);
 
-    switch (type) {
-    case Input: _graphic.setOutlineColor(sf::Color(0x888888ff)); break;
-    case Output: _graphic.setOutlineColor(sf::Color::White); break;
-    }
     if (_value) {
-        _graphic.setFillColor(sf::Color::Red);
+        _graphic.setFillColor(sf::Color(COLOR_ACTIVE));
     } else {
-        _graphic.setFillColor(sf::Color::Black);
+        _graphic.setFillColor(sf::Color(COLOR_INACTIVE));
     }
 }
 Pin::~Pin() {
@@ -55,11 +54,6 @@ void Pin::setValue(bool value) {
         return;
     }
     _value = value;
-    if (_value) {
-        _graphic.setFillColor(sf::Color::Red);
-    } else {
-        _graphic.setFillColor(sf::Color::Black);
-    }
     changed();
 }
 
@@ -99,6 +93,22 @@ void Pin::draw(sf::RenderWindow& window) const { window.draw(_graphic); }
 
 bool Pin::connect(PinFlag* obs) { return _flags.insert(obs).second; }
 bool Pin::disconnect(PinFlag* obs) { return _flags.erase(obs) > 0; }
+
+void Pin::update(const sf::RenderWindow& window) {
+    if(_value) {
+        _graphic.setFillColor(sf::Color(COLOR_ACTIVE));
+    } else {
+        _graphic.setFillColor(sf::Color(COLOR_INACTIVE));
+    }
+
+    if(collide(window, sf::Mouse::getPosition(window))) {
+        sf::Color c = _graphic.getFillColor();
+        c.r = std::min(c.r + COLOR_MUL, 255);
+        c.g = std::min(c.g + COLOR_MUL, 255);
+        c.b = std::min(c.b + COLOR_MUL, 255);
+        _graphic.setFillColor(c);
+    }
+}
 
 std::string Pin::getFullPath() const {
     if (_parent) {

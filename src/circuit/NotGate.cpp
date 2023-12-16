@@ -47,10 +47,12 @@ NotGate* NotGate::clone(const std::string& newId) const {
     return c;
 }
 
-void NotGate::update(const sf::RenderWindow&) {
+void NotGate::update(const sf::RenderWindow& w) {
     if(_flag == Pin::Dirty) {
         _output.setValue(!_input.getValue());
     }
+    _input.update(w);
+    _output.update(w);
 }
 
 void NotGate::draw(sf::RenderWindow& window) const {

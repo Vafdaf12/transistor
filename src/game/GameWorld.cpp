@@ -260,6 +260,12 @@ void GameWorld::update(sf::RenderWindow& w) {
     for (auto& c : _circuits) {
         c->update(w);
     }
+    for (auto& p : _inputs) {
+        p->update(w);
+    }
+    for (auto& p : _outputs) {
+        p->update(w);
+    }
     sf::Vector2u size = w.getSize();
     _guiView.setSize(size.x, size.y);
     _guiView.setCenter(size.x / 2.f, size.y / 2.f);
