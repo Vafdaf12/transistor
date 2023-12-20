@@ -1,6 +1,5 @@
 #include "Wire.h"
 #include "SFML/Graphics/PrimitiveType.hpp"
-#include "SFML/Graphics/RenderTarget.hpp"
 
 Wire::Wire(Pin* p1, Pin* p2) {
     switch (p1->getType()) {
@@ -26,7 +25,7 @@ Wire::~Wire() {
         _to->setValue(false);
     }
 }
-void Wire::draw(sf::RenderTarget& target, sf::RenderStates) const {
+void Wire::draw(sf::RenderWindow& target) const {
     static sf::Vertex edge[2] = {sf::Vertex({0, 0}, sf::Color::White)};
 
     edge[0].position = _from->getWorldSpacePosition(target);
@@ -42,7 +41,7 @@ void Wire::draw(sf::RenderTarget& target, sf::RenderStates) const {
     target.draw(edge, 2, sf::Lines);
 }
 
-void Wire::update(const sf::RenderWindow&) {
+void Wire::update(const sf::RenderWindow&, float) {
     if (_flags[0] == Pin::Dirty) {
         _to->setValue(_from->getValue());
         _flags[0] = Pin::None;

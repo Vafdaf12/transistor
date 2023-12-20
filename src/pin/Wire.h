@@ -1,22 +1,21 @@
 #pragma once
 
-#include "SFML/Graphics/Drawable.hpp"
-
 #include "Pin.h"
+#include "core/Entity.h"
 
-class Wire : public sf::Drawable {
+class Wire : public core::Entity {
 public:
     Wire(Pin*, Pin*);
     ~Wire();
 
-    void draw(sf::RenderTarget&, sf::RenderStates) const override;
-    void update(const sf::RenderWindow&);
+    void update(const sf::RenderWindow&, float dt) override;
+    void onEvent(const sf::RenderWindow&, const sf::Event&) override {}
+    void draw(sf::RenderWindow&) const override;
 
     bool isEndpoint(const Pin* pin) const;
 
     bool operator==(const Wire&) const;
     bool operator!=(const Wire& rhs) const { return !(*this == rhs); }
-
 
     inline const Pin* getFrom() const { return _from; }
     inline const Pin* getTo() const { return _to; }

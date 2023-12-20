@@ -29,6 +29,11 @@ public:
 
     NotGate* clone(const std::string& id) const override;
 
+    inline void setView(const sf::View& view) override {
+        _input.setView(&view);
+        _output.setView(&view);
+    }
+
 private:
     const Assets& _assets;
 

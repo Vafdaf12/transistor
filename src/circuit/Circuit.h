@@ -44,6 +44,8 @@ public:
 
     virtual Pin* queryPin(const std::string& id) = 0;
 
+    virtual void setView(const sf::View& view) = 0;
+
     void onEvent(const sf::RenderWindow&, const sf::Event&) override {}
 private:
     std::string _id;

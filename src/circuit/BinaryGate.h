@@ -36,6 +36,12 @@ public:
 
     inline Func getFunc() const { return _process; }
 
+    inline void setView(const sf::View& view) override {
+        _in1.setView(&view);
+        _in2.setView(&view);
+        _out.setView(&view);
+    }
+
     static int And(int, int);
     static int Or(int, int);
     static int Nand(int, int);

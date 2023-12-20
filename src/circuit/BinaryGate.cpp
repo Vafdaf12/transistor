@@ -1,6 +1,5 @@
 #include "BinaryGate.h"
 
-#include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/System/Vector2.hpp"
 

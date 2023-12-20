@@ -1,16 +1,12 @@
 #include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Window/Cursor.hpp"
 #include "SFML/Window/Event.hpp"
-#include "asset/CircuitRegistry.h"
+#include "app/CircuitEditor.h"
+#include "asset/AssetSystem.h"
 #include "asset/ResourceManager.h"
-#include "asset/deserialize.h"
 #include "circuit/BinaryGate.h"
-#include "core/Entity.h"
-#include "pin/Pin.h"
 #include "tools/NavigationTool.h"
 
 #include <iostream>
-#include <list>
 #include <memory>
 
 int main(int, char**) {
@@ -33,26 +29,25 @@ int main(int, char**) {
     registry.add("not_gate", [&](const json& j) { return serde::createNot(j, assets); });
     */
 
+
     // --- WINDOW SETUP ---
     sf::Clock clock;
     sf::RenderWindow window({1280, 720}, "Transistor");
     window.setVerticalSyncEnabled(true);
 
-    sf::View worldView = window.getDefaultView();
-
     // --- GAME WORLD ---
-    std::list<std::unique_ptr<core::Entity>> entities;
-    Pin* pin = new Pin("pin", Pin::Input, {100, 100});
-    pin->setEditable(true);
-
-    entities.emplace_back(pin);
-    pin = nullptr;
-
-    entities.emplace_back(new BinaryGate("pin", gateTextures, BinaryGate::Nand, {200, 0}));
+    CircuitEditor editor(window.getDefaultView(), window.getDefaultView());
+    editor.addInput("in1");
+    editor.addInput("in2");
+    editor.addInput("in3");
+    editor.addOutput("out1");
+    editor.addOutput("out2");
+    editor.addCircuit(new BinaryGate("pin", gateTextures, BinaryGate::Nand, {200, 0}));
+    editor.addCircuit(new BinaryGate("pin2", gateTextures, BinaryGate::Xor, {200, 100}));
 
     // --- INPUT METHODS ---
     std::vector<std::unique_ptr<Tool>> tools;
-    tools.emplace_back(new NavigationTool(worldView));
+    tools.emplace_back(new NavigationTool(editor.getWorldView()));
 
     // --- EVENT LOOP ---
     float time = clock.restart().asMilliseconds();
@@ -67,32 +62,25 @@ int main(int, char**) {
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
                 window.close();
             }
-            for (auto& e : entities) {
-                e->onEvent(window, event);
+            for(auto& tool : tools) {
+                tool->onEvent(window, event);
             }
-            for (auto& t : tools) {
-                t->onEvent(window, event);
-            }
+            editor.onEvent(window, event);
         }
 
         // --- REALTIME UPDATES ---
         float dt = clock.restart().asSeconds();
-        for (auto& e : entities) {
-            e->update(window, dt);
+        for(auto& tool : tools) {
+            tool->update(window, dt);
         }
-        for (auto& t : tools) {
-            t->update(window, dt);
-        }
+        editor.update(window, dt);
 
         // --- RENDERING ---
-        window.setView(worldView);
         window.clear();
-        for (const auto& e : entities) {
-            e->draw(window);
+        for(auto& tool : tools) {
+            tool->draw(window);
         }
-        for (auto& t : tools) {
-            t->draw(window);
-        }
+        editor.draw(window);
         window.display();
     }
 

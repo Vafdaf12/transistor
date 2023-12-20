@@ -239,7 +239,7 @@ void GameWorld::draw(sf::RenderWindow& window) const {
         c->draw(window);
     }
     for (const auto& wire : _wires) {
-        window.draw(wire);
+        wire.draw(window);
     }
     sf::View view = window.getView();
     window.setView(_guiView);
@@ -254,7 +254,7 @@ void GameWorld::draw(sf::RenderWindow& window) const {
 
 void GameWorld::update(const sf::RenderWindow& w, float dt) {
     for (auto& wire : _wires) {
-        wire.update(w);
+        wire.update(w, dt);
     }
     for (auto& c : _circuits) {
         c->update(w, dt);
