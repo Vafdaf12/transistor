@@ -1,8 +1,9 @@
 #pragma once
 
 #include "SFML/Graphics/Sprite.hpp"
+#include "SFML/Graphics/Texture.hpp"
 
-#include "asset/AssetSystem.h"
+#include "asset/ResourceManager.h"
 #include "circuit/Circuit.h"
 #include "pin/Pin.h"
 

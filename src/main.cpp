@@ -1,6 +1,8 @@
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Window/Event.hpp"
+#include "asset/CircuitRegistry.h"
 #include "asset/ResourceManager.h"
+#include "asset/deserialize.h"
 #include "circuit/BinaryGate.h"
 #include "core/Entity.h"
 #include "pin/Pin.h"
@@ -11,11 +13,21 @@
 
 int main(int, char**) {
     // --- RESOURCES ---
+    Assets assets;
+    assets.textures.load("gate_not", "assets/sprites/gate_not.png");
+
     ResourceManager<BinaryGate::Func, sf::Texture> gateTextures;
     gateTextures.load(BinaryGate::Or, "assets/sprites/gate_or.png");
     gateTextures.load(BinaryGate::Xor, "assets/sprites/gate_xor.png");
     gateTextures.load(BinaryGate::And, "assets/sprites/gate_and.png");
     gateTextures.load(BinaryGate::Nand, "assets/sprites/gate_nand.png");
+
+    CircuitRegistry registry;
+    registry.add("or_gate", [&](const json& j) { return serde::createBinaryGate<BinaryGate::Or>(j, gateTextures); });
+    registry.add("xor_gate", [&](const json& j) { return serde::createBinaryGate<BinaryGate::Xor>(j, gateTextures); });
+    registry.add("and_gate", [&](const json& j) { return serde::createBinaryGate<BinaryGate::And>(j, gateTextures); });
+    registry.add("nand_gate", [&](const json& j) { return serde::createBinaryGate<BinaryGate::Nand>(j, gateTextures); });
+    registry.add("not_gate", [&](const json& j) { return serde::createNot(j, assets); });
 
     // --- WINDOW SETUP ---
     sf::Clock clock;
