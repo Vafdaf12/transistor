@@ -15,6 +15,7 @@ int main(int, char**) {
     gateTextures.load(BinaryGate::Or, "assets/sprites/gate_or.png");
     gateTextures.load(BinaryGate::Xor, "assets/sprites/gate_xor.png");
     gateTextures.load(BinaryGate::And, "assets/sprites/gate_and.png");
+    gateTextures.load(BinaryGate::Nand, "assets/sprites/gate_nand.png");
 
     // --- WINDOW SETUP ---
     sf::Clock clock;
@@ -28,7 +29,7 @@ int main(int, char**) {
     entities.emplace_back(pin);
     pin = nullptr;
 
-    entities.emplace_back(new BinaryGate("pin", gateTextures, BinaryGate::Xor, {200, 0}));
+    entities.emplace_back(new BinaryGate("pin", gateTextures, BinaryGate::Nand, {200, 0}));
 
     // --- EVENT LOOP ---
     float time = clock.restart().asMilliseconds();

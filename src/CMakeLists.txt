@@ -9,7 +9,6 @@ FetchContent_MakeAvailable(SFML)
 add_executable(${BINARY} 
     main.cpp
     CircuitButton.cpp
-    circuit/NandCircuit.cpp
     circuit/BinaryGate.cpp
     circuit/NotGate.cpp
     pin/Pin.cpp

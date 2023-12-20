@@ -3,7 +3,7 @@
 #include <cassert>
 
 namespace serde {
-    NandCircuit* createNand(const json& j, const Assets& assets) {
+    BinaryGate* createNand(const json& j, const Assets& assets) {
         assert(false && "Not implemented");
         return nullptr;
         /*

@@ -1,7 +1,6 @@
 #include "GameWorld.h"
 #include "SFML/System/Vector2.hpp"
 #include "circuit/BinaryGate.h"
-#include "circuit/NandCircuit.h"
 #include "circuit/NotGate.h"
 #include "json.hpp"
 #include <fstream>
@@ -87,7 +86,8 @@ bool GameWorld::saveToFile(const std::string& path) {
         elem["position"]["x"] = pos.x;
         elem["position"]["y"] = pos.y;
 
-        if (dynamic_cast<NandCircuit*>(circuit.get())) {
+        if (dynamic_cast<void*>(circuit.get())) {
+            assert(false && "Not Implemented");
             elem["type"] = "nand_gate";
         } else if (dynamic_cast<NotGate*>(circuit.get())) {
             elem["type"] = "not_gate";
