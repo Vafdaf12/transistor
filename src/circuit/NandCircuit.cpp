@@ -5,30 +5,15 @@
 NandCircuit::NandCircuit(const std::string& id, const Assets& assets, sf::Vector2f pos)
     : Circuit(id), _text("NAND", assets.fonts.get("default")), _in1("in1", Pin::Input),
       _in2("in2", Pin::Input), _out("out", Pin::Output, {0, 0}, 1), _assets(assets) {
-    const sf::Vector2f pad = sf::Vector2f(PADDING, PADDING);
     _text.setStyle(sf::Text::Bold);
 
     _in1.setParent(this);
     _in2.setParent(this);
     _out.setParent(this);
 
-    _shape.setPosition(pos);
-    _text.setPosition(pos + pad);
-
     _shape.setFillColor(sf::Color(0xe97531ff));
     _text.setFillColor(sf::Color::White);
-
-    sf::Vector2f size = _text.getGlobalBounds().getSize();
-    size.x += 2 * PADDING;
-    size.y = _text.getCharacterSize() + 2 * PADDING;
-
-    _shape.setSize(size);
-
-    _out.setCenter(pos + sf::Vector2f(size.x, size.y / 2.f));
-
-    size.y /= 4;
-    _in1.setCenter(pos + sf::Vector2f(0, size.y * 1.f));
-    _in2.setCenter(pos + sf::Vector2f(0, size.y * 3.f));
+    setPosition(pos);
 
     _in1.connect(_flags);
     _in2.connect(_flags + 1);
@@ -49,8 +34,26 @@ Pin* NandCircuit::collidePin(sf::Vector2f v) {
     return nullptr;
 }
 
-std::vector<sf::Transformable*> NandCircuit::getTransforms() {
-    return {&_text, &_shape, &_in1.getTransform(), &_in2.getTransform(), &_out.getTransform()};
+sf::Vector2f NandCircuit::getPosition() const {
+    return _shape.getPosition();
+}
+void NandCircuit::setPosition(sf::Vector2f pos) {
+    static const sf::Vector2f pad = sf::Vector2f(PADDING, PADDING);
+
+    _shape.setPosition(pos);
+    _text.setPosition(pos + pad);
+
+    sf::Vector2f size = _text.getGlobalBounds().getSize();
+    size.x += 2 * PADDING;
+    size.y = _text.getCharacterSize() + 2 * PADDING;
+
+    _shape.setSize(size);
+
+    _out.setCenter(pos + sf::Vector2f(size.x, size.y / 2.f));
+
+    size.y /= 4;
+    _in1.setCenter(pos + sf::Vector2f(0, size.y * 1.f));
+    _in2.setCenter(pos + sf::Vector2f(0, size.y * 3.f));
 }
 
 sf::FloatRect NandCircuit::getBoundingBox() const { return _shape.getGlobalBounds(); }

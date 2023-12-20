@@ -15,7 +15,10 @@ public:
 
     bool collide(sf::Vector2f) const override;
     Pin* collidePin(sf::Vector2f) override;
-    std::vector<sf::Transformable*> getTransforms() override;
+
+    virtual sf::Vector2f getPosition() const override;
+    virtual void setPosition(sf::Vector2f) override;
+
     sf::FloatRect getBoundingBox() const override;
 
     BinaryGate* clone(const std::string& id) const override;

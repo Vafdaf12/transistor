@@ -3,9 +3,10 @@
 #include <iostream>
 #include <ostream>
 
-CircuitDragger::CircuitDragger(GameWorld& world, const DragBoard& board) : _world(world), _board(board) {}
+CircuitDragger::CircuitDragger(GameWorld& world, const DragBoard& board)
+    : _world(world), _board(board) {}
 
-bool CircuitDragger::isActive() const { return _dragger.isDragging(); }
+bool CircuitDragger::isActive() const { return !_circuits.empty(); }
 
 void CircuitDragger::onEvent(const sf::RenderWindow& window, const sf::Event& e) {
     if (e.type == sf::Event::MouseButtonPressed && e.mouseButton.button == sf::Mouse::Left) {
@@ -29,29 +30,28 @@ void CircuitDragger::onEvent(const sf::RenderWindow& window, const sf::Event& e)
         }
     }
     if (e.type == sf::Event::MouseButtonReleased && e.mouseButton.button == sf::Mouse::Left) {
-        _dragger.endDrag();
+        _circuits.clear();
     }
 }
 
 void CircuitDragger::update(const sf::RenderWindow& window) {
     sf::Vector2i pos = sf::Mouse::getPosition(window);
     sf::Vector2f worldPos = window.mapPixelToCoords(pos);
-    _dragger.update(worldPos);
+
+    for (auto& [delta, c] : _circuits) {
+        c->setPosition(worldPos + delta);
+    }
 }
 
-void CircuitDragger::startDragging(const sf::RenderWindow& window, const std::vector<Circuit*> selection) {
+void CircuitDragger::startDragging(
+    const sf::RenderWindow& window, const std::vector<Circuit*> selection
+) {
     sf::Vector2i mousePos = sf::Mouse::getPosition(window);
     sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
 
-    std::vector<sf::Transformable*> components;
-    for (Circuit* c : selection) {
-        std::vector<sf::Transformable*> children = c->getTransforms();
-        std::copy(children.begin(), children.end(), std::back_inserter(components));
-    }
-    if(components.empty()) {
-        std::cout << "Nothing to drag" << std::endl;
-        return;
-    }
+    std::transform(selection.begin(), selection.end(), _circuits.begin(), [&](Circuit* c) {
+        return std::make_pair(c->getPosition() - worldPos, c);
+    });
+
     std::cout << "Begin Drag" << std::endl;
-    _dragger.beginDrag(components, worldPos);
 }

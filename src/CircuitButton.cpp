@@ -31,9 +31,7 @@ void CircuitButton::update(const sf::RenderWindow& w) {
             worldPos = w.mapPixelToCoords(pos);
             Circuit* c = _circuit.clone(_world.assignCircuitId(_circuit.getId()));
             worldPos -= c->getBoundingBox().getSize()/2.f;
-            for(sf::Transformable* t : c->getTransforms()) {
-                t->move(worldPos);
-            }
+            c->setPosition(worldPos);
             _world.addCircuit(c);
             _dragger.startDragging(w, {c});
             std::cout << "Spawn circuit in preview mode:" << c->getId() << std::endl;

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "ComponentDragger.h"
 #include "game/GameWorld.h"
 #include "pin/Pin.h"
 #include "tools/Tool.h"
@@ -17,7 +16,7 @@ public:
     void startDragging(const sf::RenderWindow& window, const std::vector<Circuit*> selection);
 
 private:
-    ComponentDragger _dragger;
+    std::vector<std::pair<sf::Vector2f, Circuit*>> _circuits;
 
     GameWorld& _world;
     const DragBoard& _board;

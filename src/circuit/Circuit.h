@@ -29,15 +29,10 @@ public:
     virtual Pin* collidePin(sf::Vector2f) = 0;
 
 
-    /**
-     * @brief Retrieves the transformable components of the circuit.
-     * This is used to move the circuit around, e.g. drag and drop
-     * 
-     * @return std::vector<sf::Transformable*> 
-     */
-    virtual std::vector<sf::Transformable*> getTransforms() = 0;
-
     virtual sf::FloatRect getBoundingBox() const = 0;
+
+    virtual sf::Vector2f getPosition() const = 0;
+    virtual void setPosition(sf::Vector2f) = 0;
 
     /**
     * @brief Clones the circuit with a new identifier

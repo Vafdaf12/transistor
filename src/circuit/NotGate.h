@@ -15,7 +15,9 @@ public:
     NotGate(const std::string& id, const Assets& assets,  sf::Vector2f pos = {0, 0});
     ~NotGate();
 
-    std::vector<sf::Transformable*> getTransforms() override;
+    virtual sf::Vector2f getPosition() const override;
+    virtual void setPosition(sf::Vector2f) override;
+
     sf::FloatRect getBoundingBox() const override;
 
     void draw(sf::RenderWindow& window) const override;

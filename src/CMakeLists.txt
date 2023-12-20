@@ -8,7 +8,6 @@ FetchContent_MakeAvailable(SFML)
 
 add_executable(${BINARY} 
     main.cpp
-    ComponentDragger.cpp
     CircuitButton.cpp
     circuit/NandCircuit.cpp
     circuit/BinaryGate.cpp

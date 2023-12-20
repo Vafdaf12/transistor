@@ -12,14 +12,8 @@ NotGate::NotGate(const std::string& id, const Assets& assets, sf::Vector2f pos)
     _input.setParent(this);
     _output.setParent(this);
 
-    _sprite.setPosition(pos);
     _sprite.scale(0.7, 0.7);
-
-
-    sf::Vector2f size = _sprite.getGlobalBounds().getSize();
-
-    _output.setCenter(pos + sf::Vector2f(size.x, size.y / 2.f));
-    _input.setCenter(pos + sf::Vector2f(0, size.y / 2.f));
+    setPosition(pos);
 
     _input.connect(&_flag);
 }
@@ -36,8 +30,15 @@ Pin* NotGate::collidePin(sf::Vector2f v) {
     return nullptr;
 }
 
-std::vector<sf::Transformable*> NotGate::getTransforms() {
-    return {&_sprite, &_input.getTransform(), &_output.getTransform()};
+sf::Vector2f NotGate::getPosition() const {
+    return _sprite.getPosition();
+}
+void NotGate::setPosition(sf::Vector2f pos) {
+    _sprite.setPosition(pos);
+    sf::Vector2f size = _sprite.getGlobalBounds().getSize();
+
+    _output.setCenter(pos + sf::Vector2f(size.x, size.y / 2.f));
+    _input.setCenter(pos + sf::Vector2f(0, size.y / 2.f));
 }
 
 sf::FloatRect NotGate::getBoundingBox() const { return _sprite.getGlobalBounds(); }

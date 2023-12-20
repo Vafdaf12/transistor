@@ -19,20 +19,14 @@ BinaryGate::BinaryGate(const std::string& id, const Assets& assets, Func fn, sf:
     _in2.setParent(this);
     _out.setParent(this);
 
-    _sprite.setPosition(pos);
     _sprite.scale(0.7, 0.7);
 
-    sf::Vector2f size = _sprite.getGlobalBounds().getSize();
-
-    _out.setCenter(pos + sf::Vector2f(size.x, size.y / 2.f));
-
-    size.y /= 3;
-    _in1.setCenter(pos + sf::Vector2f(0, size.y * 1.f));
-    _in2.setCenter(pos + sf::Vector2f(0, size.y * 2.f));
+    setPosition(pos);
 
     _in1.connect(_flags);
     _in2.connect(_flags+1);
 }
+
 BinaryGate::~BinaryGate() {
     _in1.disconnect(_flags);
     _in2.disconnect(_flags + 1);
@@ -48,9 +42,18 @@ Pin* BinaryGate::collidePin(sf::Vector2f v) {
         return &_out;
     return nullptr;
 }
+sf::Vector2f BinaryGate::getPosition() const {
+    return _sprite.getPosition();
+}
+void BinaryGate::setPosition(sf::Vector2f pos) {
+    _sprite.setPosition(pos);
+    sf::Vector2f size = _sprite.getGlobalBounds().getSize();
 
-std::vector<sf::Transformable*> BinaryGate::getTransforms() {
-    return {&_sprite, &_in1.getTransform(), &_in2.getTransform(), &_out.getTransform()};
+    _out.setCenter(pos + sf::Vector2f(size.x, size.y / 2.f));
+
+    size.y /= 3;
+    _in1.setCenter(pos + sf::Vector2f(0, size.y * 1.f));
+    _in2.setCenter(pos + sf::Vector2f(0, size.y * 2.f));
 }
 
 sf::FloatRect BinaryGate::getBoundingBox() const { return _sprite.getGlobalBounds(); }
