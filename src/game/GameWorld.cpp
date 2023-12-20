@@ -1,6 +1,5 @@
 #include "GameWorld.h"
 #include "SFML/System/Vector2.hpp"
-#include "asset/AssetSystem.h"
 #include "circuit/BinaryGate.h"
 #include "circuit/NandCircuit.h"
 #include "circuit/NotGate.h"
@@ -226,7 +225,7 @@ std::vector<Circuit*> GameWorld::collideCircuit(sf::FloatRect rect) {
     return contained;
 }
 
-void GameWorld::onEvent(sf::RenderWindow& w, const sf::Event& e) {
+void GameWorld::onEvent(const sf::RenderWindow& w, const sf::Event& e) {
     for (auto& p : _inputs) {
         p->onEvent(w, e);
     }
@@ -253,18 +252,18 @@ void GameWorld::draw(sf::RenderWindow& window) const {
     window.setView(view);
 }
 
-void GameWorld::update(sf::RenderWindow& w) {
+void GameWorld::update(const sf::RenderWindow& w, float dt) {
     for (auto& wire : _wires) {
         wire.update(w);
     }
     for (auto& c : _circuits) {
-        c->update(w);
+        c->update(w, dt);
     }
     for (auto& p : _inputs) {
-        p->update(w);
+        p->update(w, dt);
     }
     for (auto& p : _outputs) {
-        p->update(w);
+        p->update(w, dt);
     }
     sf::Vector2u size = w.getSize();
     _guiView.setSize(size.x, size.y);

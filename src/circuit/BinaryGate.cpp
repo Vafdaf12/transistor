@@ -60,15 +60,15 @@ BinaryGate* BinaryGate::clone(const std::string& newId) const {
     return c;
 }
 
-void BinaryGate::update(const sf::RenderWindow& w) {
+void BinaryGate::update(const sf::RenderWindow& w, float dt) {
     if(_flags[0] == Pin::Dirty || _flags[1] == Pin::Dirty) {
         _out.setValue(_process(_in1.getValue(), _in2.getValue()));
         _flags[0] = Pin::None;
         _flags[1] = Pin::None;
     }
-    _out.update(w);
-    _in1.update(w);
-    _in2.update(w);
+    _out.update(w, dt);
+    _in1.update(w, dt);
+    _in2.update(w, dt);
 }
 
 void BinaryGate::draw(sf::RenderWindow& window) const {

@@ -1,11 +1,11 @@
 #pragma once
 
-#include "SFML/Graphics/RenderWindow.hpp"
+#include "core/Entity.h"
 #include "pin/Pin.h"
 
 #include <string>
 
-class Circuit {
+class Circuit : public core::Entity {
 public:
     Circuit(const std::string& id) : _id(id) {}
     virtual ~Circuit() {}
@@ -49,9 +49,7 @@ public:
 
     virtual Pin* queryPin(const std::string& id) = 0;
 
-    virtual void draw(sf::RenderWindow& window) const = 0;
-    virtual void update(const sf::RenderWindow&) {}
-
+    void onEvent(const sf::RenderWindow&, const sf::Event&) override {}
 private:
     std::string _id;
 };

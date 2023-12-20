@@ -5,12 +5,13 @@
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Transformable.hpp"
 #include "SFML/System/Vector2.hpp"
+#include "core/Entity.h"
 #include <set>
 #include <string>
 
 class Circuit;
 
-class Pin {
+class Pin : public core::Entity {
 public:
     static constexpr uint32_t COLOR_ACTIVE = 0xff0000ff;
     static constexpr uint32_t COLOR_INACTIVE = 0x000000ff;
@@ -27,9 +28,9 @@ public:
     Pin(const std::string& id, PinType type, sf::Vector2f pos = {0, 0}, int state = 0);
     ~Pin();
 
-    void onEvent(const sf::RenderWindow&, const sf::Event& event);
-    void update(const sf::RenderWindow&);
-    void draw(sf::RenderWindow&) const;
+    void onEvent(const sf::RenderWindow&, const sf::Event& event) override;
+    void update(const sf::RenderWindow&, float dt) override;
+    void draw(sf::RenderWindow&) const override;
 
     bool canConnect(const Pin& other) const;
     bool collide(sf::Vector2f) const;

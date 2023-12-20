@@ -11,9 +11,10 @@
 #include "SFML/System/Vector2.hpp"
 #include "asset/CircuitRegistry.h"
 #include "circuit/Circuit.h"
+#include "core/Entity.h"
 #include "pin/Wire.h"
 
-class GameWorld  {
+class GameWorld : public core::Entity {
 public:
     enum PinTag {
         CIRCUIT = 1 << 0,
@@ -40,9 +41,9 @@ public:
     Circuit* collideCircuit(sf::Vector2f pos);
     std::vector<Circuit*> collideCircuit(sf::FloatRect rect);
 
-    void onEvent(sf::RenderWindow&, const sf::Event&);
-    void draw(sf::RenderWindow&) const;
-    void update(sf::RenderWindow&);
+    void onEvent(const sf::RenderWindow&, const sf::Event&) override;
+    void update(const sf::RenderWindow&, float dt) override;
+    void draw(sf::RenderWindow&) const override;
 
     Pin* queryPin(const std::string& path);
     Circuit* queryCircuit(const std::string& path);

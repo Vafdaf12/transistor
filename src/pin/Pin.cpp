@@ -6,7 +6,6 @@
 #include "SFML/Window/Event.hpp"
 #include "circuit/Circuit.h"
 
-#include <cmath>
 
 
 Pin::Pin(const std::string& id, PinType type, sf::Vector2f pos, int state)
@@ -94,7 +93,7 @@ void Pin::draw(sf::RenderWindow& window) const { window.draw(_graphic); }
 bool Pin::connect(PinFlag* obs) { return _flags.insert(obs).second; }
 bool Pin::disconnect(PinFlag* obs) { return _flags.erase(obs) > 0; }
 
-void Pin::update(const sf::RenderWindow& window) {
+void Pin::update(const sf::RenderWindow& window, float dt) {
     if(_value) {
         _graphic.setFillColor(sf::Color(COLOR_ACTIVE));
     } else {

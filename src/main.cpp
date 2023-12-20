@@ -1,13 +1,26 @@
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Window/Event.hpp"
+#include "core/Entity.h"
+#include "pin/Pin.h"
 
 #include <iostream>
+#include <memory>
+#include <list>
+
 
 int main(int, char**) {
     // --- WINDOW SETUP ---
     sf::Clock clock;
     sf::RenderWindow window({1280, 720}, "Transistor");
     window.setVerticalSyncEnabled(true);
+
+    std::list<std::unique_ptr<core::Entity>> entities;
+    Pin* pin = new Pin("pin", Pin::Input, {100, 100});
+    pin->setEditable(true);
+
+    entities.emplace_back(pin);
+    pin = nullptr;
+
 
 
     // --- EVENT LOOP ---
@@ -23,12 +36,22 @@ int main(int, char**) {
             if(event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
                 window.close();
             }
+            for(auto& e : entities) {
+                e->onEvent(window, event);
+            }
         }
 
         // --- REALTIME UPDATES ---
+        float dt = clock.restart().asSeconds();
+        for(auto& e : entities) {
+            e->update(window, dt);
+        }
 
         // --- RENDERING ---
         window.clear();
+        for(const auto& e : entities) {
+            e->draw(window);
+        }
         window.display();
     }
 

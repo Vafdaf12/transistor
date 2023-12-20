@@ -19,7 +19,7 @@ public:
     sf::FloatRect getBoundingBox() const override;
 
     void draw(sf::RenderWindow& window) const override;
-    void update(const sf::RenderWindow&) override;
+    void update(const sf::RenderWindow&, float dt) override;
 
     bool collide(sf::Vector2f) const override;
     Pin* collidePin(sf::Vector2f) override;

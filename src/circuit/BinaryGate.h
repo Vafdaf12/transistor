@@ -20,7 +20,7 @@ public:
 
     BinaryGate* clone(const std::string& id) const override;
 
-    void update(const sf::RenderWindow&) override;
+    void update(const sf::RenderWindow&, float dt) override;
     void draw(sf::RenderWindow& window) const override;
 
     Pin* queryPin(const std::string& id) override;
