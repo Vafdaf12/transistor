@@ -29,8 +29,8 @@ void NavigationTool::update(const sf::RenderWindow& window, float) {
     sf::Vector2i pos = sf::Mouse::getPosition(window);
 
     if(_state == Panning && sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-        sf::Vector2f prevWorldPos = window.mapPixelToCoords(_prevMousePosition);
-        sf::Vector2f worldPos = window.mapPixelToCoords(pos);
+        sf::Vector2f prevWorldPos = window.mapPixelToCoords(_prevMousePosition, _view);
+        sf::Vector2f worldPos = window.mapPixelToCoords(pos, _view);
 
         _view.move(prevWorldPos - worldPos);
     }
