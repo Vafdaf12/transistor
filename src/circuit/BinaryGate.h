@@ -3,14 +3,19 @@
 #include "SFML/Graphics/Sprite.hpp"
 
 #include "asset/AssetSystem.h"
-#include "pin/Pin.h"
 #include "circuit/Circuit.h"
+#include "pin/Pin.h"
 
 class BinaryGate : public Circuit {
 public:
-    using Func = int(*)(int, int);
+    using Func = int (*)(int, int);
 
-    BinaryGate(const std::string& id, const Assets& assets, Func fn,  sf::Vector2f pos = {0, 0});
+    BinaryGate(
+        const std::string& id,
+        const ResourceManager<BinaryGate::Func, sf::Texture>& textures,
+        Func fn,
+        sf::Vector2f pos = {0, 0}
+    );
     ~BinaryGate();
 
     bool collide(sf::Vector2f) const override;
@@ -30,7 +35,6 @@ public:
 
     inline Func getFunc() const { return _process; }
 
-
     static int And(int, int);
     static int Or(int, int);
     static int Nand(int, int);
@@ -40,12 +44,12 @@ public:
 private:
     static constexpr float PADDING = 20;
 
-    const Assets& _assets;
+    const ResourceManager<BinaryGate::Func, sf::Texture>& _textures;
 
     sf::Sprite _sprite;
 
     Pin _in1, _in2, _out;
     Pin::PinFlag _flags[2] = {Pin::Dirty};
-    
+
     Func _process;
 };

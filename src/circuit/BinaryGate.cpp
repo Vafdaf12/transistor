@@ -1,19 +1,18 @@
 #include "BinaryGate.h"
 
-#include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Rect.hpp"
+#include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/System/Vector2.hpp"
 
-BinaryGate::BinaryGate(const std::string& id, const Assets& assets, Func fn, sf::Vector2f pos)
-    : Circuit(id), _in1("in1", Pin::Input), _in2("in2", Pin::Input),
-      _assets(assets), _out("out", Pin::Output, {0, 0}, 0), _process(fn) {
-    if (fn == And) {
-        _sprite.setTexture(assets.textures.get("gate_and"));
-    } else if (fn == Xor) {
-        _sprite.setTexture(assets.textures.get("gate_xor"));
-    } else if (fn == Or) {
-        _sprite.setTexture(assets.textures.get("gate_or"));
-    }
+BinaryGate::BinaryGate(
+    const std::string& id,
+    const ResourceManager<BinaryGate::Func, sf::Texture>& textures,
+    Func fn,
+    sf::Vector2f pos
+)
+    : Circuit(id), _in1("in1", Pin::Input), _in2("in2", Pin::Input), _textures(textures),
+      _out("out", Pin::Output, {0, 0}, 0), _process(fn) {
+    _sprite.setTexture(textures.get(fn));
 
     _in1.setParent(this);
     _in2.setParent(this);
@@ -24,7 +23,7 @@ BinaryGate::BinaryGate(const std::string& id, const Assets& assets, Func fn, sf:
     setPosition(pos);
 
     _in1.connect(_flags);
-    _in2.connect(_flags+1);
+    _in2.connect(_flags + 1);
 }
 
 BinaryGate::~BinaryGate() {
@@ -42,9 +41,7 @@ Pin* BinaryGate::collidePin(sf::Vector2f v) {
         return &_out;
     return nullptr;
 }
-sf::Vector2f BinaryGate::getPosition() const {
-    return _sprite.getPosition();
-}
+sf::Vector2f BinaryGate::getPosition() const { return _sprite.getPosition(); }
 void BinaryGate::setPosition(sf::Vector2f pos) {
     _sprite.setPosition(pos);
     sf::Vector2f size = _sprite.getGlobalBounds().getSize();
@@ -59,12 +56,12 @@ void BinaryGate::setPosition(sf::Vector2f pos) {
 sf::FloatRect BinaryGate::getBoundingBox() const { return _sprite.getGlobalBounds(); }
 
 BinaryGate* BinaryGate::clone(const std::string& newId) const {
-    BinaryGate* c = new BinaryGate(newId, _assets, _process, _sprite.getPosition());
+    BinaryGate* c = new BinaryGate(newId, _textures, _process, _sprite.getPosition());
     return c;
 }
 
 void BinaryGate::update(const sf::RenderWindow& w, float dt) {
-    if(_flags[0] == Pin::Dirty || _flags[1] == Pin::Dirty) {
+    if (_flags[0] == Pin::Dirty || _flags[1] == Pin::Dirty) {
         _out.setValue(_process(_in1.getValue(), _in2.getValue()));
         _flags[0] = Pin::None;
         _flags[1] = Pin::None;

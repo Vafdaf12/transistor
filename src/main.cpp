@@ -1,14 +1,21 @@
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Window/Event.hpp"
+#include "asset/ResourceManager.h"
+#include "circuit/BinaryGate.h"
 #include "core/Entity.h"
 #include "pin/Pin.h"
 
 #include <iostream>
-#include <memory>
 #include <list>
-
+#include <memory>
 
 int main(int, char**) {
+    // --- RESOURCES ---
+    ResourceManager<BinaryGate::Func, sf::Texture> gateTextures;
+    gateTextures.load(BinaryGate::Or, "assets/sprites/gate_or.png");
+    gateTextures.load(BinaryGate::Xor, "assets/sprites/gate_xor.png");
+    gateTextures.load(BinaryGate::And, "assets/sprites/gate_and.png");
+
     // --- WINDOW SETUP ---
     sf::Clock clock;
     sf::RenderWindow window({1280, 720}, "Transistor");
@@ -21,35 +28,35 @@ int main(int, char**) {
     entities.emplace_back(pin);
     pin = nullptr;
 
-
+    entities.emplace_back(new BinaryGate("pin", gateTextures, BinaryGate::Xor, {200, 0}));
 
     // --- EVENT LOOP ---
     float time = clock.restart().asMilliseconds();
     std::cout << "Startup time: " << time << "ms" << std::endl;
-    while(window.isOpen()) {
+    while (window.isOpen()) {
         // --- EVENT HANDLING ---
         sf::Event event;
-        while(window.pollEvent(event)) {
-            if(event.type == sf::Event::Closed) {
+        while (window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed) {
                 window.close();
             }
-            if(event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
                 window.close();
             }
-            for(auto& e : entities) {
+            for (auto& e : entities) {
                 e->onEvent(window, event);
             }
         }
 
         // --- REALTIME UPDATES ---
         float dt = clock.restart().asSeconds();
-        for(auto& e : entities) {
+        for (auto& e : entities) {
             e->update(window, dt);
         }
 
         // --- RENDERING ---
         window.clear();
-        for(const auto& e : entities) {
+        for (const auto& e : entities) {
             e->draw(window);
         }
         window.display();
@@ -131,7 +138,7 @@ int main(int, char**) {
     circuitButtons.back().getShape().setFillColor(sf::Color::Blue);
     circuitButtons.back().getShape().setPosition({10, 160});
     circuitButtons.back().getShape().setSize({100, 50});
-    
+
     circuitButtons.emplace_back(world, *proto4, *dragger);
     circuitButtons.back().setView(&world.getScreenView());
     circuitButtons.back().getShape().setFillColor(sf::Color::Magenta);
