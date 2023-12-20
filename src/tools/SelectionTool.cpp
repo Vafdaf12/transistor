@@ -35,7 +35,7 @@ void SelectionTool::onEvent(const sf::RenderWindow& window, const sf::Event& eve
     
 }
 
-void SelectionTool::update(const sf::RenderWindow& window) {
+void SelectionTool::update(const sf::RenderWindow& window, float) {
     if(_active) {
         sf::Vector2i pos = sf::Mouse::getPosition(window);
         sf::Vector2f worldPos = window.mapPixelToCoords(pos);

@@ -13,7 +13,7 @@ public:
     bool isActive() const override { return _firstPin; }
 
     void onEvent(const sf::RenderWindow&, const sf::Event&) override;
-    void update(const sf::RenderWindow&) override;
+    void update(const sf::RenderWindow&, float) override;
     void draw(sf::RenderWindow&) const override;
 
 private:

@@ -34,7 +34,7 @@ void CircuitDragger::onEvent(const sf::RenderWindow& window, const sf::Event& e)
     }
 }
 
-void CircuitDragger::update(const sf::RenderWindow& window) {
+void CircuitDragger::update(const sf::RenderWindow& window, float) {
     sf::Vector2i pos = sf::Mouse::getPosition(window);
     sf::Vector2f worldPos = window.mapPixelToCoords(pos);
 

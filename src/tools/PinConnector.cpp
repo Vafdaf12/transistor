@@ -2,7 +2,7 @@
 
 PinConnector::PinConnector(GameWorld& world) : _world(world) {}
 
-void PinConnector::update(const sf::RenderWindow& window) {
+void PinConnector::update(const sf::RenderWindow& window, float) {
     if (isActive()) {
         sf::Vector2i pos = sf::Mouse::getPosition(window);
         _vertices[1].position = window.mapPixelToCoords(pos);

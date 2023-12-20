@@ -12,7 +12,7 @@ public:
     bool isActive() const override;
 
     void onEvent(const sf::RenderWindow&, const sf::Event&) override;
-    void update(const sf::RenderWindow&) override;
+    void update(const sf::RenderWindow&, float) override;
     void startDragging(const sf::RenderWindow& window, const std::vector<Circuit*> selection);
 
 private:

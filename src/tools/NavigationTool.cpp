@@ -24,7 +24,7 @@ void NavigationTool::onEvent(const sf::RenderWindow& window, const sf::Event& e)
     }
 }
 
-void NavigationTool::update(const sf::RenderWindow& window) {
+void NavigationTool::update(const sf::RenderWindow& window, float) {
 
     sf::Vector2i pos = sf::Mouse::getPosition(window);
 

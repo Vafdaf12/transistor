@@ -1,4 +1,5 @@
 #include "SFML/Graphics/RenderWindow.hpp"
+#include "SFML/Window/Cursor.hpp"
 #include "SFML/Window/Event.hpp"
 #include "asset/CircuitRegistry.h"
 #include "asset/ResourceManager.h"
@@ -6,6 +7,7 @@
 #include "circuit/BinaryGate.h"
 #include "core/Entity.h"
 #include "pin/Pin.h"
+#include "tools/NavigationTool.h"
 
 #include <iostream>
 #include <list>
@@ -22,18 +24,23 @@ int main(int, char**) {
     gateTextures.load(BinaryGate::And, "assets/sprites/gate_and.png");
     gateTextures.load(BinaryGate::Nand, "assets/sprites/gate_nand.png");
 
+    /*
     CircuitRegistry registry;
     registry.add("or_gate", [&](const json& j) { return serde::createBinaryGate<BinaryGate::Or>(j, gateTextures); });
     registry.add("xor_gate", [&](const json& j) { return serde::createBinaryGate<BinaryGate::Xor>(j, gateTextures); });
     registry.add("and_gate", [&](const json& j) { return serde::createBinaryGate<BinaryGate::And>(j, gateTextures); });
     registry.add("nand_gate", [&](const json& j) { return serde::createBinaryGate<BinaryGate::Nand>(j, gateTextures); });
     registry.add("not_gate", [&](const json& j) { return serde::createNot(j, assets); });
+    */
 
     // --- WINDOW SETUP ---
     sf::Clock clock;
     sf::RenderWindow window({1280, 720}, "Transistor");
     window.setVerticalSyncEnabled(true);
 
+    sf::View worldView = window.getDefaultView();
+
+    // --- GAME WORLD ---
     std::list<std::unique_ptr<core::Entity>> entities;
     Pin* pin = new Pin("pin", Pin::Input, {100, 100});
     pin->setEditable(true);
@@ -42,6 +49,10 @@ int main(int, char**) {
     pin = nullptr;
 
     entities.emplace_back(new BinaryGate("pin", gateTextures, BinaryGate::Nand, {200, 0}));
+
+    // --- INPUT METHODS ---
+    std::vector<std::unique_ptr<Tool>> tools;
+    tools.emplace_back(new NavigationTool(worldView));
 
     // --- EVENT LOOP ---
     float time = clock.restart().asMilliseconds();
@@ -59,6 +70,9 @@ int main(int, char**) {
             for (auto& e : entities) {
                 e->onEvent(window, event);
             }
+            for (auto& t : tools) {
+                t->onEvent(window, event);
+            }
         }
 
         // --- REALTIME UPDATES ---
@@ -66,11 +80,18 @@ int main(int, char**) {
         for (auto& e : entities) {
             e->update(window, dt);
         }
+        for (auto& t : tools) {
+            t->update(window, dt);
+        }
 
         // --- RENDERING ---
+        window.setView(worldView);
         window.clear();
         for (const auto& e : entities) {
             e->draw(window);
+        }
+        for (auto& t : tools) {
+            t->draw(window);
         }
         window.display();
     }

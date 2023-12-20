@@ -11,7 +11,7 @@ public:
     inline bool isActive() const override { return _state != None; };
 
     void onEvent(const sf::RenderWindow&, const sf::Event&) override;
-    void update(const sf::RenderWindow&) override;
+    void update(const sf::RenderWindow&, float) override;
 
 private:
     enum State { None, Panning };
