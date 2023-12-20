@@ -1,53 +1,38 @@
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/Drawable.hpp"
-#include "SFML/Graphics/Rect.hpp"
-#include "SFML/Graphics/RectangleShape.hpp"
-#include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Texture.hpp"
-#include "SFML/Graphics/Transform.hpp"
-#include "SFML/Graphics/View.hpp"
-#include "SFML/System/Vector2.hpp"
-#include "SFML/Window/Clipboard.hpp"
 #include "SFML/Window/Event.hpp"
-#include "SFML/Window/Keyboard.hpp"
-#include "SFML/Window/WindowBase.hpp"
 
 #include <iostream>
-#include <list>
-#include <string>
-#include <vector>
-
-#include "EventLayer.h"
-#include "asset/AssetSystem.h"
-#include "asset/deserialize.h"
-#include "asset/CommandLoader.h"
-#include "circuit/Circuit.h"
-#include "circuit/NandCircuit.h"
-#include "circuit/BinaryGate.h"
-#include "circuit/NotGate.h"
-#include "game/GameWorld.h"
-#include "pin/Pin.h"
-#include "tools/CircuitDragger.h"
-#include "tools/NavigationTool.h"
-#include "tools/PinConnector.h"
-#include "tools/SelectionTool.h"
-#include "tools/Tool.h"
-
-#include "CircuitButton.h"
-
-using SfLayer = EventLayer<sf::Event::EventType, sf::Event>;
-
-constexpr float RADIUS = 10.0f;
-constexpr float SEP = 2 * RADIUS;
-constexpr float WIDTH = 150;
-
-enum ToolState {
-    NONE = 0,
-    DRAGGING,
-};
 
 int main(int, char**) {
+    // --- WINDOW SETUP ---
+    sf::Clock clock;
+    sf::RenderWindow window({1280, 720}, "Transistor");
+    window.setVerticalSyncEnabled(true);
+
+
+    // --- EVENT LOOP ---
+    float time = clock.restart().asMilliseconds();
+    std::cout << "Startup time: " << time << "ms" << std::endl;
+    while(window.isOpen()) {
+        // --- EVENT HANDLING ---
+        sf::Event event;
+        while(window.pollEvent(event)) {
+            if(event.type == sf::Event::Closed) {
+                window.close();
+            }
+            if(event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
+                window.close();
+            }
+        }
+
+        // --- REALTIME UPDATES ---
+
+        // --- RENDERING ---
+        window.clear();
+        window.display();
+    }
+
+    /*
     std::cout << sf::Clipboard::getString().toAnsiString() << std::endl;
     sf::RenderWindow window({1280, 720}, "Transistor");
     window.setKeyRepeatEnabled(false);
@@ -215,4 +200,5 @@ int main(int, char**) {
     }
     world.saveToFile("assets/world.json");
     return 0;
+    */
 }
