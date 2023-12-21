@@ -5,6 +5,8 @@
 #include "asset/AssetSystem.h"
 #include "asset/ResourceManager.h"
 #include "circuit/BinaryGate.h"
+#include "ui/ImageView.h"
+#include "ui/Widget.h"
 
 #include <iostream>
 
@@ -48,6 +50,13 @@ int main(int, char**) {
     editor.addCircuit(new BinaryGate("pin", gateTextures, BinaryGate::Nand, {200, 0}));
     editor.addCircuit(new BinaryGate("pin2", gateTextures, BinaryGate::Xor, {200, 100}));
 
+    // --- GUI ---
+    sf::View gui = window.getDefaultView();
+
+    ui::ImageView* imageView = new ui::ImageView(gateTextures.get(BinaryGate::Xor));
+    imageView->getSprite().setScale(0.5f, 0.5f);
+    std::unique_ptr<ui::Widget> root(imageView);
+
     // --- EVENT LOOP ---
     float time = clock.restart().asMilliseconds();
     std::cout << "Startup time: " << time << "ms" << std::endl;
@@ -58,8 +67,15 @@ int main(int, char**) {
             if (event.type == sf::Event::Closed) {
                 window.close();
             }
+            if (event.type == sf::Event::Resized) {
+                gui = window.getDefaultView();
+            }
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
                 window.close();
+            }
+            window.setView(gui);
+            if(root->onEvent(window, event)) {
+                    continue;
             }
             editor.onEvent(window, event);
         }
@@ -67,10 +83,15 @@ int main(int, char**) {
         // --- REALTIME UPDATES ---
         float dt = clock.restart().asSeconds();
         editor.update(window, dt);
+        window.setView(gui);
+        root->update(window, dt);
 
         // --- RENDERING ---
         window.clear();
         editor.draw(window);
+
+        window.setView(gui);
+        root->draw(window);
         window.display();
     }
 

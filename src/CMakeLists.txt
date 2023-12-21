@@ -9,6 +9,7 @@ FetchContent_MakeAvailable(SFML)
 add_executable(${BINARY} 
     main.cpp
     app/CircuitEditor.cpp
+    ui/ImageView.cpp
     CircuitButton.cpp
     circuit/BinaryGate.cpp
     circuit/NotGate.cpp
