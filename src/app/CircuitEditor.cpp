@@ -8,6 +8,8 @@
 
 #include <algorithm>
 #include <cmath>
+#include <iostream>
+#include <string>
 
 CircuitEditor::CircuitEditor(const sf::View& screen, const sf::View& world)
     : _worldSpace(world), _screenSpace(screen) {
@@ -40,7 +42,7 @@ bool CircuitEditor::removeInput(Pin* pin) {
 }
 
 bool CircuitEditor::addOutput(const std::string& id) {
-    bool exists = std::any_of(_inputs.begin(), _inputs.end(), [&id](const Pin& p) {
+    bool exists = std::any_of(_outputs.begin(), _outputs.end(), [&id](const Pin& p) {
         return p.getId() == id;
     });
     if (!exists) {
@@ -175,11 +177,11 @@ void CircuitEditor::layoutPins() {
     sf::Vector2f outputBase = {size.x - Pin::RADIUS - pinMargin, (size.y - outputHeight) / 2.f};
 
     size_t i = 0;
-    for(Pin& p : _inputs) {
+    for (Pin& p : _inputs) {
         p.setCenter(inputBase + sf::Vector2f(0, (i++) * pinStep));
     }
     i = 0;
-    for(Pin& p : _outputs) {
+    for (Pin& p : _outputs) {
         p.setCenter(outputBase + sf::Vector2f(0, (i++) * pinStep));
     }
 }
@@ -191,6 +193,30 @@ void CircuitEditor::onEvent(const sf::RenderWindow& w, const sf::Event& e) {
         float zoom = _worldSpace.getSize().x / e.size.width;
         _worldSpace.setSize(e.size.width * zoom, e.size.height * zoom);
         layoutPins();
+    }
+    if (e.type == sf::Event::KeyPressed) {
+        if (e.key.code == sf::Keyboard::Up) {
+            if (e.key.alt) {
+                std::string id = getInputId("in");
+                addInput(id);
+                std::cout << "Add input: " << id << std::endl;
+            } else {
+                std::string id = getOutputId("out");
+                addOutput(id);
+                std::cout << "Add output: " << id << std::endl;
+            }
+        }
+        if (e.key.code == sf::Keyboard::Down) {
+            if (e.key.alt && _inputs.size() > 0) {
+                _inputs.pop_back();
+                layoutPins();
+                std::cout << "Remove input" << std::endl;
+            } else if (_outputs.size() > 0) {
+                _outputs.pop_back();
+                layoutPins();
+                std::cout << "Remove output" << std::endl;
+            }
+        }
     }
 
     for (auto& p : _wires) {
@@ -338,6 +364,28 @@ std::string CircuitEditor::getCircuitId(const std::string& id) const {
     int count = 0;
     for (const auto& c : _circuits) {
         std::string cid = c->getId().substr(0, id.size());
+        count++;
+    }
+    if (count == 0) {
+        return id;
+    }
+    return id + std::to_string(count);
+}
+std::string CircuitEditor::getInputId(const std::string& id) const {
+    int count = 0;
+    for (const auto& c : _inputs) {
+        std::string cid = c.getId().substr(0, id.size());
+        count++;
+    }
+    if (count == 0) {
+        return id;
+    }
+    return id + std::to_string(count);
+}
+std::string CircuitEditor::getOutputId(const std::string& id) const {
+    int count = 0;
+    for (const auto& c : _outputs) {
+        std::string cid = c.getId().substr(0, id.size());
         count++;
     }
     if (count == 0) {

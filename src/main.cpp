@@ -37,11 +37,11 @@ int main(int, char**) {
     sf::View view = window.getDefaultView();
     view.setCenter(0, 0);
     CircuitEditor editor(window.getDefaultView(), view);
+    editor.addInput("in0");
     editor.addInput("in1");
     editor.addInput("in2");
-    editor.addInput("in3");
+    editor.addOutput("out0");
     editor.addOutput("out1");
-    editor.addOutput("out2");
     editor.addCircuit(new BinaryGate("pin", gateTextures, BinaryGate::Nand, {200, 0}));
     editor.addCircuit(new BinaryGate("pin2", gateTextures, BinaryGate::Xor, {200, 100}));
 

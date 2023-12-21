@@ -74,6 +74,9 @@ private:
     void layoutPins();
     void updateWires();
 
+    std::string getInputId(const std::string& base) const;
+    std::string getOutputId(const std::string& base) const;
+
     sf::View _screenSpace;
     sf::View _worldSpace;
 
