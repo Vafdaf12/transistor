@@ -36,7 +36,9 @@ int main(int, char**) {
     window.setVerticalSyncEnabled(true);
 
     // --- GAME WORLD ---
-    CircuitEditor editor(window.getDefaultView(), window.getDefaultView());
+    sf::View view = window.getDefaultView();
+    view.setCenter(0, 0);
+    CircuitEditor editor(window.getDefaultView(), view);
     editor.addInput("in1");
     editor.addInput("in2");
     editor.addInput("in3");

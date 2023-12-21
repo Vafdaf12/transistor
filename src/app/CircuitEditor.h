@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "SFML/Graphics/VertexArray.hpp"
 #include "SFML/Graphics/View.hpp"
 #include "core/Entity.h"
 #include "pin/Pin.h"
@@ -68,6 +69,9 @@ private:
 
     sf::View _screenSpace;
     sf::View _worldSpace;
+
+    sf::VertexArray _grid;
+
 
     std::vector<Wire> _wires;
     std::vector<Pin> _inputs;

@@ -3,12 +3,13 @@
 #include "circuit/Circuit.h"
 
 #include <algorithm>
+#include <cmath>
 #include <vector>
 
 CircuitEditor::CircuitEditor(const sf::View& screen, const sf::View& world)
     : _worldSpace(world), _screenSpace(screen) {
-        layoutPins();
-    }
+    layoutPins();
+}
 
 bool CircuitEditor::addInput(const std::string& id) {
     bool exists = std::any_of(_inputs.begin(), _inputs.end(), [&id](const Pin& p) {
@@ -170,9 +171,54 @@ void CircuitEditor::update(const sf::RenderWindow& w, float dt) {
     for (auto& c : _circuits) {
         c->update(w, dt);
     }
+
+
+    sf::Vector2f topLeft = _worldSpace.getCenter()-_worldSpace.getSize()/2.f;
+    sf::Vector2f bottomRight = _worldSpace.getCenter()+_worldSpace.getSize()/2.f;
+
+    const int zoom = std::min(_worldSpace.getSize().x / w.getSize().x / 4, 3.f);
+    const float gridSize = std::pow(2, zoom) * 100;
+    const sf::Color dimColor = sf::Color(0xffffff55);
+
+    _grid.clear();
+    _grid.setPrimitiveType(sf::Lines);
+    int range = ceil((bottomRight.x - topLeft.x) / gridSize);
+    float start = floor(topLeft.x / gridSize) * gridSize;
+    for (int i = 0; i <= range; i++) {
+        sf::Vertex top({start + gridSize * i, topLeft.y});
+        sf::Vertex bot({start + gridSize * i, bottomRight.y});
+
+        if (top.position.x == 0) {
+            top.color = sf::Color::Green;
+            bot.color = sf::Color::Green;
+        } else {
+            top.color = dimColor;
+            bot.color = dimColor;
+        }
+        _grid.append(top);
+        _grid.append(bot);
+    }
+    
+    range = ceil((bottomRight.y - topLeft.y) / gridSize);
+    start = floor(topLeft.y / gridSize) * gridSize;
+    for (int i = 0; i <= range; i++) {
+        sf::Vertex top({topLeft.x, start + gridSize * i});
+        sf::Vertex bot({bottomRight.x, start + gridSize * i});
+
+        if (top.position.y == 0) {
+            top.color = sf::Color::Red;
+            bot.color = sf::Color::Red;
+        } else {
+            top.color = dimColor;
+            bot.color = dimColor;
+        }
+        _grid.append(top);
+        _grid.append(bot);
+    }
 }
 void CircuitEditor::draw(sf::RenderWindow& w) const {
     w.setView(_worldSpace);
+    w.draw(_grid);
     for (const auto& p : _wires) {
         p.draw(w);
     }
@@ -226,13 +272,12 @@ Circuit* CircuitEditor::queryCircuit(const std::string& path) {
 }
 std::string CircuitEditor::getCircuitId(const std::string& id) const {
     int count = 0;
-    for(const auto& c : _circuits) {
+    for (const auto& c : _circuits) {
         std::string cid = c->getId().substr(0, id.size());
         count++;
     }
-    if(count == 0) {
+    if (count == 0) {
         return id;
     }
     return id + std::to_string(count);
-
 }
