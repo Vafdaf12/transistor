@@ -269,7 +269,7 @@ void CircuitEditor::update(const sf::RenderWindow& w, float dt) {
     float dist =
         w.mapCoordsToPixel({100, 0}, _worldSpace).x - w.mapCoordsToPixel({0, 0}, _worldSpace).x;
     const int zoom = std::min(_worldSpace.getSize().x / w.getSize().x / 4, 3.f);
-    const float gridSize =  10 * 1024 / std::pow(2, ceil(log2(dist)));
+    const float gridSize = 10 * 1024 / std::pow(2, ceil(log2(dist)));
     const sf::Color dimColor = sf::Color(0xffffff55);
 
     _grid.clear();

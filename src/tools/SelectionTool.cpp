@@ -15,7 +15,7 @@ void SelectionTool::onEvent(const sf::RenderWindow& window, const sf::Event& eve
         _board.clearSelection();
 
         sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
-        sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
+        sf::Vector2f worldPos = window.mapPixelToCoords(mousePos, _editor.getWorldView());
 
         if (!_editor.collidePin(window, mousePos, true)) {
             _selector.setPosition(worldPos);
@@ -38,7 +38,7 @@ void SelectionTool::onEvent(const sf::RenderWindow& window, const sf::Event& eve
 void SelectionTool::update(const sf::RenderWindow& window, float) {
     if (_active) {
         sf::Vector2i pos = sf::Mouse::getPosition(window);
-        sf::Vector2f worldPos = window.mapPixelToCoords(pos);
+        sf::Vector2f worldPos = window.mapPixelToCoords(pos, _editor.getWorldView());
         sf::Vector2f size = worldPos - _selector.getPosition();
         _selector.setSize(size);
     }
