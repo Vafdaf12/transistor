@@ -1,4 +1,5 @@
 #include "SFML/Graphics/RenderWindow.hpp"
+#include "SFML/Window/ContextSettings.hpp"
 #include "SFML/Window/Event.hpp"
 #include "app/CircuitEditor.h"
 #include "asset/AssetSystem.h"
@@ -30,7 +31,9 @@ int main(int, char**) {
 
     // --- WINDOW SETUP ---
     sf::Clock clock;
-    sf::RenderWindow window({1280, 720}, "Transistor");
+    sf::ContextSettings settings;
+    settings.antialiasingLevel = 5;
+    sf::RenderWindow window({1280, 720}, "Transistor", sf::Style::Default, settings);
     window.setVerticalSyncEnabled(true);
 
     // --- GAME WORLD ---
