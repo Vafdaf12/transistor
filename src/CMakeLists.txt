@@ -10,7 +10,7 @@ add_executable(${BINARY}
     main.cpp
     app/CircuitEditor.cpp
     ui/ImageView.cpp
-    CircuitButton.cpp
+    ui/CircuitButton.cpp
     circuit/BinaryGate.cpp
     circuit/NotGate.cpp
     pin/Pin.cpp

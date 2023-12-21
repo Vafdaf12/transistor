@@ -5,6 +5,12 @@
 #include "SFML/Window/Event.hpp"
 
 namespace ui {
+using State = uint8_t;
+enum StateFlags {
+    Hover = 1,
+    Dragging = 2,
+};
+
 class Widget {
 public:
     virtual ~Widget() {}
@@ -16,9 +22,5 @@ public:
 
     virtual void setPosition(sf::Vector2f) = 0;
     virtual sf::Vector2f getPosition() const = 0;
-
-    enum State {
-        Hover = 1 << 0,
-    };
 };
-}
+} // namespace ui

@@ -5,10 +5,13 @@
 #include "asset/AssetSystem.h"
 #include "asset/ResourceManager.h"
 #include "circuit/BinaryGate.h"
+#include "circuit/NotGate.h"
+#include "ui/CircuitButton.h"
 #include "ui/ImageView.h"
 #include "ui/Widget.h"
 
 #include <iostream>
+
 
 int main(int, char**) {
     // --- RESOURCES ---
@@ -53,9 +56,30 @@ int main(int, char**) {
     // --- GUI ---
     sf::View gui = window.getDefaultView();
 
+    std::vector<std::unique_ptr<ui::Widget>> widgets;
+
     ui::ImageView* imageView = new ui::ImageView(gateTextures.get(BinaryGate::Xor));
     imageView->getSprite().setScale(0.5f, 0.5f);
-    std::unique_ptr<ui::Widget> root(imageView);
+    widgets.emplace_back(new ui::CircuitButton(editor, new BinaryGate("xor", gateTextures, BinaryGate::Xor), imageView));
+
+    imageView = new ui::ImageView(gateTextures.get(BinaryGate::And));
+    imageView->getSprite().setScale(0.5f, 0.5f);
+    widgets.emplace_back(new ui::CircuitButton(editor, new BinaryGate("and", gateTextures, BinaryGate::And), imageView));
+
+    imageView = new ui::ImageView(gateTextures.get(BinaryGate::Or));
+    imageView->getSprite().setScale(0.5f, 0.5f);
+    widgets.emplace_back(new ui::CircuitButton(editor, new BinaryGate("or", gateTextures, BinaryGate::Or), imageView));
+
+    imageView = new ui::ImageView(assets.textures.get("gate_not"));
+    imageView->getSprite().setScale(0.5f, 0.5f);
+    widgets.emplace_back(new ui::CircuitButton(editor, new NotGate("not", assets), imageView));
+
+    sf::Vector2f offset(10, 10);
+    for(auto& w : widgets) {
+        w->setPosition(offset);
+        offset += sf::Vector2f(w->getBoundingBox().getSize().x + 10, 0);
+    }
+
 
     // --- EVENT LOOP ---
     float time = clock.restart().asMilliseconds();
@@ -74,8 +98,14 @@ int main(int, char**) {
                 window.close();
             }
             window.setView(gui);
-            if(root->onEvent(window, event)) {
-                    continue;
+            bool handled = false;
+            for(auto& w : widgets) {
+                if(w->onEvent(window, event)) {
+                    handled = true;
+                }
+            }
+            if(handled) {
+                continue;
             }
             editor.onEvent(window, event);
         }
@@ -84,14 +114,18 @@ int main(int, char**) {
         float dt = clock.restart().asSeconds();
         editor.update(window, dt);
         window.setView(gui);
-        root->update(window, dt);
+        for(auto& w : widgets) {
+            w->update(window, dt);
+        }
 
         // --- RENDERING ---
         window.clear();
         editor.draw(window);
 
         window.setView(gui);
-        root->draw(window);
+        for(auto& w : widgets) {
+            w->draw(window);
+        }
         window.display();
     }
 
