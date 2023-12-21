@@ -2,15 +2,16 @@
 
 #include "circuit/Circuit.h"
 #include "tools/NavigationTool.h"
+#include "tools/PinConnector.h"
 
 #include <algorithm>
 #include <cmath>
-#include <vector>
 
 CircuitEditor::CircuitEditor(const sf::View& screen, const sf::View& world)
     : _worldSpace(world), _screenSpace(screen) {
     layoutPins();
     _tools.emplace_back(new NavigationTool(_worldSpace));
+    _tools.emplace_back(new PinConnector(*this));
 }
 
 bool CircuitEditor::addInput(const std::string& id) {
@@ -73,11 +74,11 @@ bool CircuitEditor::removeCircuit(Circuit* c) {
 }
 
 bool CircuitEditor::addWire(Pin* from, Pin* to) {
-    Wire wire(from, to);
-    bool exists =
-        std::any_of(_wires.begin(), _wires.end(), [&wire](const Wire& w) { return wire == w; });
+    bool exists = std::any_of(_wires.begin(), _wires.end(), [from, to](const Wire& w) {
+        return w.getFrom() == from && w.getTo() == to;
+    });
     if (!exists) {
-        _wires.emplace_back(std::move(wire));
+        _wires.emplace_back(from, to);
     }
     return !exists;
 }
@@ -85,8 +86,27 @@ bool CircuitEditor::removeWire(Pin* from, Pin* to) {
     if (!to) {
         return std::erase_if(_wires, [from](const Wire& w) { return w.isEndpoint(from); }) > 0;
     }
-    Wire wire(from, to);
-    return std::erase_if(_wires, [&wire](const Wire& w) { return w == wire; }) > 0;
+    return std::erase_if(_wires, [from, to](const Wire& w) {
+               return w.getFrom() == from && w.getTo() == to;
+           }) > 0;
+}
+Wire* CircuitEditor::getWire(Pin* from, Pin* to) {
+    auto it = _wires.end();
+    if (!to) {
+        it = std::find_if(_wires.begin(), _wires.end(), [from](const auto& w) {
+            return w.isEndpoint(from);
+        });
+    } else {
+        Wire wire(from, to);
+        it = std::find_if(_wires.begin(), _wires.end(), [&wire](const Wire& w) {
+            return w == wire;
+        });
+    }
+    if (it != _wires.end()) {
+        return &(*it);
+    } else {
+        return nullptr;
+    }
 }
 
 Pin* CircuitEditor::collidePin(const sf::RenderWindow& w, sf::Vector2i pixel, bool worldOnly) {
@@ -130,11 +150,13 @@ void CircuitEditor::layoutPins() {
     sf::Vector2f inputBase = {Pin::RADIUS + pinMargin, (size.y - inputHeight) / 2};
     sf::Vector2f outputBase = {size.x - Pin::RADIUS - pinMargin, (size.y - outputHeight) / 2.f};
 
-    for (size_t i = 0; i < _inputs.size(); i++) {
-        _inputs[i].setCenter(inputBase + sf::Vector2f(0, i * pinStep));
+    size_t i = 0;
+    for(Pin& p : _inputs) {
+        p.setCenter(inputBase + sf::Vector2f(0, (i++) * pinStep));
     }
-    for (size_t i = 0; i < _outputs.size(); i++) {
-        _outputs[i].setCenter(outputBase + sf::Vector2f(0, i * pinStep));
+    i = 0;
+    for(Pin& p : _outputs) {
+        p.setCenter(outputBase + sf::Vector2f(0, (i++) * pinStep));
     }
 }
 void CircuitEditor::onEvent(const sf::RenderWindow& w, const sf::Event& e) {
@@ -159,8 +181,11 @@ void CircuitEditor::onEvent(const sf::RenderWindow& w, const sf::Event& e) {
     for (auto& c : _circuits) {
         c->onEvent(w, e);
     }
-    for(auto& tool : _tools) {
+    for (auto& tool : _tools) {
         tool->onEvent(w, e);
+        if (tool->isActive()) {
+            break;
+        }
     }
 }
 void CircuitEditor::update(const sf::RenderWindow& w, float dt) {
@@ -176,12 +201,15 @@ void CircuitEditor::update(const sf::RenderWindow& w, float dt) {
     for (auto& c : _circuits) {
         c->update(w, dt);
     }
-    for(auto& tool : _tools) {
+    for (auto& tool : _tools) {
         tool->update(w, dt);
+        if (tool->isActive()) {
+            break;
+        }
     }
 
-    sf::Vector2f topLeft = _worldSpace.getCenter()-_worldSpace.getSize()/2.f;
-    sf::Vector2f bottomRight = _worldSpace.getCenter()+_worldSpace.getSize()/2.f;
+    sf::Vector2f topLeft = _worldSpace.getCenter() - _worldSpace.getSize() / 2.f;
+    sf::Vector2f bottomRight = _worldSpace.getCenter() + _worldSpace.getSize() / 2.f;
 
     const int zoom = std::min(_worldSpace.getSize().x / w.getSize().x / 4, 3.f);
     const float gridSize = std::pow(2, zoom) * 100;
@@ -205,7 +233,7 @@ void CircuitEditor::update(const sf::RenderWindow& w, float dt) {
         _grid.append(top);
         _grid.append(bot);
     }
-    
+
     range = ceil((bottomRight.y - topLeft.y) / gridSize);
     start = floor(topLeft.y / gridSize) * gridSize;
     for (int i = 0; i <= range; i++) {
@@ -242,7 +270,7 @@ void CircuitEditor::draw(sf::RenderWindow& w) const {
     }
 
     w.setView(_worldSpace);
-    for(auto& tool : _tools) {
+    for (auto& tool : _tools) {
         tool->draw(w);
     }
 }

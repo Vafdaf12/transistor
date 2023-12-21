@@ -1,5 +1,6 @@
 #include "Wire.h"
 #include "SFML/Graphics/PrimitiveType.hpp"
+#include <iostream>
 
 Wire::Wire(Pin* p1, Pin* p2) {
     switch (p1->getType()) {

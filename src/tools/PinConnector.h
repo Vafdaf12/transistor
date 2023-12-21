@@ -2,13 +2,13 @@
 
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Vertex.hpp"
-#include "game/GameWorld.h"
+#include "app/CircuitEditor.h"
 #include "pin/Pin.h"
 #include "tools/Tool.h"
 
 class PinConnector : public Tool {
 public:
-    PinConnector(GameWorld& world);
+    PinConnector(CircuitEditor& world);
 
     bool isActive() const override { return _firstPin; }
 
@@ -17,7 +17,7 @@ public:
     void draw(sf::RenderWindow&) const override;
 
 private:
-    GameWorld& _world;
+    CircuitEditor& _editor;
 
     Pin* _firstPin = nullptr;
 

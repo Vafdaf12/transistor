@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+#include <memory>
+#include <list>
 
 #include "SFML/Graphics/VertexArray.hpp"
 #include "SFML/Graphics/View.hpp"
@@ -55,8 +57,9 @@ public:
 
     bool addWire(Pin* from, Pin* to);
     bool removeWire(Pin* from, Pin* to = nullptr);
+    Wire* getWire(Pin* from, Pin* to = nullptr);
 
-    Pin* collidePin(const sf::RenderWindow&, sf::Vector2i pos, bool worldOnly = true);
+    Pin* collidePin(const sf::RenderWindow&, sf::Vector2i pos, bool worldOnly = false);
 
     void onEvent(const sf::RenderWindow&, const sf::Event&) override;
     void update(const sf::RenderWindow&, float dt) override;
@@ -73,9 +76,13 @@ private:
 
     sf::VertexArray _grid;
 
-    std::vector<Wire> _wires;
-    std::vector<Pin> _inputs;
-    std::vector<Pin> _outputs;
+    // NOTE: Lists are used here to preserve the consistency of flag pointers
+    // between wires and pins, since a vector does it's whole "resize-and-copy"
+    // maneuver, inherently invalidating the pointers
+    std::list<Wire> _wires;
+    std::list<Pin> _inputs;
+    std::list<Pin> _outputs;
+
     std::vector<std::unique_ptr<Circuit>> _circuits;
 
     std::vector<std::unique_ptr<Tool>> _tools;
