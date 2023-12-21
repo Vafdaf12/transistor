@@ -1,12 +1,13 @@
 #include "SelectionTool.h"
 #include "SFML/Graphics/RenderWindow.hpp"
 
-SelectionTool::SelectionTool( GameWorld& world, DragBoard& board) : _world(world), _board(board) {
+SelectionTool::SelectionTool(CircuitEditor& editor, DragBoard& board)
+    : _editor(editor), _board(board) {
     _selector.setFillColor({66, 135, 245, 100});
 }
 
 void SelectionTool::onEvent(const sf::RenderWindow& window, const sf::Event& event) {
-    if(event.type == sf::Event::MouseButtonPressed) {
+    if (event.type == sf::Event::MouseButtonPressed) {
         if (event.mouseButton.button != sf::Mouse::Left) {
             return;
         }
@@ -16,27 +17,26 @@ void SelectionTool::onEvent(const sf::RenderWindow& window, const sf::Event& eve
         sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
         sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
 
-        if(!_world.collideCircuit(worldPos) && !_world.collidePin(worldPos)) {
+        if (!_editor.collidePin(window, mousePos, true)) {
             _selector.setPosition(worldPos);
             _selector.setSize({0, 0});
             _active = true;
         }
     }
-    if(event.type == sf::Event::MouseMoved) {
+    if (event.type == sf::Event::MouseMoved) {
         if (!_active) {
             return;
         }
-        _board.setSelection(_world.collideCircuit(_selector.getGlobalBounds()));
+        _board.setSelection(_editor.collideCircuit(_selector.getGlobalBounds()));
     }
 
-    if(event.type == sf::Event::MouseButtonReleased) {
+    if (event.type == sf::Event::MouseButtonReleased) {
         _active = false;
     }
-    
 }
 
 void SelectionTool::update(const sf::RenderWindow& window, float) {
-    if(_active) {
+    if (_active) {
         sf::Vector2i pos = sf::Mouse::getPosition(window);
         sf::Vector2f worldPos = window.mapPixelToCoords(pos);
         sf::Vector2f size = worldPos - _selector.getPosition();
@@ -45,7 +45,7 @@ void SelectionTool::update(const sf::RenderWindow& window, float) {
 }
 
 void SelectionTool::draw(sf::RenderWindow& window) const {
-    if(_active) {
+    if (_active) {
         window.draw(_selector);
     }
     for (const Circuit* c : _board.getSelection()) {

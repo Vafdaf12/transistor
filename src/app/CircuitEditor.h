@@ -10,6 +10,7 @@
 #include "pin/Pin.h"
 #include "pin/Wire.h"
 #include "tools/Tool.h"
+#include "util/DragBoard.h"
 
 class CircuitEditor : public core::Entity {
 public:
@@ -60,6 +61,7 @@ public:
     Wire* getWire(Pin* from, Pin* to = nullptr);
 
     Pin* collidePin(const sf::RenderWindow&, sf::Vector2i pos, bool worldOnly = false);
+    std::vector<Circuit*> collideCircuit(sf::FloatRect rect);
 
     void onEvent(const sf::RenderWindow&, const sf::Event&) override;
     void update(const sf::RenderWindow&, float dt) override;
@@ -86,4 +88,5 @@ private:
     std::vector<std::unique_ptr<Circuit>> _circuits;
 
     std::vector<std::unique_ptr<Tool>> _tools;
+    DragBoard _board;
 };

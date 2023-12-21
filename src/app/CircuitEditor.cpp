@@ -3,6 +3,7 @@
 #include "circuit/Circuit.h"
 #include "tools/NavigationTool.h"
 #include "tools/PinConnector.h"
+#include "tools/SelectionTool.h"
 
 #include <algorithm>
 #include <cmath>
@@ -12,6 +13,7 @@ CircuitEditor::CircuitEditor(const sf::View& screen, const sf::View& world)
     layoutPins();
     _tools.emplace_back(new NavigationTool(_worldSpace));
     _tools.emplace_back(new PinConnector(*this));
+    _tools.emplace_back(new SelectionTool(*this, _board));
 }
 
 bool CircuitEditor::addInput(const std::string& id) {
@@ -107,6 +109,17 @@ Wire* CircuitEditor::getWire(Pin* from, Pin* to) {
     } else {
         return nullptr;
     }
+}
+std::vector<Circuit*> CircuitEditor::collideCircuit(sf::FloatRect rect) {
+    std::vector<Circuit*> contained;
+    for (const auto& c : _circuits) {
+        sf::Vector2f tl = c->getBoundingBox().getPosition();
+        sf::Vector2f br = tl + c->getBoundingBox().getSize();
+        if (rect.contains(tl) && rect.contains(br)) {
+            contained.push_back(c.get());
+        }
+    }
+    return contained;
 }
 
 Pin* CircuitEditor::collidePin(const sf::RenderWindow& w, sf::Vector2i pixel, bool worldOnly) {
