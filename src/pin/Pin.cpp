@@ -69,6 +69,14 @@ sf::Vector2f Pin::getWorldSpacePosition(const sf::RenderTarget& target) const {
     sf::Vector2i screenSpace = target.mapCoordsToPixel(orgPos, *_view);
     return target.mapPixelToCoords(screenSpace);
 }
+
+sf::Vector2i Pin::getScreenSpacePosition(const sf::RenderTarget& target) const {
+    sf::Vector2f orgPos = getCenter();
+    if (!_view) {
+        return target.mapCoordsToPixel(orgPos);
+    }
+    return target.mapCoordsToPixel(orgPos, *_view);
+}
 void Pin::setCenter(sf::Vector2f pos) {
     float r = _graphic.getRadius();
     _graphic.setPosition(pos - sf::Vector2f(r, r));

@@ -5,7 +5,7 @@ PinConnector::PinConnector(CircuitEditor& world) : _editor(world) {}
 void PinConnector::update(const sf::RenderWindow& window, float) {
     if (isActive()) {
         sf::Vector2i pos = sf::Mouse::getPosition(window);
-        _vertices[1].position = window.mapPixelToCoords(pos);
+        _vertices[1].position = window.mapPixelToCoords(pos, _editor.getWorldView());
     }
 }
 
@@ -24,7 +24,9 @@ void PinConnector::onEvent(const sf::RenderWindow& window, const sf::Event& even
             _editor.removeWire(_firstPin);
         }
         if (_firstPin) {
-            _vertices[0].position = _firstPin->getWorldSpacePosition(window);
+            sf::Vector2i pos = _firstPin->getScreenSpacePosition(window);
+
+            _vertices[0].position = window.mapPixelToCoords(pos, _editor.getWorldView());
         }
     }
     if (event.type == sf::Event::MouseButtonReleased) {
@@ -32,7 +34,7 @@ void PinConnector::onEvent(const sf::RenderWindow& window, const sf::Event& even
             return;
         }
         sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
-        sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
+        sf::Vector2f worldPos = window.mapPixelToCoords(mousePos, _editor.getWorldView());
 
         Pin* nextPin = _editor.collidePin(window, mousePos);
 

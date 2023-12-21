@@ -60,18 +60,22 @@ int main(int, char**) {
 
     ui::ImageView* imageView = new ui::ImageView(gateTextures.get(BinaryGate::Xor));
     imageView->getSprite().setScale(0.5f, 0.5f);
+    imageView->getSprite().setColor(sf::Color::Cyan);
     widgets.emplace_back(new ui::CircuitButton(editor, new BinaryGate("xor", gateTextures, BinaryGate::Xor), imageView));
 
     imageView = new ui::ImageView(gateTextures.get(BinaryGate::And));
     imageView->getSprite().setScale(0.5f, 0.5f);
+    imageView->getSprite().setColor(sf::Color::Cyan);
     widgets.emplace_back(new ui::CircuitButton(editor, new BinaryGate("and", gateTextures, BinaryGate::And), imageView));
 
     imageView = new ui::ImageView(gateTextures.get(BinaryGate::Or));
     imageView->getSprite().setScale(0.5f, 0.5f);
+    imageView->getSprite().setColor(sf::Color::Cyan);
     widgets.emplace_back(new ui::CircuitButton(editor, new BinaryGate("or", gateTextures, BinaryGate::Or), imageView));
 
     imageView = new ui::ImageView(assets.textures.get("gate_not"));
     imageView->getSprite().setScale(0.5f, 0.5f);
+    imageView->getSprite().setColor(sf::Color::Cyan);
     widgets.emplace_back(new ui::CircuitButton(editor, new NotGate("not", assets), imageView));
 
     sf::Vector2f offset(10, 10);

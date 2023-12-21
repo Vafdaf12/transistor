@@ -58,6 +58,7 @@ public:
     sf::Vector2f getCenter() const;
 
     sf::Vector2f getWorldSpacePosition(const sf::RenderTarget&) const;
+    sf::Vector2i getScreenSpacePosition(const sf::RenderTarget&) const;
 
     static constexpr float RADIUS = 10.f;
 
