@@ -217,8 +217,8 @@ void CircuitEditor::onEvent(const sf::RenderWindow& w, const sf::Event& e) {
                 std::cout << "Remove output" << std::endl;
             }
         }
-        if(e.key.code == sf::Keyboard::Delete) {
-            for(Circuit* c: _board.getSelection()) {
+        if (e.key.code == sf::Keyboard::Delete) {
+            for (Circuit* c : _board.getSelection()) {
                 removeCircuit(c);
             }
             _board.clearSelection();
@@ -266,9 +266,10 @@ void CircuitEditor::update(const sf::RenderWindow& w, float dt) {
 
     sf::Vector2f topLeft = _worldSpace.getCenter() - _worldSpace.getSize() / 2.f;
     sf::Vector2f bottomRight = _worldSpace.getCenter() + _worldSpace.getSize() / 2.f;
-
+    float dist =
+        w.mapCoordsToPixel({100, 0}, _worldSpace).x - w.mapCoordsToPixel({0, 0}, _worldSpace).x;
     const int zoom = std::min(_worldSpace.getSize().x / w.getSize().x / 4, 3.f);
-    const float gridSize = std::pow(2, zoom) * 100;
+    const float gridSize =  10 * 1024 / std::pow(2, ceil(log2(dist)));
     const sf::Color dimColor = sf::Color(0xffffff55);
 
     _grid.clear();
