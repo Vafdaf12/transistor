@@ -15,13 +15,6 @@ void NavigationTool::onEvent(const sf::RenderWindow& window, const sf::Event& e)
         float delta = e.mouseWheelScroll.delta;
         _view.zoom(1.0 - (delta * 0.1f));
     }
-    if(e.type == sf::Event::Resized) {
-        float zoom = _view.getSize().y / e.size.height;
-        float x = e.size.width;
-        float y = e.size.height;
-        _view.setSize({x, y});
-        _view.zoom(zoom);
-    }
 }
 
 void NavigationTool::update(const sf::RenderWindow& window, float) {

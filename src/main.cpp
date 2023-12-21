@@ -4,10 +4,8 @@
 #include "asset/AssetSystem.h"
 #include "asset/ResourceManager.h"
 #include "circuit/BinaryGate.h"
-#include "tools/NavigationTool.h"
 
 #include <iostream>
-#include <memory>
 
 int main(int, char**) {
     // --- RESOURCES ---
@@ -47,10 +45,6 @@ int main(int, char**) {
     editor.addCircuit(new BinaryGate("pin", gateTextures, BinaryGate::Nand, {200, 0}));
     editor.addCircuit(new BinaryGate("pin2", gateTextures, BinaryGate::Xor, {200, 100}));
 
-    // --- INPUT METHODS ---
-    std::vector<std::unique_ptr<Tool>> tools;
-    tools.emplace_back(new NavigationTool(editor.getWorldView()));
-
     // --- EVENT LOOP ---
     float time = clock.restart().asMilliseconds();
     std::cout << "Startup time: " << time << "ms" << std::endl;
@@ -64,24 +58,15 @@ int main(int, char**) {
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
                 window.close();
             }
-            for(auto& tool : tools) {
-                tool->onEvent(window, event);
-            }
             editor.onEvent(window, event);
         }
 
         // --- REALTIME UPDATES ---
         float dt = clock.restart().asSeconds();
-        for(auto& tool : tools) {
-            tool->update(window, dt);
-        }
         editor.update(window, dt);
 
         // --- RENDERING ---
         window.clear();
-        for(auto& tool : tools) {
-            tool->draw(window);
-        }
         editor.draw(window);
         window.display();
     }

@@ -7,6 +7,7 @@
 #include "core/Entity.h"
 #include "pin/Pin.h"
 #include "pin/Wire.h"
+#include "tools/Tool.h"
 
 class CircuitEditor : public core::Entity {
 public:
@@ -72,9 +73,10 @@ private:
 
     sf::VertexArray _grid;
 
-
     std::vector<Wire> _wires;
     std::vector<Pin> _inputs;
     std::vector<Pin> _outputs;
     std::vector<std::unique_ptr<Circuit>> _circuits;
+
+    std::vector<std::unique_ptr<Tool>> _tools;
 };

@@ -1,6 +1,7 @@
 #include "CircuitEditor.h"
 
 #include "circuit/Circuit.h"
+#include "tools/NavigationTool.h"
 
 #include <algorithm>
 #include <cmath>
@@ -9,6 +10,7 @@
 CircuitEditor::CircuitEditor(const sf::View& screen, const sf::View& world)
     : _worldSpace(world), _screenSpace(screen) {
     layoutPins();
+    _tools.emplace_back(new NavigationTool(_worldSpace));
 }
 
 bool CircuitEditor::addInput(const std::string& id) {
@@ -157,6 +159,9 @@ void CircuitEditor::onEvent(const sf::RenderWindow& w, const sf::Event& e) {
     for (auto& c : _circuits) {
         c->onEvent(w, e);
     }
+    for(auto& tool : _tools) {
+        tool->onEvent(w, e);
+    }
 }
 void CircuitEditor::update(const sf::RenderWindow& w, float dt) {
     for (auto& p : _wires) {
@@ -171,7 +176,9 @@ void CircuitEditor::update(const sf::RenderWindow& w, float dt) {
     for (auto& c : _circuits) {
         c->update(w, dt);
     }
-
+    for(auto& tool : _tools) {
+        tool->update(w, dt);
+    }
 
     sf::Vector2f topLeft = _worldSpace.getCenter()-_worldSpace.getSize()/2.f;
     sf::Vector2f bottomRight = _worldSpace.getCenter()+_worldSpace.getSize()/2.f;
@@ -232,6 +239,11 @@ void CircuitEditor::draw(sf::RenderWindow& w) const {
     }
     for (const auto& p : _outputs) {
         p.draw(w);
+    }
+
+    w.setView(_worldSpace);
+    for(auto& tool : _tools) {
+        tool->draw(w);
     }
 }
 Pin* CircuitEditor::queryPin(const std::string& path) {
