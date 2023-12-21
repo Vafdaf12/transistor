@@ -1,14 +1,12 @@
 #pragma once
 
-#include "game/GameWorld.h"
-#include "pin/Pin.h"
+#include "app/CircuitEditor.h"
 #include "tools/Tool.h"
-
 #include "util/DragBoard.h"
 
 class CircuitDragger : public Tool {
 public:
-    CircuitDragger(GameWorld& world, const DragBoard& board);
+    CircuitDragger(CircuitEditor& editor, const DragBoard& board);
     bool isActive() const override;
 
     void onEvent(const sf::RenderWindow&, const sf::Event&) override;
@@ -18,6 +16,6 @@ public:
 private:
     std::vector<std::pair<sf::Vector2f, Circuit*>> _circuits;
 
-    GameWorld& _world;
+    CircuitEditor& _editor;
     const DragBoard& _board;
 };

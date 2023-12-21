@@ -61,6 +61,7 @@ public:
     Wire* getWire(Pin* from, Pin* to = nullptr);
 
     Pin* collidePin(const sf::RenderWindow&, sf::Vector2i pos, bool worldOnly = false);
+    Circuit* collideCircuit(sf::Vector2f pos);
     std::vector<Circuit*> collideCircuit(sf::FloatRect rect);
 
     void onEvent(const sf::RenderWindow&, const sf::Event&) override;

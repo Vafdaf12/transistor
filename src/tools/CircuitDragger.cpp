@@ -1,10 +1,10 @@
 #include "CircuitDragger.h"
 #include "circuit/Circuit.h"
-#include <iostream>
-#include <ostream>
 
-CircuitDragger::CircuitDragger(GameWorld& world, const DragBoard& board)
-    : _world(world), _board(board) {}
+#include <iterator>
+
+CircuitDragger::CircuitDragger(CircuitEditor& editor, const DragBoard& board)
+    : _editor(editor), _board(board) {}
 
 bool CircuitDragger::isActive() const { return !_circuits.empty(); }
 
@@ -21,7 +21,7 @@ void CircuitDragger::onEvent(const sf::RenderWindow& window, const sf::Event& e)
             }
         }
         if (!canDrag) {
-            Circuit* c = _world.collideCircuit(worldPos);
+            Circuit* c = _editor.collideCircuit(worldPos);
             if (c) {
                 startDragging(window, {c});
             }
@@ -49,9 +49,9 @@ void CircuitDragger::startDragging(
     sf::Vector2i mousePos = sf::Mouse::getPosition(window);
     sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
 
-    std::transform(selection.begin(), selection.end(), _circuits.begin(), [&](Circuit* c) {
+    _circuits.clear();
+    std::transform(selection.begin(), selection.end(), std::back_inserter(_circuits), [&](Circuit* c) {
         return std::make_pair(c->getPosition() - worldPos, c);
     });
 
-    std::cout << "Begin Drag" << std::endl;
 }

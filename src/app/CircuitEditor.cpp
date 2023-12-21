@@ -1,6 +1,7 @@
 #include "CircuitEditor.h"
-
 #include "circuit/Circuit.h"
+
+#include "tools/CircuitDragger.h"
 #include "tools/NavigationTool.h"
 #include "tools/PinConnector.h"
 #include "tools/SelectionTool.h"
@@ -13,6 +14,7 @@ CircuitEditor::CircuitEditor(const sf::View& screen, const sf::View& world)
     layoutPins();
     _tools.emplace_back(new NavigationTool(_worldSpace));
     _tools.emplace_back(new PinConnector(*this));
+    _tools.emplace_back(new CircuitDragger(*this, _board));
     _tools.emplace_back(new SelectionTool(*this, _board));
 }
 
@@ -109,6 +111,15 @@ Wire* CircuitEditor::getWire(Pin* from, Pin* to) {
     } else {
         return nullptr;
     }
+}
+
+Circuit* CircuitEditor::collideCircuit(sf::Vector2f pos) {
+    for (const auto& c : _circuits) {
+        if (c->collide(pos)) {
+            return c.get();
+        }
+    }
+    return nullptr;
 }
 std::vector<Circuit*> CircuitEditor::collideCircuit(sf::FloatRect rect) {
     std::vector<Circuit*> contained;
