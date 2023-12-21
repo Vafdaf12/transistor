@@ -217,6 +217,12 @@ void CircuitEditor::onEvent(const sf::RenderWindow& w, const sf::Event& e) {
                 std::cout << "Remove output" << std::endl;
             }
         }
+        if(e.key.code == sf::Keyboard::Delete) {
+            for(Circuit* c: _board.getSelection()) {
+                removeCircuit(c);
+            }
+            _board.clearSelection();
+        }
     }
 
     for (auto& p : _wires) {
