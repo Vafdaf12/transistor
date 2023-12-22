@@ -70,3 +70,11 @@ Pin* NotGate::queryPin(const std::string& id) {
     return nullptr;
 }
 
+void NotGate::toJson(nlohmann::json& j) const {
+    j["id"] = getId();
+    j["type"] = "not_gate";
+    j["position"] = {
+        {"x", _sprite.getPosition().x },
+        {"y", _sprite.getPosition().y },
+    };
+}

@@ -15,3 +15,5 @@ namespace serde {
     NotGate* createNot(const json& j, const Assets& assets);
 }
 
+#include "deserialize.inl"
+

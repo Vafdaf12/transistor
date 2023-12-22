@@ -2,19 +2,88 @@
 #include "SFML/Window/ContextSettings.hpp"
 #include "SFML/Window/Event.hpp"
 #include "app/CircuitEditor.h"
+#include "asset/AssetLoader.h"
 #include "asset/AssetSystem.h"
 #include "asset/ResourceManager.h"
+#include "asset/deserialize.h"
 #include "circuit/BinaryGate.h"
 #include "circuit/NotGate.h"
 #include "ui/CircuitButton.h"
 #include "ui/ImageView.h"
 #include "ui/Widget.h"
 
+#include <fstream>
 #include <iostream>
+#include <string>
 
+bool openEditor(
+    CircuitEditor& editor,
+    const std::string& path,
+    const AssetContext<Circuit, std::string>& circuits
+) {
+    std::ifstream file(path);
+    if (!file.is_open()) {
+        return false;
+    }
+
+    json data = json::parse(file);
+
+    std::cout << "[INFO/CircuitEditor] Loading inputs" << std::endl;
+    for (auto id : data["inputs"]) {
+        if(!editor.addInput(id.get<std::string>())) {
+            std::cout << "[WARN/CircuitEditor] Failed to load input: "  << id << std::endl;
+        }
+    }
+
+    std::cout << "[INFO/CircuitEditor] Loading outputs" << std::endl;
+    for (auto id : data["outputs"]) {
+        if(!editor.addOutput(id.get<std::string>())) {
+            std::cout << "[WARN/CircuitEditor] Failed to load input: "  << id << std::endl;
+        }
+    }
+
+    std::cout << "[INFO/CircuitEditor] Loading circuits" << std::endl;
+    for (auto elem : data["elements"]) {
+        std::string type = elem["type"].get<std::string>();
+        Circuit* circuit = circuits.read(type, elem);
+        editor.addCircuit(circuit);
+    }
+
+    std::cout << "[INFO/CircuitEditor] Loading wires" << std::endl;
+    for (auto w : data["wires"]) {
+        std::string froms, tos;
+        w["from"].get_to(froms);
+        w["to"].get_to(tos);
+        Pin* from = editor.queryPin(froms);
+        Pin* to = editor.queryPin(tos);
+
+        if(!from || !to) {
+            std::cout << "[WARN/CircuitEditor] Failed to load wire: "  << froms << " -> " << tos << std::endl;
+            continue;
+        }
+        editor.addWire(from, to);
+    }
+    std::cout << "[INFO/CircuitEditor] Done." << std::endl;
+
+    return true;
+}
+
+bool saveEditor(const CircuitEditor& editor, const std::string& path) {
+    std::ofstream file(path);
+    if (!file.is_open()) {
+        return false;
+    }
+
+    json data;
+    editor.toJson(data);
+    file << std::setw(4) << data;
+    return true;
+}
 
 int main(int, char**) {
     // --- RESOURCES ---
+    
+    std::cout << "[INFO] Loading Assets" << std::endl;
     Assets assets;
     assets.textures.load("gate_not", "assets/sprites/gate_not.png");
 
@@ -24,17 +93,34 @@ int main(int, char**) {
     gateTextures.load(BinaryGate::And, "assets/sprites/gate_and.png");
     gateTextures.load(BinaryGate::Nand, "assets/sprites/gate_nand.png");
 
+    AssetContext<Circuit, std::string> context;
+    context.addType("or_gate", [&](const json& j) {
+        return serde::createBinaryGate<BinaryGate::Or>(j, gateTextures);
+    });
+    context.addType("xor_gate", [&](const json& j) {
+        return serde::createBinaryGate<BinaryGate::Xor>(j, gateTextures);
+    });
+    context.addType("and_gate", [&](const json& j) {
+        return serde::createBinaryGate<BinaryGate::And>(j, gateTextures);
+    });
+    context.addType("nand_gate", [&](const json& j) {
+        return serde::createBinaryGate<BinaryGate::Nand>(j, gateTextures);
+    });
+    context.addType("not_gate", [&](const json& j) { return serde::createNot(j, assets); });
+
     /*
     CircuitRegistry registry;
-    registry.add("or_gate", [&](const json& j) { return serde::createBinaryGate<BinaryGate::Or>(j, gateTextures); });
-    registry.add("xor_gate", [&](const json& j) { return serde::createBinaryGate<BinaryGate::Xor>(j, gateTextures); });
-    registry.add("and_gate", [&](const json& j) { return serde::createBinaryGate<BinaryGate::And>(j, gateTextures); });
-    registry.add("nand_gate", [&](const json& j) { return serde::createBinaryGate<BinaryGate::Nand>(j, gateTextures); });
-    registry.add("not_gate", [&](const json& j) { return serde::createNot(j, assets); });
+    registry.add("or_gate", [&](const json& j) { return serde::createBinaryGate<BinaryGate::Or>(j,
+    gateTextures); }); registry.add("xor_gate", [&](const json& j) { return
+    serde::createBinaryGate<BinaryGate::Xor>(j, gateTextures); }); registry.add("and_gate",
+    [&](const json& j) { return serde::createBinaryGate<BinaryGate::And>(j, gateTextures); });
+    registry.add("nand_gate", [&](const json& j) { return
+    serde::createBinaryGate<BinaryGate::Nand>(j, gateTextures); }); registry.add("not_gate",
+    [&](const json& j) { return serde::createNot(j, assets); });
     */
 
-
     // --- WINDOW SETUP ---
+    std::cout << "[INFO] Setting up window" << std::endl;
     sf::Clock clock;
     sf::ContextSettings settings;
     settings.antialiasingLevel = 5;
@@ -45,33 +131,36 @@ int main(int, char**) {
     sf::View view = window.getDefaultView();
     view.setCenter(0, 0);
     CircuitEditor editor(window.getDefaultView(), view);
-    editor.addInput("in0");
-    editor.addInput("in1");
-    editor.addInput("in2");
-    editor.addOutput("out0");
-    editor.addOutput("out1");
-    editor.addCircuit(new BinaryGate("pin", gateTextures, BinaryGate::Nand, {200, 0}));
-    editor.addCircuit(new BinaryGate("pin2", gateTextures, BinaryGate::Xor, {200, 100}));
+
+    std::cout << "[INFO] Loading editor" << std::endl;
+    openEditor(editor, "assets/world.json", context);
 
     // --- GUI ---
     sf::View gui = window.getDefaultView();
 
     std::vector<std::unique_ptr<ui::Widget>> widgets;
 
+    std::cout << "[INFO] Loading Sprites" << std::endl;
     ui::ImageView* imageView = new ui::ImageView(gateTextures.get(BinaryGate::Xor));
     imageView->getSprite().setScale(0.5f, 0.5f);
     imageView->getSprite().setColor(sf::Color::Cyan);
-    widgets.emplace_back(new ui::CircuitButton(editor, new BinaryGate("xor", gateTextures, BinaryGate::Xor), imageView));
+    widgets.emplace_back(new ui::CircuitButton(
+        editor, new BinaryGate("xor", gateTextures, BinaryGate::Xor), imageView
+    ));
 
     imageView = new ui::ImageView(gateTextures.get(BinaryGate::And));
     imageView->getSprite().setScale(0.5f, 0.5f);
     imageView->getSprite().setColor(sf::Color::Cyan);
-    widgets.emplace_back(new ui::CircuitButton(editor, new BinaryGate("and", gateTextures, BinaryGate::And), imageView));
+    widgets.emplace_back(new ui::CircuitButton(
+        editor, new BinaryGate("and", gateTextures, BinaryGate::And), imageView
+    ));
 
     imageView = new ui::ImageView(gateTextures.get(BinaryGate::Or));
     imageView->getSprite().setScale(0.5f, 0.5f);
     imageView->getSprite().setColor(sf::Color::Cyan);
-    widgets.emplace_back(new ui::CircuitButton(editor, new BinaryGate("or", gateTextures, BinaryGate::Or), imageView));
+    widgets.emplace_back(
+        new ui::CircuitButton(editor, new BinaryGate("or", gateTextures, BinaryGate::Or), imageView)
+    );
 
     imageView = new ui::ImageView(assets.textures.get("gate_not"));
     imageView->getSprite().setScale(0.5f, 0.5f);
@@ -79,11 +168,10 @@ int main(int, char**) {
     widgets.emplace_back(new ui::CircuitButton(editor, new NotGate("not", assets), imageView));
 
     sf::Vector2f offset(10, 10);
-    for(auto& w : widgets) {
+    for (auto& w : widgets) {
         w->setPosition(offset);
         offset += sf::Vector2f(w->getBoundingBox().getSize().x + 10, 0);
     }
-
 
     // --- EVENT LOOP ---
     float time = clock.restart().asMilliseconds();
@@ -103,12 +191,12 @@ int main(int, char**) {
             }
             window.setView(gui);
             bool handled = false;
-            for(auto& w : widgets) {
-                if(w->onEvent(window, event)) {
+            for (auto& w : widgets) {
+                if (w->onEvent(window, event)) {
                     handled = true;
                 }
             }
-            if(handled) {
+            if (handled) {
                 continue;
             }
             editor.onEvent(window, event);
@@ -118,7 +206,7 @@ int main(int, char**) {
         float dt = clock.restart().asSeconds();
         editor.update(window, dt);
         window.setView(gui);
-        for(auto& w : widgets) {
+        for (auto& w : widgets) {
             w->update(window, dt);
         }
 
@@ -127,59 +215,10 @@ int main(int, char**) {
         editor.draw(window);
 
         window.setView(gui);
-        for(auto& w : widgets) {
+        for (auto& w : widgets) {
             w->draw(window);
         }
         window.display();
     }
-
-    /*
-
-    GameWorld world;
-    world.loadFromFile("assets/world.json", registry);
-    CommandLoader loader;
-
-
-    NandCircuit* proto = new NandCircuit("nand", assets);
-    BinaryGate* proto2 = new BinaryGate("and", assets, BinaryGate::And);
-    BinaryGate* proto3 = new BinaryGate("or", assets, BinaryGate::Or);
-    BinaryGate* proto4 = new BinaryGate("xor", assets, BinaryGate::Xor);
-    Circuit* proto5 = new NotGate("not", assets);
-
-    // --- GUI UPDATES ---
-    std::vector<CircuitButton> circuitButtons;
-
-    circuitButtons.emplace_back(world, *proto, *dragger);
-    circuitButtons.back().setView(&world.getScreenView());
-    circuitButtons.back().getShape().setFillColor(sf::Color::White);
-    circuitButtons.back().getShape().setPosition({10, 10});
-    circuitButtons.back().getShape().setSize({200, 75});
-
-    circuitButtons.emplace_back(world, *proto2, *dragger);
-    circuitButtons.back().setView(&world.getScreenView());
-    circuitButtons.back().getShape().setFillColor(sf::Color::Yellow);
-    circuitButtons.back().getShape().setPosition({10, 100});
-    circuitButtons.back().getShape().setSize({100, 50});
-
-    circuitButtons.emplace_back(world, *proto3, *dragger);
-    circuitButtons.back().setView(&world.getScreenView());
-    circuitButtons.back().getShape().setFillColor(sf::Color::Blue);
-    circuitButtons.back().getShape().setPosition({10, 160});
-    circuitButtons.back().getShape().setSize({100, 50});
-
-    circuitButtons.emplace_back(world, *proto4, *dragger);
-    circuitButtons.back().setView(&world.getScreenView());
-    circuitButtons.back().getShape().setFillColor(sf::Color::Magenta);
-    circuitButtons.back().getShape().setPosition({10, 220});
-    circuitButtons.back().getShape().setSize({100, 50});
-
-    circuitButtons.emplace_back(world, *proto5, *dragger);
-    circuitButtons.back().setView(&world.getScreenView());
-    circuitButtons.back().getShape().setFillColor(sf::Color::Red);
-    circuitButtons.back().getShape().setPosition({10, 290});
-    circuitButtons.back().getShape().setSize({100, 50});
-
-    world.saveToFile("assets/world.json");
-    return 0;
-    */
+    saveEditor(editor, "assets/world.json");
 }

@@ -5,64 +5,14 @@
 #include "json.hpp"
 #include <fstream>
 #include <iomanip>
-#include <iostream>
 #include <vector>
 
 using json = nlohmann::json;
 
-bool GameWorld::loadFromFile(const std::string& path, const CircuitRegistry<std::string>& registry) {
-    std::ifstream file(path);
-    if (!file.is_open()) {
-        return false;
-    }
-
-    json data = json::parse(file);
-
-    size_t i = 0;
-
-    for (auto id : data["inputs"]) {
-        Pin* pin = new Pin(id.get<std::string>(), Pin::Output, sf::Vector2f(-400, i * 30));
-        pin->setView(&_guiView);
-        pin->setEditable(true);
-        _inputs.emplace_back(pin);
-        i++;
-    }
-
-    i = 0;
-    for (auto id : data["outputs"]) {
-        Pin* pin = new Pin(id.get<std::string>(), Pin::Input, sf::Vector2f(400, i * 30));
-        pin->setView(&_guiView);
-        _outputs.emplace_back(pin);
-        i++;
-    }
-
-    for (auto elem : data["elements"]) {
-        std::string type = elem["type"].get<std::string>();
-        Circuit* circuit = registry.create(type, elem);
-        if(!circuit) {
-            std::cout  << "Unsupported circuit type: \"" << type << "\". Ignoring" << std::endl;
-            continue;
-        }
-        _circuits.emplace_back(circuit);
-    }
-    for (auto w : data["wires"]) {
-        Pin* from = queryPin(w["from"].get<std::string>());
-        if (!from) {
-            std::cout << "[ERROR] Cannot find pin \"" << w["from"].get<std::string>() << "\""
-                      << std::endl;
-            return false;
-        }
-        Pin* to = queryPin(w["to"].get<std::string>());
-        if (!to) {
-            std::cout << "[ERROR] Cannot find pin \"" << w["to"].get<std::string>() << "\""
-                      << std::endl;
-            return false;
-        }
-        _wires.emplace_back(from, to);
-        std::cout << "Added wire" << std::endl;
-    }
-
-    return true;
+bool GameWorld::loadFromFile(
+    const std::string& path, const CircuitRegistry<std::string>& registry
+) {
+    return false;
 }
 
 bool GameWorld::saveToFile(const std::string& path) {
@@ -205,7 +155,7 @@ Circuit* GameWorld::collideCircuit(sf::Vector2f pos) {
         if (!c->collide(pos)) {
             continue;
         }
-        if(!c->collidePin(pos)){
+        if (!c->collidePin(pos)) {
             return c.get();
         } else {
             return nullptr;
@@ -335,13 +285,12 @@ void GameWorld::layoutPins(const sf::RenderWindow& window) {
 
 std::string GameWorld::assignCircuitId(const std::string& id) const {
     int count = 0;
-    for(const auto& c : _circuits) {
+    for (const auto& c : _circuits) {
         std::string cid = c->getId().substr(0, id.size());
         count++;
     }
-    if(count == 0) {
+    if (count == 0) {
         return id;
     }
     return id + std::to_string(count);
-
 }

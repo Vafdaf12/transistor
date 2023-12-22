@@ -29,6 +29,8 @@ public:
 
     NotGate* clone(const std::string& id) const override;
 
+    void toJson(nlohmann::json& j) const override;
+
     inline void setView(const sf::View& view) override {
         _input.setView(&view);
         _output.setView(&view);

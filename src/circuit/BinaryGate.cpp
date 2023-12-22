@@ -92,3 +92,20 @@ int BinaryGate::Or(int x, int y) { return x || y; }
 int BinaryGate::Nand(int x, int y) { return !And(x, y); }
 int BinaryGate::Nor(int x, int y) { return !Or(x, y); }
 int BinaryGate::Xor(int x, int y) { return x ^ y; }
+
+void BinaryGate::toJson(nlohmann::json& j) const {
+    const static std::unordered_map<Func, std::string> mapping = {
+        {And, "and_gate"},
+        {Or, "or_gate"},
+        {Nand, "nand_gate"},
+        {Nor, "nor_gate"},
+        {Xor, "xor_gate"},
+    };
+
+    j["id"] = getId();
+    j["type"] = mapping.at(_process);
+    j["position"] = {
+        {"x", _sprite.getPosition().x },
+        {"y", _sprite.getPosition().y },
+    };
+}

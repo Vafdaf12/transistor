@@ -1,5 +1,5 @@
 {
-    "inputs": ["in1", "in2", "in3"],
+    "inputs": ["in0", "in1", "in2"],
     "outputs": ["out"],
     "elements": [
         {
@@ -41,15 +41,15 @@
             "to": "nand/in1"
         },
         {
-            "from": "in3",
+            "from": "in2",
             "to": "or/in2"
         },
         {
-            "from": "in2",
+            "from": "in1",
             "to": "or/in1"
         },
         {
-            "from": "in1",
+            "from": "in0",
             "to": "and/in1"
         },
         {
@@ -57,7 +57,7 @@
             "to": "xor/out"
         },
         {
-            "from": "in3",
+            "from": "in2",
             "to": "nand/in2"
         }
     ]

@@ -1,3 +1,5 @@
+#pragma once
+
 #include "deserialize.h"
 #include "circuit/NotGate.h"
 

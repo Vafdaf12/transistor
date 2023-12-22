@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/Entity.h"
+#include "json.hpp"
 #include "pin/Pin.h"
 
 #include <string>
@@ -47,6 +48,8 @@ public:
     virtual void setView(const sf::View& view) = 0;
 
     void onEvent(const sf::RenderWindow&, const sf::Event&) override {}
+
+    virtual void toJson(nlohmann::json& j) const = 0;
 private:
     std::string _id;
 };

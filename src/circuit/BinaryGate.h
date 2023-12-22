@@ -42,6 +42,8 @@ public:
         _out.setView(&view);
     }
 
+    void toJson(nlohmann::json& j) const override;
+
     static int And(int, int);
     static int Or(int, int);
     static int Nand(int, int);

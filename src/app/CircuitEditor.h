@@ -6,6 +6,8 @@
 
 #include "SFML/Graphics/VertexArray.hpp"
 #include "SFML/Graphics/View.hpp"
+#include "json.hpp"
+
 #include "core/Entity.h"
 #include "pin/Pin.h"
 #include "pin/Wire.h"
@@ -70,6 +72,7 @@ public:
 
     inline sf::View& getWorldView() {return _worldSpace; }
 
+    void toJson(nlohmann::json&) const;
 private:
     void layoutPins();
     void updateWires();

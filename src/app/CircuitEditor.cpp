@@ -223,11 +223,11 @@ void CircuitEditor::onEvent(const sf::RenderWindow& w, const sf::Event& e) {
             }
             _board.clearSelection();
         }
-        if(e.key.control && e.key.code == sf::Keyboard::C) {
+        if (e.key.control && e.key.code == sf::Keyboard::C) {
             _board.setClipboard(_board.getSelection());
             std::cout << "Copy " << _board.getClipboard().size() << std::endl;
         }
-        if(e.key.control && e.key.code == sf::Keyboard::V) {
+        if (e.key.control && e.key.code == sf::Keyboard::V) {
             std::vector<Circuit*> copied = _board.getClipboard();
             std::transform(copied.begin(), copied.end(), copied.begin(), [this](Circuit* c) {
                 Circuit* clone = c->clone(getCircuitId(c->getId()));
@@ -415,4 +415,35 @@ std::string CircuitEditor::getOutputId(const std::string& id) const {
         return id;
     }
     return id + std::to_string(count);
+}
+void CircuitEditor::toJson(nlohmann::json& j) const {
+    std::transform(
+        _inputs.begin(),
+        _inputs.end(),
+        std::back_inserter(j["inputs"]),
+        [](const Pin& pin) { return pin.getId(); }
+    );
+    std::transform(
+        _outputs.begin(),
+        _outputs.end(),
+        std::back_inserter(j["outputs"]),
+        [](const Pin& pin) { return pin.getId(); }
+    );
+    std::transform(
+        _circuits.begin(),
+        _circuits.end(),
+        std::back_inserter(j["elements"]),
+        [](const auto& c) {
+            nlohmann::json j;
+            c->toJson(j);
+            return j;
+        }
+    );
+
+    std::transform(_wires.begin(), _wires.end(), std::back_inserter(j["wires"]), [](const auto& w) {
+        return nlohmann::json{
+            {"from", w.getFrom()->getFullPath()},
+            {"to", w.getTo()->getFullPath()},
+        };
+    });
 }
