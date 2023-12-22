@@ -12,6 +12,11 @@ public:
 
     void clearSelection();
 
+    void setClipboard(const std::vector<Circuit*>&);
+    void clearClipboard();
+    const std::vector<Circuit*>& getClipboard() const;
+
 private:
     std::vector<Circuit*> _selection;
+    std::vector<Circuit*> _clipboard;
 };

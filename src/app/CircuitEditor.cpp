@@ -223,6 +223,22 @@ void CircuitEditor::onEvent(const sf::RenderWindow& w, const sf::Event& e) {
             }
             _board.clearSelection();
         }
+        if(e.key.control && e.key.code == sf::Keyboard::C) {
+            _board.setClipboard(_board.getSelection());
+            std::cout << "Copy " << _board.getClipboard().size() << std::endl;
+        }
+        if(e.key.control && e.key.code == sf::Keyboard::V) {
+            std::vector<Circuit*> copied = _board.getClipboard();
+            std::transform(copied.begin(), copied.end(), copied.begin(), [this](Circuit* c) {
+                Circuit* clone = c->clone(getCircuitId(c->getId()));
+                clone->setPosition(clone->getPosition() + sf::Vector2f(10, 10));
+                addCircuit(clone);
+                return clone;
+            });
+            _board.setSelection(copied);
+            _board.setClipboard(copied);
+            std::cout << "Paste " << _board.getClipboard().size() << std::endl;
+        }
     }
 
     for (auto& p : _wires) {
