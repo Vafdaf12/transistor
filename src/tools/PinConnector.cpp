@@ -21,7 +21,7 @@ void PinConnector::onEvent(const sf::RenderWindow& window, const sf::Event& even
 
         if (_firstPin && _firstPin->getType() == Pin::Input && wire) {
             _firstPin = const_cast<Pin*>(wire->getFrom());
-            _editor.removeWire(_firstPin);
+            _editor.removeWire(_firstPin, const_cast<Pin*>(wire->getTo()));
         }
         if (_firstPin) {
             sf::Vector2i pos = _firstPin->getScreenSpacePosition(window);

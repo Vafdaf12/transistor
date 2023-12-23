@@ -162,7 +162,8 @@ Pin* CircuitEditor::collidePin(const sf::RenderWindow& w, sf::Vector2i pixel, bo
 }
 
 void CircuitEditor::updateWires() {
-    std::erase_if(_wires, [](const Wire& w) { return !w.isValid(); });
+    int count = std::erase_if(_wires, [](const Wire& w) { return !w.isValid(); });
+    std::cout << "[INFO/CircuitEditor] Removed " << count << " wires" << std::endl;
 }
 void CircuitEditor::layoutPins() {
     static constexpr float pinPadding = 30;
@@ -208,12 +209,10 @@ void CircuitEditor::onEvent(const sf::RenderWindow& w, const sf::Event& e) {
         }
         if (e.key.code == sf::Keyboard::Down) {
             if (e.key.alt && _inputs.size() > 0) {
-                _inputs.pop_back();
-                layoutPins();
+                removeInput(&_inputs.back());
                 std::cout << "Remove input" << std::endl;
             } else if (_outputs.size() > 0) {
-                _outputs.pop_back();
-                layoutPins();
+                removeOutput(&_outputs.back());
                 std::cout << "Remove output" << std::endl;
             }
         }
