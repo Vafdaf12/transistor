@@ -2,7 +2,7 @@
 
 #include "core/Entity.h"
 #include "json.hpp"
-#include "pin/Pin.h"
+#include "Pin.h"
 
 #include <string>
 

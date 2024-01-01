@@ -5,7 +5,7 @@
 
 #include <string>
 
-#include "pin/Pin.h"
+#include "Pin.h"
 #include "circuit/Circuit.h"
 #include "asset/AssetSystem.h"
 

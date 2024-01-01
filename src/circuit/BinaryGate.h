@@ -5,7 +5,7 @@
 
 #include "asset/ResourceManager.h"
 #include "circuit/Circuit.h"
-#include "pin/Pin.h"
+#include "circuit/Pin.h"
 
 class BinaryGate : public Circuit {
 public:

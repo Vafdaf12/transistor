@@ -3,7 +3,7 @@
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 #include "app/CircuitEditor.h"
-#include "pin/Pin.h"
+#include "circuit/Pin.h"
 #include "tools/Tool.h"
 
 class PinConnector : public Tool {

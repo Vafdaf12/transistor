@@ -8,9 +8,9 @@
 #include "SFML/Graphics/View.hpp"
 #include "json.hpp"
 
+#include "circuit/Pin.h"
+#include "circuit/Wire.h"
 #include "core/Entity.h"
-#include "pin/Pin.h"
-#include "pin/Wire.h"
 #include "tools/Tool.h"
 #include "util/DragBoard.h"
 

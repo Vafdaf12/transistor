@@ -13,9 +13,8 @@ add_executable(${BINARY}
     ui/CircuitButton.cpp
     circuit/BinaryGate.cpp
     circuit/NotGate.cpp
-    pin/Pin.cpp
-    pin/Wire.cpp
-    game/GameWorld.cpp
+    circuit/Pin.cpp
+    circuit/Wire.cpp
     asset/CommandLoader.cpp
     tools/NavigationTool.cpp
     tools/PinConnector.cpp
