@@ -67,7 +67,9 @@ bool CircuitEditor::addCircuit(Circuit* c) {
     });
     if (!exists) {
         _circuits.emplace_back(c);
-        c->setView(_worldSpace);
+        for (Pin* p : c->getAllPins()) {
+            p->setView(&_worldSpace);
+        }
     }
     return !exists;
 }
@@ -136,10 +138,11 @@ std::vector<Circuit*> CircuitEditor::collideCircuit(sf::FloatRect rect) {
 }
 
 Pin* CircuitEditor::collidePin(const sf::RenderWindow& w, sf::Vector2i pixel, bool worldOnly) {
-    sf::Vector2f pos = w.mapPixelToCoords(pixel, _worldSpace);
     for (auto& c : _circuits) {
-        if (Pin* pin = c->collidePin(pos)) {
-            return pin;
+        for (Pin* p : c->getAllPins()) {
+            if (p->collide(w, pixel)) {
+                return p;
+            }
         }
     }
 
@@ -147,7 +150,7 @@ Pin* CircuitEditor::collidePin(const sf::RenderWindow& w, sf::Vector2i pixel, bo
         return nullptr;
     }
 
-    pos = w.mapPixelToCoords(pixel, _screenSpace);
+    sf::Vector2f pos = w.mapPixelToCoords(pixel, _screenSpace);
     for (auto& p : _inputs) {
         if (p.collide(pos)) {
             return &p;
@@ -366,9 +369,11 @@ Pin* CircuitEditor::queryPin(const std::string& path) {
     if (!c) {
         return nullptr;
     }
-    Pin* p = c->queryPin(pin);
-
-    return p;
+    std::vector<Pin*> pins = c->getAllPins();
+    auto it = std::find_if(pins.begin(), pins.end(), [&pin](const Pin* p) {
+            return p->getId() == pin;
+            });
+    return it == pins.end() ? nullptr : *it;
 }
 
 Circuit* CircuitEditor::queryCircuit(const std::string& path) {

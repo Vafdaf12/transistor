@@ -1,13 +1,15 @@
 #pragma once
 
+#include <set>
+#include <string>
+
 #include "SFML/Graphics/CircleShape.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Transformable.hpp"
 #include "SFML/System/Vector2.hpp"
+
 #include "core/Entity.h"
-#include <set>
-#include <string>
 
 class Circuit;
 

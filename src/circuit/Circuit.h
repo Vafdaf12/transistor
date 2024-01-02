@@ -1,8 +1,8 @@
 #pragma once
 
+#include "Pin.h"
 #include "core/Entity.h"
 #include "json.hpp"
-#include "Pin.h"
 
 #include <string>
 
@@ -12,36 +12,29 @@ public:
 
     /**
      * @brief Checks if a point is within the circuit's bounds
-     * 
+     *
      * @return true The point is within the circuit's bounds
      * @return false  The point is outside the circuit's bounds
      */
     virtual bool collide(sf::Vector2f) const = 0;
 
     /**
-     * @brief Retrieves the pin (if any) containing the passed in point
-     * 
-     * @return Pin* 
+     * @return std::vector<Pin*> all pins in the circuit (excluding any sub-circuits)
      */
-    virtual Pin* collidePin(sf::Vector2f) = 0;
-
+    virtual std::vector<Pin*> getAllPins() = 0;
+    std::vector<const Pin*> getAllPins() const { return getAllPins(); }
 
     virtual sf::FloatRect getBoundingBox() const = 0;
-
     virtual sf::Vector2f getPosition() const = 0;
     virtual void setPosition(sf::Vector2f) = 0;
 
     /**
-    * @brief Clones the circuit with a new identifier
-    * 
-    * @param id New circuit identifier
-    * @return Circuit*
-    */
+     * @brief Clones the circuit with a new identifier
+     *
+     * @param id New circuit identifier
+     * @return Circuit*
+     */
     virtual Circuit* clone(const std::string& id) const = 0;
-
-    virtual Pin* queryPin(const std::string& id) = 0;
-
-    virtual void setView(const sf::View& view) = 0;
 
     void onEvent(const sf::RenderWindow&, const sf::Event&) override {}
 

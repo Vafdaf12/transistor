@@ -20,7 +20,6 @@ public:
     ~BinaryGate();
 
     bool collide(sf::Vector2f) const override;
-    Pin* collidePin(sf::Vector2f) override;
 
     virtual sf::Vector2f getPosition() const override;
     virtual void setPosition(sf::Vector2f) override;
@@ -32,15 +31,8 @@ public:
     void update(const sf::RenderWindow&, float dt) override;
     void draw(sf::RenderWindow& window) const override;
 
-    Pin* queryPin(const std::string& id) override;
-
     inline Func getFunc() const { return _process; }
-
-    inline void setView(const sf::View& view) override {
-        _in1.setView(&view);
-        _in2.setView(&view);
-        _out.setView(&view);
-    }
+    inline std::vector<Pin*> getAllPins() override { return {&_in1, &_in2, &_out}; }
 
     void toJson(nlohmann::json& j) const override;
 

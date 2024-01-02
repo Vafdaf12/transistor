@@ -22,14 +22,6 @@ NotGate::~NotGate() {
 }
 bool NotGate::collide(sf::Vector2f v) const { return _sprite.getGlobalBounds().contains(v); }
 
-Pin* NotGate::collidePin(sf::Vector2f v) {
-    if (_input.collide(v))
-        return &_input;
-    if (_output.collide(v))
-        return &_output;
-    return nullptr;
-}
-
 sf::Vector2f NotGate::getPosition() const {
     return _sprite.getPosition();
 }
@@ -60,14 +52,6 @@ void NotGate::draw(sf::RenderWindow& window) const {
     window.draw(_sprite);
     _input.draw(window);
     _output.draw(window);
-}
-
-Pin* NotGate::queryPin(const std::string& id) {
-    if (_input.getId() == id)
-        return &_input;
-    if (_output.getId() == id)
-        return &_output;
-    return nullptr;
 }
 
 void NotGate::toJson(nlohmann::json& j) const {

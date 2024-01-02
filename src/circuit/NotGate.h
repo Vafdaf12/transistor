@@ -6,13 +6,12 @@
 #include <string>
 
 #include "Pin.h"
-#include "circuit/Circuit.h"
 #include "asset/AssetSystem.h"
-
+#include "circuit/Circuit.h"
 
 class NotGate : public Circuit {
 public:
-    NotGate(const std::string& id, const Assets& assets,  sf::Vector2f pos = {0, 0});
+    NotGate(const std::string& id, const Assets& assets, sf::Vector2f pos = {0, 0});
     ~NotGate();
 
     virtual sf::Vector2f getPosition() const override;
@@ -24,17 +23,11 @@ public:
     void update(const sf::RenderWindow&, float dt) override;
 
     bool collide(sf::Vector2f) const override;
-    Pin* collidePin(sf::Vector2f) override;
-    Pin* queryPin(const std::string& id) override;
 
     NotGate* clone(const std::string& id) const override;
 
     void toJson(nlohmann::json& j) const override;
-
-    inline void setView(const sf::View& view) override {
-        _input.setView(&view);
-        _output.setView(&view);
-    }
+    inline std::vector<Pin*> getAllPins() override { return {&_input, &_output}; }
 
 private:
     const Assets& _assets;

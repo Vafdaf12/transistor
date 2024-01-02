@@ -31,15 +31,6 @@ BinaryGate::~BinaryGate() {
 }
 bool BinaryGate::collide(sf::Vector2f v) const { return _sprite.getGlobalBounds().contains(v); }
 
-Pin* BinaryGate::collidePin(sf::Vector2f v) {
-    if (_in1.collide(v))
-        return &_in1;
-    if (_in2.collide(v))
-        return &_in2;
-    if (_out.collide(v))
-        return &_out;
-    return nullptr;
-}
 sf::Vector2f BinaryGate::getPosition() const { return _sprite.getPosition(); }
 void BinaryGate::setPosition(sf::Vector2f pos) {
     _sprite.setPosition(pos);
@@ -75,16 +66,6 @@ void BinaryGate::draw(sf::RenderWindow& window) const {
     _in1.draw(window);
     _in2.draw(window);
     _out.draw(window);
-}
-
-Pin* BinaryGate::queryPin(const std::string& id) {
-    if (_in1.getId() == id)
-        return &_in1;
-    if (_in2.getId() == id)
-        return &_in2;
-    if (_out.getId() == id)
-        return &_out;
-    return nullptr;
 }
 
 int BinaryGate::And(int x, int y) { return x && y; }
