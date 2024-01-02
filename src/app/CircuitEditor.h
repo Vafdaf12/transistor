@@ -10,11 +10,10 @@
 
 #include "circuit/Pin.h"
 #include "circuit/Wire.h"
-#include "core/Entity.h"
 #include "tools/Tool.h"
 #include "util/DragBoard.h"
 
-class CircuitEditor : public core::Entity {
+class CircuitEditor {
 public:
     CircuitEditor(const sf::View& screen, const sf::View& world);
 
@@ -66,9 +65,9 @@ public:
     Circuit* collideCircuit(sf::Vector2f pos);
     std::vector<Circuit*> collideCircuit(sf::FloatRect rect);
 
-    void onEvent(const sf::RenderWindow&, const sf::Event&) override;
-    void update(const sf::RenderWindow&, float dt) override;
-    void draw(sf::RenderWindow&) const override;
+    void onEvent(const sf::RenderWindow&, const sf::Event&);
+    void update(const sf::RenderWindow&, float dt);
+    void draw(sf::RenderWindow&) const;
 
     inline sf::View& getWorldView() {return _worldSpace; }
 

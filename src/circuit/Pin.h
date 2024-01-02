@@ -11,7 +11,7 @@
 
 class Circuit;
 
-class Pin : public core::Entity {
+class Pin : public core::Entity<std::string> {
 public:
     static constexpr uint32_t COLOR_ACTIVE = 0xff0000ff;
     static constexpr uint32_t COLOR_INACTIVE = 0x000000ff;
@@ -47,14 +47,12 @@ public:
 
     inline void setEditable(bool val) { _editable = val; }
     inline void setType(PinType val) { _type = val; }
-    inline void setId(const std::string& id) { _id = id; }
     inline void setView(const sf::View* view) { _view = view; }
     void setValue(bool val);
     void setCenter(sf::Vector2f pos);
 
     inline bool getValue() const { return _value; }
     inline PinType getType() const { return _type; }
-    inline const std::string& getId() const { return _id; }
     sf::Vector2f getCenter() const;
 
     sf::Vector2f getWorldSpacePosition(const sf::RenderTarget&) const;
@@ -64,8 +62,6 @@ public:
 
 private:
     void changed();
-
-    std::string _id;
 
     bool _value = 0;
     bool _editable = false;

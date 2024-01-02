@@ -9,7 +9,7 @@
 
 
 Pin::Pin(const std::string& id, PinType type, sf::Vector2f pos, int state)
-    : _type(type), _value(state), _id(id) {
+    : Entity(id), _type(type), _value(state) {
     _graphic.setPosition(pos - sf::Vector2f(RADIUS, RADIUS));
     _graphic.setOutlineColor(sf::Color(COLOR_OUTLINE));
     _graphic.setOutlineThickness(1);
@@ -119,9 +119,9 @@ void Pin::update(const sf::RenderWindow& window, float dt) {
 
 std::string Pin::getFullPath() const {
     if (_parent) {
-        return _parent->getId() + "/" + _id;
+        return _parent->getId() + "/" + getId();
     }
-    return _id;
+    return getId();
 }
 void Pin::changed() {
     for (PinFlag* flag : _flags) {

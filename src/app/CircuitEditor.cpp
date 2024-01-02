@@ -240,9 +240,6 @@ void CircuitEditor::onEvent(const sf::RenderWindow& w, const sf::Event& e) {
         }
     }
 
-    for (auto& p : _wires) {
-        p.onEvent(w, e);
-    }
     for (auto& p : _inputs) {
         p.onEvent(w, e);
     }

@@ -6,13 +6,9 @@
 
 #include <string>
 
-class Circuit : public core::Entity {
+class Circuit : public core::Entity<std::string> {
 public:
-    Circuit(const std::string& id) : _id(id) {}
-    virtual ~Circuit() {}
-
-    inline const std::string& getId() const { return _id; }
-    inline void setId(const std::string& id) { _id = id; }
+    using Entity::Entity;
 
     /**
      * @brief Checks if a point is within the circuit's bounds
@@ -50,6 +46,4 @@ public:
     void onEvent(const sf::RenderWindow&, const sf::Event&) override {}
 
     virtual void toJson(nlohmann::json& j) const = 0;
-private:
-    std::string _id;
 };
