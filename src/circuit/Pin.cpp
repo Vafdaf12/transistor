@@ -18,11 +18,6 @@ Pin::Pin(const std::string& id, PinType type, sf::Vector2f pos, int state)
         _graphic.setFillColor(sf::Color(COLOR_INACTIVE));
     }
 }
-Pin::~Pin() {
-    for (PinFlag* flag : _flags) {
-        *flag = Dead;
-    }
-}
 void Pin::onEvent(const sf::RenderWindow& w, const sf::Event& e) {
     if (!_editable) {
         return;
@@ -46,11 +41,7 @@ void Pin::onEvent(const sf::RenderWindow& w, const sf::Event& e) {
     }
 }
 void Pin::setValue(bool value) {
-    if (_value == value) {
-        return;
-    }
     _value = value;
-    changed();
 }
 
 sf::Vector2i Pin::getScreenSpacePosition(const sf::RenderTarget& target) const {
@@ -79,9 +70,6 @@ bool Pin::collide(const sf::RenderTarget& target, sf::Vector2i pos) const {
 
 void Pin::draw(sf::RenderWindow& window) const { window.draw(_graphic); }
 
-bool Pin::connect(PinFlag* obs) { return _flags.insert(obs).second; }
-bool Pin::disconnect(PinFlag* obs) { return _flags.erase(obs) > 0; }
-
 void Pin::update(const sf::RenderWindow& window, float dt) {
     if (_value) {
         _graphic.setFillColor(sf::Color(COLOR_ACTIVE));
@@ -103,14 +91,4 @@ std::string Pin::getFullPath() const {
         return _parent->getId() + "/" + getId();
     }
     return getId();
-}
-void Pin::changed() {
-    for (PinFlag* flag : _flags) {
-        if (*flag == Dirty) {
-            *flag = None;
-        }
-        if (*flag == None) {
-            *flag = Dirty;
-        }
-    }
 }

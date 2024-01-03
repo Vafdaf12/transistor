@@ -22,7 +22,6 @@ public:
      * @return std::vector<Pin*> all pins in the circuit (excluding any sub-circuits)
      */
     virtual std::vector<Pin*> getAllPins() = 0;
-    std::vector<const Pin*> getAllPins() const { return getAllPins(); }
 
     virtual sf::FloatRect getBoundingBox() const = 0;
     virtual sf::Vector2f getPosition() const = 0;

@@ -56,7 +56,7 @@ public:
     bool removeOutput(Pin* pin);
 
     bool addCircuit(Circuit* c);
-    bool removeCircuit(Circuit* c);
+    bool removeCircuit(const Circuit* c);
 
     bool addWire(Pin* from, Pin* to);
     bool removeWire(Pin* from, Pin* to = nullptr);
@@ -75,8 +75,8 @@ public:
     void toJson(nlohmann::json&) const;
 
 private:
+    void removeConnectedWires(const Pin* pin);
     void layoutPins();
-    void updateWires();
 
     std::string getInputId(const std::string& base) const;
     std::string getOutputId(const std::string& base) const;

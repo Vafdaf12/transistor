@@ -12,7 +12,6 @@
 class NotGate : public Circuit {
 public:
     NotGate(const std::string& id, const Assets& assets, sf::Vector2f pos = {0, 0});
-    ~NotGate();
 
     virtual sf::Vector2f getPosition() const override;
     virtual void setPosition(sf::Vector2f) override;
@@ -27,13 +26,11 @@ public:
     NotGate* clone(const std::string& id) const override;
 
     void toJson(nlohmann::json& j) const override;
-    inline std::vector<Pin*> getAllPins() override { return {&_input, &_output}; }
+    inline std::vector<Pin*> getAllPins() override { return {&m_input, &m_output}; }
 
 private:
-    const Assets& _assets;
+    Pin m_input, m_output;
 
-    sf::Sprite _sprite;
-
-    Pin _input, _output;
-    Pin::PinFlag _flag = Pin::Dirty;
+    const Assets& m_assets;
+    sf::Sprite m_sprite;
 };

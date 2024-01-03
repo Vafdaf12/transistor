@@ -34,7 +34,7 @@ bool CircuitEditor::addInput(const std::string& id) {
 bool CircuitEditor::removeInput(Pin* pin) {
     bool removed = std::erase_if(_inputs, [&pin](const Pin& p) { return &p == pin; }) > 0;
     if (removed) {
-        updateWires();
+        removeConnectedWires(pin);
         layoutPins();
     }
     return removed;
@@ -54,7 +54,7 @@ bool CircuitEditor::addOutput(const std::string& id) {
 bool CircuitEditor::removeOutput(Pin* pin) {
     bool removed = std::erase_if(_outputs, [&pin](const Pin& p) { return &p == pin; }) > 0;
     if (removed) {
-        updateWires();
+        removeConnectedWires(pin);
         layoutPins();
     }
     return removed;
@@ -72,10 +72,15 @@ bool CircuitEditor::addCircuit(Circuit* c) {
     }
     return !exists;
 }
-bool CircuitEditor::removeCircuit(Circuit* c) {
+bool CircuitEditor::removeCircuit(const Circuit* c) {
+    std::vector<Pin*> circuitPins = const_cast<Circuit*>(c)->getAllPins();
+
     bool removed = std::erase_if(_circuits, [&c](const auto& p) { return c == p.get(); }) > 0;
     if (removed) {
-        updateWires();
+        using namespace std::placeholders;
+        for(Pin* p : circuitPins) {
+            removeConnectedWires(p);
+        }
     }
     return removed;
 }
@@ -163,9 +168,11 @@ Pin* CircuitEditor::collidePin(const sf::RenderWindow& w, sf::Vector2i pixel, bo
     return nullptr;
 }
 
-void CircuitEditor::updateWires() {
-    int count = std::erase_if(_wires, [](const Wire& w) { return !w.isValid(); });
-    std::cout << "[INFO/CircuitEditor] Removed " << count << " wires" << std::endl;
+void CircuitEditor::removeConnectedWires(const Pin* pin) {
+    int count = std::erase_if(_wires, [pin](const Wire& w) { return w.isEndpoint(pin); });
+    if(count > 0) {
+        std::cout << "[INFO/CircuitEditor] Removed " << count << " wires" << std::endl;
+    }
 }
 void CircuitEditor::layoutPins() {
     static constexpr float pinPadding = 30;

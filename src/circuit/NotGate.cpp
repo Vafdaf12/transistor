@@ -5,60 +5,53 @@
 #include "SFML/System/Vector2.hpp"
 
 NotGate::NotGate(const std::string& id, const Assets& assets, sf::Vector2f pos)
-    : Circuit(id), _input("in", Pin::Input), _output("out", Pin::Output),
-      _assets(assets) {
-    _sprite.setTexture(assets.textures.get("gate_not"));
+    : Circuit(id), m_input("in", Pin::Input), m_output("out", Pin::Output),
+      m_assets(assets) {
+    m_sprite.setTexture(assets.textures.get("gate_not"));
 
-    _input.setParent(this);
-    _output.setParent(this);
+    m_input.setParent(this);
+    m_output.setParent(this);
 
-    _sprite.scale(0.7, 0.7);
+    m_sprite.scale(0.7, 0.7);
     setPosition(pos);
-
-    _input.connect(&_flag);
 }
-NotGate::~NotGate() {
-    _input.disconnect(&_flag);
-}
-bool NotGate::collide(sf::Vector2f v) const { return _sprite.getGlobalBounds().contains(v); }
+bool NotGate::collide(sf::Vector2f v) const { return m_sprite.getGlobalBounds().contains(v); }
 
 sf::Vector2f NotGate::getPosition() const {
-    return _sprite.getPosition();
+    return m_sprite.getPosition();
 }
 void NotGate::setPosition(sf::Vector2f pos) {
-    _sprite.setPosition(pos);
-    sf::Vector2f size = _sprite.getGlobalBounds().getSize();
+    m_sprite.setPosition(pos);
+    sf::Vector2f size = m_sprite.getGlobalBounds().getSize();
 
-    _output.setPosition(pos + sf::Vector2f(size.x, size.y / 2.f));
-    _input.setPosition(pos + sf::Vector2f(0, size.y / 2.f));
+    m_output.setPosition(pos + sf::Vector2f(size.x, size.y / 2.f));
+    m_input.setPosition(pos + sf::Vector2f(0, size.y / 2.f));
 }
 
-sf::FloatRect NotGate::getBoundingBox() const { return _sprite.getGlobalBounds(); }
+sf::FloatRect NotGate::getBoundingBox() const { return m_sprite.getGlobalBounds(); }
 
 NotGate* NotGate::clone(const std::string& newId) const {
-    NotGate* c = new NotGate(newId, _assets, _sprite.getPosition());
+    NotGate* c = new NotGate(newId, m_assets, m_sprite.getPosition());
     return c;
 }
 
 void NotGate::update(const sf::RenderWindow& w, float dt) {
-    if(_flag == Pin::Dirty) {
-        _output.setValue(!_input.getValue());
-    }
-    _input.update(w, dt);
-    _output.update(w, dt);
+    m_output.setValue(!m_input.getValue());
+    m_input.update(w, dt);
+    m_output.update(w, dt);
 }
 
 void NotGate::draw(sf::RenderWindow& window) const {
-    window.draw(_sprite);
-    _input.draw(window);
-    _output.draw(window);
+    window.draw(m_sprite);
+    m_input.draw(window);
+    m_output.draw(window);
 }
 
 void NotGate::toJson(nlohmann::json& j) const {
     j["id"] = getId();
     j["type"] = "not_gate";
     j["position"] = {
-        {"x", _sprite.getPosition().x },
-        {"y", _sprite.getPosition().y },
+        {"x", m_sprite.getPosition().x },
+        {"y", m_sprite.getPosition().y },
     };
 }

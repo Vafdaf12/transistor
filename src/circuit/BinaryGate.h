@@ -17,7 +17,6 @@ public:
         Func fn,
         sf::Vector2f pos = {0, 0}
     );
-    ~BinaryGate();
 
     bool collide(sf::Vector2f) const override;
 
@@ -31,8 +30,8 @@ public:
     void update(const sf::RenderWindow&, float dt) override;
     void draw(sf::RenderWindow& window) const override;
 
-    inline Func getFunc() const { return _process; }
-    inline std::vector<Pin*> getAllPins() override { return {&_in1, &_in2, &_out}; }
+    inline Func getFunc() const { return m_process; }
+    inline std::vector<Pin*> getAllPins() override { return {&m_in1, &m_in2, &m_out}; }
 
     void toJson(nlohmann::json& j) const override;
 
@@ -45,12 +44,12 @@ public:
 private:
     static constexpr float PADDING = 20;
 
-    const ResourceManager<BinaryGate::Func, sf::Texture>& _textures;
+    Pin m_in1;
+    Pin m_in2;
+    Pin m_out;
 
-    sf::Sprite _sprite;
+    Func m_process;
 
-    Pin _in1, _in2, _out;
-    Pin::PinFlag _flags[2] = {Pin::Dirty};
-
-    Func _process;
+    const ResourceManager<BinaryGate::Func, sf::Texture>& m_textures;
+    sf::Sprite m_sprite;
 };

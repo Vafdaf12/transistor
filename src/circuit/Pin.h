@@ -22,10 +22,8 @@ public:
     static constexpr uint32_t COLOR_OUTLINE = 0xffffffff;
 
     enum PinType { Input, Output };
-    enum PinFlag { None = 0, Dirty = 1, Dead = 2 };
 
     Pin(const std::string& id, PinType type, sf::Vector2f pos = {0, 0}, int state = 0);
-    ~Pin();
 
     void onEvent(const sf::RenderWindow&, const sf::Event& event) override;
     void update(const sf::RenderWindow&, float dt) override;
@@ -36,9 +34,6 @@ public:
     bool collide(const sf::RenderTarget& target, sf::Vector2i) const;
 
     sf::Transformable& getTransform();
-
-    bool connect(PinFlag* obs);
-    bool disconnect(PinFlag* obs);
 
     std::string getFullPath() const;
 
@@ -57,15 +52,10 @@ public:
     sf::Vector2i getScreenSpacePosition(const sf::RenderTarget&) const;
 
 private:
-    void changed();
-
     // --- Data model attributes ---
     bool _value = 0;
     bool _editable = false;
     PinType _type;
-
-    std::set<PinFlag*> _flags;
-
     Circuit* _parent = nullptr;
 
     // --- SFML-related attributes ---

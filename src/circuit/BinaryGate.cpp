@@ -9,63 +9,53 @@ BinaryGate::BinaryGate(
     Func fn,
     sf::Vector2f pos
 )
-    : Circuit(id), _in1("in1", Pin::Input), _in2("in2", Pin::Input), _textures(textures),
-      _out("out", Pin::Output, {0, 0}, 0), _process(fn) {
-    _sprite.setTexture(textures.get(fn));
+    : Circuit(id), m_in1("in1", Pin::Input), m_in2("in2", Pin::Input), m_textures(textures),
+      m_out("out", Pin::Output, {0, 0}, 0), m_process(fn) {
+    m_sprite.setTexture(textures.get(fn));
 
-    _in1.setParent(this);
-    _in2.setParent(this);
-    _out.setParent(this);
+    m_in1.setParent(this);
+    m_in2.setParent(this);
+    m_out.setParent(this);
 
-    _sprite.scale(0.7, 0.7);
+    m_sprite.scale(0.7, 0.7);
 
     setPosition(pos);
-
-    _in1.connect(_flags);
-    _in2.connect(_flags + 1);
 }
 
-BinaryGate::~BinaryGate() {
-    _in1.disconnect(_flags);
-    _in2.disconnect(_flags + 1);
-}
-bool BinaryGate::collide(sf::Vector2f v) const { return _sprite.getGlobalBounds().contains(v); }
+bool BinaryGate::collide(sf::Vector2f v) const { return m_sprite.getGlobalBounds().contains(v); }
 
-sf::Vector2f BinaryGate::getPosition() const { return _sprite.getPosition(); }
+sf::Vector2f BinaryGate::getPosition() const { return m_sprite.getPosition(); }
 void BinaryGate::setPosition(sf::Vector2f pos) {
-    _sprite.setPosition(pos);
-    sf::Vector2f size = _sprite.getGlobalBounds().getSize();
+    m_sprite.setPosition(pos);
+    sf::Vector2f size = m_sprite.getGlobalBounds().getSize();
 
-    _out.setPosition(pos + sf::Vector2f(size.x, size.y / 2.f));
+    m_out.setPosition(pos + sf::Vector2f(size.x, size.y / 2.f));
 
     size.y /= 4;
-    _in1.setPosition(pos + sf::Vector2f(0, size.y * 1.f));
-    _in2.setPosition(pos + sf::Vector2f(0, size.y * 3.f));
+    m_in1.setPosition(pos + sf::Vector2f(0, size.y * 1.f));
+    m_in2.setPosition(pos + sf::Vector2f(0, size.y * 3.f));
 }
 
-sf::FloatRect BinaryGate::getBoundingBox() const { return _sprite.getGlobalBounds(); }
+sf::FloatRect BinaryGate::getBoundingBox() const { return m_sprite.getGlobalBounds(); }
 
 BinaryGate* BinaryGate::clone(const std::string& newId) const {
-    BinaryGate* c = new BinaryGate(newId, _textures, _process, _sprite.getPosition());
+    BinaryGate* c = new BinaryGate(newId, m_textures, m_process, m_sprite.getPosition());
     return c;
 }
 
 void BinaryGate::update(const sf::RenderWindow& w, float dt) {
-    if (_flags[0] == Pin::Dirty || _flags[1] == Pin::Dirty) {
-        _out.setValue(_process(_in1.getValue(), _in2.getValue()));
-        _flags[0] = Pin::None;
-        _flags[1] = Pin::None;
-    }
-    _out.update(w, dt);
-    _in1.update(w, dt);
-    _in2.update(w, dt);
+    m_out.setValue(m_process(m_in1.getValue(), m_in2.getValue()));
+
+    m_out.update(w, dt);
+    m_in1.update(w, dt);
+    m_in2.update(w, dt);
 }
 
 void BinaryGate::draw(sf::RenderWindow& window) const {
-    window.draw(_sprite);
-    _in1.draw(window);
-    _in2.draw(window);
-    _out.draw(window);
+    window.draw(m_sprite);
+    m_in1.draw(window);
+    m_in2.draw(window);
+    m_out.draw(window);
 }
 
 int BinaryGate::And(int x, int y) { return x && y; }
@@ -84,9 +74,9 @@ void BinaryGate::toJson(nlohmann::json& j) const {
     };
 
     j["id"] = getId();
-    j["type"] = mapping.at(_process);
+    j["type"] = mapping.at(m_process);
     j["position"] = {
-        {"x", _sprite.getPosition().x },
-        {"y", _sprite.getPosition().y },
+        {"x", m_sprite.getPosition().x},
+        {"y", m_sprite.getPosition().y},
     };
 }
