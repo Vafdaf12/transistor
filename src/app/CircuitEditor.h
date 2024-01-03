@@ -1,11 +1,12 @@
 #pragma once
 
-#include <string>
-#include <memory>
 #include <list>
+#include <memory>
+#include <string>
 
 #include "SFML/Graphics/VertexArray.hpp"
 #include "SFML/Graphics/View.hpp"
+#include "core/Camera.h"
 #include "json.hpp"
 
 #include "circuit/Pin.h"
@@ -15,31 +16,31 @@
 
 class CircuitEditor {
 public:
-    CircuitEditor(const sf::View& screen, const sf::View& world);
+    CircuitEditor(const sf::View& screen);
 
     /**
-    * @brief Computes an available circuit ID
-    * 
-    * @param base The base id to work from when computing the ID
-    * @return std::string An available ID
-    */
+     * @brief Computes an available circuit ID
+     *
+     * @param base The base id to work from when computing the ID
+     * @return std::string An available ID
+     */
     std::string getCircuitId(const std::string& base) const;
 
     /**
-    * @brief Attempts to find a pin in the editor, searching both circuits
-    * and input pins
-    * 
-    * @param path The path to the pin
-    * @return Pin* The found pin (or null if not found)
-    */
+     * @brief Attempts to find a pin in the editor, searching both circuits
+     * and input pins
+     *
+     * @param path The path to the pin
+     * @return Pin* The found pin (or null if not found)
+     */
     Pin* queryPin(const std::string& path);
 
     /**
-    * @brief Attempts to find a circuit in the editor
-    * 
-    * @param id The id of the circuit
-    * @return Circuit* The found circuit (or null if not found)
-    */
+     * @brief Attempts to find a circuit in the editor
+     *
+     * @param id The id of the circuit
+     * @return Circuit* The found circuit (or null if not found)
+     */
     Circuit* queryCircuit(const std::string& id);
 
     // TODO:
@@ -69,9 +70,10 @@ public:
     void update(const sf::RenderWindow&, float dt);
     void draw(sf::RenderWindow&) const;
 
-    inline sf::View& getWorldView() {return _worldSpace; }
+    inline const sf::View& getWorldView() { return m_camera.getView(); }
 
     void toJson(nlohmann::json&) const;
+
 private:
     void layoutPins();
     void updateWires();
@@ -80,7 +82,7 @@ private:
     std::string getOutputId(const std::string& base) const;
 
     sf::View _screenSpace;
-    sf::View _worldSpace;
+    Camera m_camera;
 
     sf::VertexArray _grid;
 

@@ -128,9 +128,7 @@ int main(int, char**) {
     window.setVerticalSyncEnabled(true);
 
     // --- GAME WORLD ---
-    sf::View view = window.getDefaultView();
-    view.setCenter(0, 0);
-    CircuitEditor editor(window.getDefaultView(), view);
+    CircuitEditor editor(window.getDefaultView());
 
     std::cout << "[INFO] Loading editor" << std::endl;
     openEditor(editor, "assets/world.json", context);

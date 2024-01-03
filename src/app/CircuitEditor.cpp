@@ -2,7 +2,6 @@
 #include "circuit/Circuit.h"
 
 #include "tools/CircuitDragger.h"
-#include "tools/NavigationTool.h"
 #include "tools/PinConnector.h"
 #include "tools/SelectionTool.h"
 
@@ -11,10 +10,10 @@
 #include <iostream>
 #include <string>
 
-CircuitEditor::CircuitEditor(const sf::View& screen, const sf::View& world)
-    : _worldSpace(world), _screenSpace(screen) {
+CircuitEditor::CircuitEditor(const sf::View& screen)
+    : _screenSpace(screen), m_camera(screen) {
     layoutPins();
-    _tools.emplace_back(new NavigationTool(_worldSpace));
+    m_camera.setTarget({0, 0});
     _tools.emplace_back(new PinConnector(*this));
     _tools.emplace_back(new CircuitDragger(*this, _board));
     _tools.emplace_back(new SelectionTool(*this, _board));
@@ -68,7 +67,7 @@ bool CircuitEditor::addCircuit(Circuit* c) {
     if (!exists) {
         _circuits.emplace_back(c);
         for (Pin* p : c->getAllPins()) {
-            p->setView(&_worldSpace);
+            p->setView(&m_camera.getView());
         }
     }
     return !exists;
@@ -190,12 +189,11 @@ void CircuitEditor::layoutPins() {
     }
 }
 void CircuitEditor::onEvent(const sf::RenderWindow& w, const sf::Event& e) {
+    m_camera.onEvent(w, e);
     if (e.type == sf::Event::Resized) {
         _screenSpace.setSize(e.size.width, e.size.height);
         _screenSpace.setCenter(e.size.width / 2.f, e.size.height / 2.f);
 
-        float zoom = _worldSpace.getSize().x / e.size.width;
-        _worldSpace.setSize(e.size.width * zoom, e.size.height * zoom);
         layoutPins();
     }
     if (e.type == sf::Event::KeyPressed) {
@@ -260,6 +258,7 @@ void CircuitEditor::onEvent(const sf::RenderWindow& w, const sf::Event& e) {
     }
 }
 void CircuitEditor::update(const sf::RenderWindow& w, float dt) {
+    m_camera.update(w, dt);
     for (auto& p : _wires) {
         p.update(w, dt);
     }
@@ -279,11 +278,11 @@ void CircuitEditor::update(const sf::RenderWindow& w, float dt) {
         }
     }
 
-    sf::Vector2f topLeft = _worldSpace.getCenter() - _worldSpace.getSize() / 2.f;
-    sf::Vector2f bottomRight = _worldSpace.getCenter() + _worldSpace.getSize() / 2.f;
+    sf::Vector2f topLeft = m_camera.getView().getCenter() - m_camera.getView().getSize() / 2.f;
+    sf::Vector2f bottomRight = m_camera.getView().getCenter() + m_camera.getView().getSize() / 2.f;
     float dist =
-        w.mapCoordsToPixel({100, 0}, _worldSpace).x - w.mapCoordsToPixel({0, 0}, _worldSpace).x;
-    const int zoom = std::min(_worldSpace.getSize().x / w.getSize().x / 4, 3.f);
+        w.mapCoordsToPixel({100, 0}, m_camera.getView()).x - w.mapCoordsToPixel({0, 0}, m_camera.getView()).x;
+    const int zoom = std::min(m_camera.getView().getSize().x / w.getSize().x / 4, 3.f);
     const float gridSize = 10 * 1024 / std::pow(2, ceil(log2(dist)));
     const sf::Color dimColor = sf::Color(0xffffff18);
 
@@ -324,7 +323,7 @@ void CircuitEditor::update(const sf::RenderWindow& w, float dt) {
     }
 }
 void CircuitEditor::draw(sf::RenderWindow& w) const {
-    w.setView(_worldSpace);
+    w.setView(m_camera.getView());
     w.draw(_grid);
     for (const auto& p : _wires) {
         p.draw(w);
@@ -341,7 +340,7 @@ void CircuitEditor::draw(sf::RenderWindow& w) const {
         p.draw(w);
     }
 
-    w.setView(_worldSpace);
+    w.setView(m_camera.getView());
     for (auto& tool : _tools) {
         tool->draw(w);
     }

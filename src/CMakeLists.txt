@@ -11,12 +11,12 @@ add_executable(${BINARY}
     app/CircuitEditor.cpp
     ui/ImageView.cpp
     ui/CircuitButton.cpp
+    core/Camera.cpp
     circuit/BinaryGate.cpp
     circuit/NotGate.cpp
     circuit/Pin.cpp
     circuit/Wire.cpp
     asset/CommandLoader.cpp
-    tools/NavigationTool.cpp
     tools/PinConnector.cpp
     tools/SelectionTool.cpp
     tools/CircuitDragger.cpp
