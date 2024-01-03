@@ -3,7 +3,6 @@
 #include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/Texture.hpp"
 
-#include "asset/ResourceManager.h"
 #include "circuit/Circuit.h"
 #include "circuit/Pin.h"
 
@@ -13,10 +12,11 @@ public:
 
     BinaryGate(
         const std::string& id,
-        const ResourceManager<BinaryGate::Func, sf::Texture>& textures,
+        const sf::Texture& texture,
         Func fn,
         sf::Vector2f pos = {0, 0}
     );
+    BinaryGate(const BinaryGate& other);
 
     bool collide(sf::Vector2f) const override;
 
@@ -50,6 +50,5 @@ private:
 
     Func m_process;
 
-    const ResourceManager<BinaryGate::Func, sf::Texture>& m_textures;
     sf::Sprite m_sprite;
 };

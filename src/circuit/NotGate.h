@@ -6,12 +6,12 @@
 #include <string>
 
 #include "Pin.h"
-#include "asset/AssetSystem.h"
 #include "circuit/Circuit.h"
 
 class NotGate : public Circuit {
 public:
-    NotGate(const std::string& id, const Assets& assets, sf::Vector2f pos = {0, 0});
+    NotGate(const std::string& id, const sf::Texture& assets, sf::Vector2f pos = {0, 0});
+    NotGate(const NotGate& other);
 
     virtual sf::Vector2f getPosition() const override;
     virtual void setPosition(sf::Vector2f) override;
@@ -31,6 +31,5 @@ public:
 private:
     Pin m_input, m_output;
 
-    const Assets& m_assets;
     sf::Sprite m_sprite;
 };

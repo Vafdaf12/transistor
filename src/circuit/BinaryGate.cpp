@@ -3,16 +3,9 @@
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/System/Vector2.hpp"
 
-BinaryGate::BinaryGate(
-    const std::string& id,
-    const ResourceManager<BinaryGate::Func, sf::Texture>& textures,
-    Func fn,
-    sf::Vector2f pos
-)
-    : Circuit(id), m_in1("in1", Pin::Input), m_in2("in2", Pin::Input), m_textures(textures),
-      m_out("out", Pin::Output, {0, 0}, 0), m_process(fn) {
-    m_sprite.setTexture(textures.get(fn));
-
+BinaryGate::BinaryGate(const std::string& id, const sf::Texture& texture, Func fn, sf::Vector2f pos)
+    : Circuit(id), m_in1("in1", Pin::Input), m_in2("in2", Pin::Input),
+      m_out("out", Pin::Output, {0, 0}, 0), m_process(fn), m_sprite(texture) {
     m_in1.setParent(this);
     m_in2.setParent(this);
     m_out.setParent(this);
@@ -21,6 +14,10 @@ BinaryGate::BinaryGate(
 
     setPosition(pos);
 }
+BinaryGate::BinaryGate(const BinaryGate& other)
+    : BinaryGate(
+          other.getId(), *other.m_sprite.getTexture(), other.m_process, other.getPosition()
+      ) {}
 
 bool BinaryGate::collide(sf::Vector2f v) const { return m_sprite.getGlobalBounds().contains(v); }
 
@@ -39,7 +36,8 @@ void BinaryGate::setPosition(sf::Vector2f pos) {
 sf::FloatRect BinaryGate::getBoundingBox() const { return m_sprite.getGlobalBounds(); }
 
 BinaryGate* BinaryGate::clone(const std::string& newId) const {
-    BinaryGate* c = new BinaryGate(newId, m_textures, m_process, m_sprite.getPosition());
+    BinaryGate* c = new BinaryGate(*this);
+    c->setId(newId);
     return c;
 }
 

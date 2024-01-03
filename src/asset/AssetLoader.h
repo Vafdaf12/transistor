@@ -7,7 +7,7 @@
 using json = nlohmann::json;
 
 template<typename Asset, typename Key>
-class AssetContext {
+class AssetLoader {
 public:
     using Marshaller = std::function<Asset*(const json&)>;
 

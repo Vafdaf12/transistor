@@ -3,7 +3,6 @@
 #include "SFML/Window/Event.hpp"
 #include "app/CircuitEditor.h"
 #include "asset/AssetLoader.h"
-#include "asset/AssetSystem.h"
 #include "asset/ResourceManager.h"
 #include "asset/deserialize.h"
 #include "circuit/BinaryGate.h"
@@ -19,7 +18,7 @@
 bool openEditor(
     CircuitEditor& editor,
     const std::string& path,
-    const AssetContext<Circuit, std::string>& circuits
+    const AssetLoader<Circuit, std::string>& circuits
 ) {
     std::ifstream file(path);
     if (!file.is_open()) {
@@ -84,8 +83,8 @@ int main(int, char**) {
     // --- RESOURCES ---
     
     std::cout << "[INFO] Loading Assets" << std::endl;
-    Assets assets;
-    assets.textures.load("gate_not", "assets/sprites/gate_not.png");
+    ResourceManager<std::string, sf::Texture> assets;
+    assets.load("gate_not", "assets/sprites/gate_not.png");
 
     ResourceManager<BinaryGate::Func, sf::Texture> gateTextures;
     gateTextures.load(BinaryGate::Or, "assets/sprites/gate_or.png");
@@ -93,7 +92,7 @@ int main(int, char**) {
     gateTextures.load(BinaryGate::And, "assets/sprites/gate_and.png");
     gateTextures.load(BinaryGate::Nand, "assets/sprites/gate_nand.png");
 
-    AssetContext<Circuit, std::string> context;
+    AssetLoader<Circuit, std::string> context;
     context.addType("or_gate", [&](const json& j) {
         return serde::createBinaryGate<BinaryGate::Or>(j, gateTextures);
     });
@@ -106,7 +105,7 @@ int main(int, char**) {
     context.addType("nand_gate", [&](const json& j) {
         return serde::createBinaryGate<BinaryGate::Nand>(j, gateTextures);
     });
-    context.addType("not_gate", [&](const json& j) { return serde::createNot(j, assets); });
+    context.addType("not_gate", [&](const json& j) { return serde::createNot(j, assets.get("gate_not")); });
 
     // --- WINDOW SETUP ---
     std::cout << "[INFO] Setting up window" << std::endl;
@@ -132,27 +131,27 @@ int main(int, char**) {
     imageView->getSprite().setScale(0.5f, 0.5f);
     imageView->getSprite().setColor(sf::Color::Cyan);
     widgets.emplace_back(new ui::CircuitButton(
-        editor, new BinaryGate("xor", gateTextures, BinaryGate::Xor), imageView
+        editor, new BinaryGate("xor", gateTextures.get(BinaryGate::Xor), BinaryGate::Xor), imageView
     ));
 
     imageView = new ui::ImageView(gateTextures.get(BinaryGate::And));
     imageView->getSprite().setScale(0.5f, 0.5f);
     imageView->getSprite().setColor(sf::Color::Cyan);
     widgets.emplace_back(new ui::CircuitButton(
-        editor, new BinaryGate("and", gateTextures, BinaryGate::And), imageView
+        editor, new BinaryGate("and", gateTextures.get(BinaryGate::And), BinaryGate::And), imageView
     ));
 
     imageView = new ui::ImageView(gateTextures.get(BinaryGate::Or));
     imageView->getSprite().setScale(0.5f, 0.5f);
     imageView->getSprite().setColor(sf::Color::Cyan);
     widgets.emplace_back(
-        new ui::CircuitButton(editor, new BinaryGate("or", gateTextures, BinaryGate::Or), imageView)
+        new ui::CircuitButton(editor, new BinaryGate("or", gateTextures.get(BinaryGate::Or), BinaryGate::Or), imageView)
     );
 
-    imageView = new ui::ImageView(assets.textures.get("gate_not"));
+    imageView = new ui::ImageView(assets.get("gate_not"));
     imageView->getSprite().setScale(0.5f, 0.5f);
     imageView->getSprite().setColor(sf::Color::Cyan);
-    widgets.emplace_back(new ui::CircuitButton(editor, new NotGate("not", assets), imageView));
+    widgets.emplace_back(new ui::CircuitButton(editor, new NotGate("not", assets.get("gate_not")), imageView));
 
     sf::Vector2f offset(10, 10);
     for (auto& w : widgets) {

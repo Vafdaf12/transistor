@@ -10,15 +10,15 @@ namespace serde {
         float x = j["position"]["x"].get<float>();
         float y = j["position"]["y"].get<float>();
 
-        return new BinaryGate(id, assets, F, {x, y});
+        return new BinaryGate(id, assets.get(F), F, {x, y});
     }
 
-    NotGate* createNot(const json& j, const Assets& assets) {
+    NotGate* createNot(const json& j, const sf::Texture& texture) {
         std::string id = j["id"].get<std::string>();
         float x = j["position"]["x"].get<float>();
         float y = j["position"]["y"].get<float>();
 
-        return new NotGate(id, assets, {x, y});
+        return new NotGate(id, texture, {x, y});
     }
 }
 

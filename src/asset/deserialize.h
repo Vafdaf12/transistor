@@ -12,7 +12,7 @@ namespace serde {
     template<BinaryGate::Func F>
     BinaryGate* createBinaryGate(const json& j, const ResourceManager<BinaryGate::Func, sf::Texture>& assets);
 
-    NotGate* createNot(const json& j, const Assets& assets);
+    NotGate* createNot(const json& j, const sf::Texture& texture);
 }
 
 #include "deserialize.inl"

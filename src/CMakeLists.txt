@@ -6,7 +6,7 @@ FetchContent_Declare(SFML
 )
 FetchContent_MakeAvailable(SFML)
 
-add_executable(${BINARY} 
+add_executable(${BINARY}
     main.cpp
     app/CircuitEditor.cpp
     ui/ImageView.cpp
@@ -16,7 +16,6 @@ add_executable(${BINARY}
     circuit/NotGate.cpp
     circuit/Pin.cpp
     circuit/Wire.cpp
-    asset/CommandLoader.cpp
     tools/PinConnector.cpp
     tools/SelectionTool.cpp
     tools/CircuitDragger.cpp
