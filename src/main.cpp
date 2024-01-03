@@ -108,17 +108,6 @@ int main(int, char**) {
     });
     context.addType("not_gate", [&](const json& j) { return serde::createNot(j, assets); });
 
-    /*
-    CircuitRegistry registry;
-    registry.add("or_gate", [&](const json& j) { return serde::createBinaryGate<BinaryGate::Or>(j,
-    gateTextures); }); registry.add("xor_gate", [&](const json& j) { return
-    serde::createBinaryGate<BinaryGate::Xor>(j, gateTextures); }); registry.add("and_gate",
-    [&](const json& j) { return serde::createBinaryGate<BinaryGate::And>(j, gateTextures); });
-    registry.add("nand_gate", [&](const json& j) { return
-    serde::createBinaryGate<BinaryGate::Nand>(j, gateTextures); }); registry.add("not_gate",
-    [&](const json& j) { return serde::createNot(j, assets); });
-    */
-
     // --- WINDOW SETUP ---
     std::cout << "[INFO] Setting up window" << std::endl;
     sf::Clock clock;

@@ -43,12 +43,6 @@ public:
      */
     Circuit* queryCircuit(const std::string& id);
 
-    // TODO:
-    // - Finish implementing this
-    // - Figure out how to handle viewports and resizing
-    // - Integrate relevant tools (connecting, panning)
-    // - Refactor tools to not be dependant on view
-
     bool addInput(const std::string& id);
     bool removeInput(Pin* pin);
 
