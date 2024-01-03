@@ -29,8 +29,8 @@ void NotGate::setPosition(sf::Vector2f pos) {
     _sprite.setPosition(pos);
     sf::Vector2f size = _sprite.getGlobalBounds().getSize();
 
-    _output.setCenter(pos + sf::Vector2f(size.x, size.y / 2.f));
-    _input.setCenter(pos + sf::Vector2f(0, size.y / 2.f));
+    _output.setPosition(pos + sf::Vector2f(size.x, size.y / 2.f));
+    _input.setPosition(pos + sf::Vector2f(0, size.y / 2.f));
 }
 
 sf::FloatRect NotGate::getBoundingBox() const { return _sprite.getGlobalBounds(); }

@@ -211,7 +211,7 @@ int main(int, char**) {
         }
 
         // --- RENDERING ---
-        window.clear();
+        window.clear(sf::Color(0x181818ff));
         editor.draw(window);
 
         window.setView(gui);

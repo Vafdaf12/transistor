@@ -15,17 +15,14 @@ class Circuit;
 
 class Pin : public core::Entity<std::string> {
 public:
+    static constexpr float RADIUS = 10.f;
+    static constexpr int HOVER_MOD = 70;
     static constexpr uint32_t COLOR_ACTIVE = 0xff0000ff;
-    static constexpr uint32_t COLOR_INACTIVE = 0x000000ff;
+    static constexpr uint32_t COLOR_INACTIVE = 0x808080ff;
     static constexpr uint32_t COLOR_OUTLINE = 0xffffffff;
-    static constexpr int COLOR_MUL = 70;
 
     enum PinType { Input, Output };
-    enum PinFlag {
-        None = 0,
-        Dirty = 1,
-        Dead = 2
-    };
+    enum PinFlag { None = 0, Dirty = 1, Dead = 2 };
 
     Pin(const std::string& id, PinType type, sf::Vector2f pos = {0, 0}, int state = 0);
     ~Pin();
@@ -51,20 +48,18 @@ public:
     inline void setType(PinType val) { _type = val; }
     inline void setView(const sf::View* view) { _view = view; }
     void setValue(bool val);
-    void setCenter(sf::Vector2f pos);
+    void setPosition(sf::Vector2f pos);
 
     inline bool getValue() const { return _value; }
     inline PinType getType() const { return _type; }
-    sf::Vector2f getCenter() const;
+    sf::Vector2f getPosition() const;
 
-    sf::Vector2f getWorldSpacePosition(const sf::RenderTarget&) const;
     sf::Vector2i getScreenSpacePosition(const sf::RenderTarget&) const;
-
-    static constexpr float RADIUS = 10.f;
 
 private:
     void changed();
 
+    // --- Data model attributes ---
     bool _value = 0;
     bool _editable = false;
     PinType _type;
@@ -73,6 +68,7 @@ private:
 
     Circuit* _parent = nullptr;
 
+    // --- SFML-related attributes ---
     sf::CircleShape _graphic;
     const sf::View* _view = nullptr;
 };

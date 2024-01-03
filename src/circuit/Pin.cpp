@@ -5,14 +5,11 @@
 
 #include "SFML/Window/Event.hpp"
 #include "circuit/Circuit.h"
-
-
+#include "util/util.h"
 
 Pin::Pin(const std::string& id, PinType type, sf::Vector2f pos, int state)
     : Entity(id), _type(type), _value(state) {
     _graphic.setPosition(pos - sf::Vector2f(RADIUS, RADIUS));
-    _graphic.setOutlineColor(sf::Color(COLOR_OUTLINE));
-    _graphic.setOutlineThickness(1);
     _graphic.setRadius(10);
 
     if (_value) {
@@ -56,31 +53,18 @@ void Pin::setValue(bool value) {
     changed();
 }
 
-sf::Vector2f Pin::getCenter() const {
-    float r = _graphic.getRadius();
-    return _graphic.getPosition() + sf::Vector2f(r, r);
-}
-sf::Vector2f Pin::getWorldSpacePosition(const sf::RenderTarget& target) const {
-    sf::Vector2f orgPos = getCenter();
-    if (!_view) {
-        return orgPos;
-    }
-
-    sf::Vector2i screenSpace = target.mapCoordsToPixel(orgPos, *_view);
-    return target.mapPixelToCoords(screenSpace);
-}
-
 sf::Vector2i Pin::getScreenSpacePosition(const sf::RenderTarget& target) const {
-    sf::Vector2f orgPos = getCenter();
-    if (!_view) {
-        return target.mapCoordsToPixel(orgPos);
-    }
-    return target.mapCoordsToPixel(orgPos, *_view);
+    return util::projectToScreenSpace(target, getPosition(), _view);
 }
-void Pin::setCenter(sf::Vector2f pos) {
-    float r = _graphic.getRadius();
-    _graphic.setPosition(pos - sf::Vector2f(r, r));
+
+sf::Vector2f Pin::getPosition() const {
+    return _graphic.getPosition() + sf::Vector2f(RADIUS, RADIUS);
 }
+void Pin::setPosition(sf::Vector2f pos) {
+    _graphic.setPosition(pos - sf::Vector2f(RADIUS, RADIUS));
+}
+sf::Transformable& Pin::getTransform() { return _graphic; }
+
 bool Pin::canConnect(const Pin& other) const {
     switch (_type) {
     case Input: return other._type == Output;
@@ -90,29 +74,26 @@ bool Pin::canConnect(const Pin& other) const {
 }
 bool Pin::collide(sf::Vector2f pos) const { return _graphic.getGlobalBounds().contains(pos); }
 bool Pin::collide(const sf::RenderTarget& target, sf::Vector2i pos) const {
-    if(!_view) {
-        return collide(target.mapPixelToCoords(pos));
-    }
-    return collide(target.mapPixelToCoords(pos, *_view));
+    return collide(util::projectToWorldSpace(target, pos, _view));
 }
-sf::Transformable& Pin::getTransform() { return _graphic; }
+
 void Pin::draw(sf::RenderWindow& window) const { window.draw(_graphic); }
 
 bool Pin::connect(PinFlag* obs) { return _flags.insert(obs).second; }
 bool Pin::disconnect(PinFlag* obs) { return _flags.erase(obs) > 0; }
 
 void Pin::update(const sf::RenderWindow& window, float dt) {
-    if(_value) {
+    if (_value) {
         _graphic.setFillColor(sf::Color(COLOR_ACTIVE));
     } else {
         _graphic.setFillColor(sf::Color(COLOR_INACTIVE));
     }
 
-    if(collide(window, sf::Mouse::getPosition(window))) {
+    if (_editable && collide(window, sf::Mouse::getPosition(window))) {
         sf::Color c = _graphic.getFillColor();
-        c.r = std::min(c.r + COLOR_MUL, 255);
-        c.g = std::min(c.g + COLOR_MUL, 255);
-        c.b = std::min(c.b + COLOR_MUL, 255);
+        c.r = std::min(c.r + HOVER_MOD, 255);
+        c.g = std::min(c.g + HOVER_MOD, 255);
+        c.b = std::min(c.b + HOVER_MOD, 255);
         _graphic.setFillColor(c);
     }
 }

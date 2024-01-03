@@ -182,11 +182,11 @@ void CircuitEditor::layoutPins() {
 
     size_t i = 0;
     for (Pin& p : _inputs) {
-        p.setCenter(inputBase + sf::Vector2f(0, (i++) * pinStep));
+        p.setPosition(inputBase + sf::Vector2f(0, (i++) * pinStep));
     }
     i = 0;
     for (Pin& p : _outputs) {
-        p.setCenter(outputBase + sf::Vector2f(0, (i++) * pinStep));
+        p.setPosition(outputBase + sf::Vector2f(0, (i++) * pinStep));
     }
 }
 void CircuitEditor::onEvent(const sf::RenderWindow& w, const sf::Event& e) {
@@ -285,7 +285,7 @@ void CircuitEditor::update(const sf::RenderWindow& w, float dt) {
         w.mapCoordsToPixel({100, 0}, _worldSpace).x - w.mapCoordsToPixel({0, 0}, _worldSpace).x;
     const int zoom = std::min(_worldSpace.getSize().x / w.getSize().x / 4, 3.f);
     const float gridSize = 10 * 1024 / std::pow(2, ceil(log2(dist)));
-    const sf::Color dimColor = sf::Color(0xffffff55);
+    const sf::Color dimColor = sf::Color(0xffffff18);
 
     _grid.clear();
     _grid.setPrimitiveType(sf::Lines);

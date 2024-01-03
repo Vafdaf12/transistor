@@ -1,5 +1,6 @@
 #include "Wire.h"
 #include "SFML/Graphics/PrimitiveType.hpp"
+#include "util/util.h"
 #include <iostream>
 
 Wire::Wire(Pin* p1, Pin* p2) {
@@ -29,14 +30,16 @@ Wire::~Wire() {
 void Wire::draw(sf::RenderWindow& target) const {
     static sf::Vertex edge[2] = {sf::Vertex({0, 0}, sf::Color::White)};
 
-    edge[0].position = _from->getWorldSpacePosition(target);
-    edge[1].position = _to->getWorldSpacePosition(target);
+    edge[0].position = util::projectToWorldSpace(target, _from->getScreenSpacePosition(target));
+    edge[1].position = util::projectToWorldSpace(target, _to->getScreenSpacePosition(target));
+
+
     if (_from->getValue()) {
-        edge[0].color = sf::Color::Red;
-        edge[1].color = sf::Color::Red;
+        edge[0].color = sf::Color(Pin::COLOR_ACTIVE);
+        edge[1].color = sf::Color(Pin::COLOR_ACTIVE);
     } else {
-        edge[0].color = sf::Color::White;
-        edge[1].color = sf::Color::White;
+        edge[0].color = sf::Color(Pin::COLOR_INACTIVE);
+        edge[1].color = sf::Color(Pin::COLOR_INACTIVE);
     }
 
     target.draw(edge, 2, sf::Lines);
