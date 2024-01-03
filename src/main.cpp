@@ -29,15 +29,15 @@ bool openEditor(
 
     std::cout << "[INFO/CircuitEditor] Loading inputs" << std::endl;
     for (auto id : data["inputs"]) {
-        if(!editor.addInput(id.get<std::string>())) {
-            std::cout << "[WARN/CircuitEditor] Failed to load input: "  << id << std::endl;
+        if (!editor.addInput(id.get<std::string>())) {
+            std::cout << "[WARN/CircuitEditor] Failed to load input: " << id << std::endl;
         }
     }
 
     std::cout << "[INFO/CircuitEditor] Loading outputs" << std::endl;
     for (auto id : data["outputs"]) {
-        if(!editor.addOutput(id.get<std::string>())) {
-            std::cout << "[WARN/CircuitEditor] Failed to load input: "  << id << std::endl;
+        if (!editor.addOutput(id.get<std::string>())) {
+            std::cout << "[WARN/CircuitEditor] Failed to load input: " << id << std::endl;
         }
     }
 
@@ -56,8 +56,9 @@ bool openEditor(
         Pin* from = editor.queryPin(froms);
         Pin* to = editor.queryPin(tos);
 
-        if(!from || !to) {
-            std::cout << "[WARN/CircuitEditor] Failed to load wire: "  << froms << " -> " << tos << std::endl;
+        if (!from || !to) {
+            std::cout << "[WARN/CircuitEditor] Failed to load wire: " << froms << " -> " << tos
+                      << std::endl;
             continue;
         }
         editor.addWire(from, to);
@@ -81,31 +82,23 @@ bool saveEditor(const CircuitEditor& editor, const std::string& path) {
 
 int main(int, char**) {
     // --- RESOURCES ---
-    
+
     std::cout << "[INFO] Loading Assets" << std::endl;
+
     ResourceManager<std::string, sf::Texture> assets;
     assets.load("gate_not", "assets/sprites/gate_not.png");
+    assets.load("gate_or", "assets/sprites/gate_or.png");
+    assets.load("gate_xor", "assets/sprites/gate_xor.png");
+    assets.load("gate_and", "assets/sprites/gate_and.png");
+    assets.load("gate_nand", "assets/sprites/gate_nand.png");
 
-    ResourceManager<BinaryGate::Func, sf::Texture> gateTextures;
-    gateTextures.load(BinaryGate::Or, "assets/sprites/gate_or.png");
-    gateTextures.load(BinaryGate::Xor, "assets/sprites/gate_xor.png");
-    gateTextures.load(BinaryGate::And, "assets/sprites/gate_and.png");
-    gateTextures.load(BinaryGate::Nand, "assets/sprites/gate_nand.png");
-
-    AssetLoader<Circuit, std::string> context;
-    context.addType("or_gate", [&](const json& j) {
-        return serde::createBinaryGate<BinaryGate::Or>(j, gateTextures);
-    });
-    context.addType("xor_gate", [&](const json& j) {
-        return serde::createBinaryGate<BinaryGate::Xor>(j, gateTextures);
-    });
-    context.addType("and_gate", [&](const json& j) {
-        return serde::createBinaryGate<BinaryGate::And>(j, gateTextures);
-    });
-    context.addType("nand_gate", [&](const json& j) {
-        return serde::createBinaryGate<BinaryGate::Nand>(j, gateTextures);
-    });
-    context.addType("not_gate", [&](const json& j) { return serde::createNot(j, assets.get("gate_not")); });
+    AssetLoader<Circuit, std::string> loader;
+    using namespace std::placeholders;
+    loader.addType("or_gate", std::bind(serde::createBinaryGate, _1, BinaryGate::Or, assets.get("gate_or")));
+    loader.addType("xor_gate", std::bind(serde::createBinaryGate, _1, BinaryGate::Xor, assets.get("gate_xor")));
+    loader.addType("and_gate", std::bind(serde::createBinaryGate, _1, BinaryGate::And, assets.get("gate_and")));
+    loader.addType("nand_gate",std::bind(serde::createBinaryGate, _1, BinaryGate::Nand, assets.get("gate_nand")));
+    loader.addType("not_gate", std::bind(serde::createNot, _1, assets.get("gate_not")));
 
     // --- WINDOW SETUP ---
     std::cout << "[INFO] Setting up window" << std::endl;
@@ -119,7 +112,7 @@ int main(int, char**) {
     CircuitEditor editor(window.getDefaultView());
 
     std::cout << "[INFO] Loading editor" << std::endl;
-    openEditor(editor, "assets/world.json", context);
+    openEditor(editor, "assets/world.json", loader);
 
     // --- GUI ---
     sf::View gui = window.getDefaultView();
@@ -127,31 +120,33 @@ int main(int, char**) {
     std::vector<std::unique_ptr<ui::Widget>> widgets;
 
     std::cout << "[INFO] Loading Sprites" << std::endl;
-    ui::ImageView* imageView = new ui::ImageView(gateTextures.get(BinaryGate::Xor));
+    ui::ImageView* imageView = new ui::ImageView(assets.get("gate_xor"));
     imageView->getSprite().setScale(0.5f, 0.5f);
     imageView->getSprite().setColor(sf::Color::Cyan);
     widgets.emplace_back(new ui::CircuitButton(
-        editor, new BinaryGate("xor", gateTextures.get(BinaryGate::Xor), BinaryGate::Xor), imageView
+        editor, new BinaryGate("xor", assets.get("gate_xor"), BinaryGate::Xor), imageView
     ));
 
-    imageView = new ui::ImageView(gateTextures.get(BinaryGate::And));
+    imageView = new ui::ImageView(assets.get("gate_and"));
     imageView->getSprite().setScale(0.5f, 0.5f);
     imageView->getSprite().setColor(sf::Color::Cyan);
     widgets.emplace_back(new ui::CircuitButton(
-        editor, new BinaryGate("and", gateTextures.get(BinaryGate::And), BinaryGate::And), imageView
+        editor, new BinaryGate("and", assets.get("gate_and"), BinaryGate::And), imageView
     ));
 
-    imageView = new ui::ImageView(gateTextures.get(BinaryGate::Or));
+    imageView = new ui::ImageView(assets.get("gate_or"));
     imageView->getSprite().setScale(0.5f, 0.5f);
     imageView->getSprite().setColor(sf::Color::Cyan);
-    widgets.emplace_back(
-        new ui::CircuitButton(editor, new BinaryGate("or", gateTextures.get(BinaryGate::Or), BinaryGate::Or), imageView)
-    );
+    widgets.emplace_back(new ui::CircuitButton(
+        editor, new BinaryGate("or", assets.get("gate_or"), BinaryGate::Or), imageView
+    ));
 
     imageView = new ui::ImageView(assets.get("gate_not"));
     imageView->getSprite().setScale(0.5f, 0.5f);
     imageView->getSprite().setColor(sf::Color::Cyan);
-    widgets.emplace_back(new ui::CircuitButton(editor, new NotGate("not", assets.get("gate_not")), imageView));
+    widgets.emplace_back(
+        new ui::CircuitButton(editor, new NotGate("not", assets.get("gate_not")), imageView)
+    );
 
     sf::Vector2f offset(10, 10);
     for (auto& w : widgets) {
