@@ -86,13 +86,15 @@ bool CircuitEditor::removeCircuit(const Circuit* c) {
 }
 
 bool CircuitEditor::addWire(Pin* from, Pin* to) {
-    bool exists = std::any_of(_wires.begin(), _wires.end(), [from, to](const Wire& w) {
-        return w.getFrom() == from && w.getTo() == to;
-    });
-    if (!exists) {
+    if(from->getType() == Pin::Input) {
+        std::swap(from, to);
+    }
+    
+    bool found = std::find(_wires.begin(), _wires.end(), Wire(from, to)) != _wires.end();
+    if (!found) {
         _wires.emplace_back(from, to);
     }
-    return !exists;
+    return !found;
 }
 bool CircuitEditor::removeWire(Pin* from, Pin* to) {
     if (!to) {
