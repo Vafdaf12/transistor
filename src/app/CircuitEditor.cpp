@@ -10,8 +10,7 @@
 #include <iostream>
 #include <string>
 
-CircuitEditor::CircuitEditor(const sf::View& screen)
-    : _screenSpace(screen), m_camera(screen) {
+CircuitEditor::CircuitEditor(const sf::View& screen) : _screenSpace(screen), m_camera(screen) {
     layoutPins();
     m_camera.setTarget({0, 0});
     _tools.emplace_back(new PinConnector(*this));
@@ -78,7 +77,7 @@ bool CircuitEditor::removeCircuit(const Circuit* c) {
     bool removed = std::erase_if(_circuits, [&c](const auto& p) { return c == p.get(); }) > 0;
     if (removed) {
         using namespace std::placeholders;
-        for(Pin* p : circuitPins) {
+        for (Pin* p : circuitPins) {
             removeConnectedWires(p);
         }
     }
@@ -86,15 +85,21 @@ bool CircuitEditor::removeCircuit(const Circuit* c) {
 }
 
 bool CircuitEditor::addWire(Pin* from, Pin* to) {
-    if(from->getType() == Pin::Input) {
+    if (from->getType() == Pin::Input) {
         std::swap(from, to);
     }
-    
-    bool found = std::find(_wires.begin(), _wires.end(), Wire(from, to)) != _wires.end();
-    if (!found) {
-        _wires.emplace_back(from, to);
+
+    auto it = std::find_if(_wires.begin(), _wires.end(), [&](const Wire& w) {
+        if (w.getTo() == to) {
+            return true;
+        }
+        return w == Wire(from, to);
+    });
+    if (it != _wires.end()) {
+        return false;
     }
-    return !found;
+    _wires.emplace_back(from, to);
+    return true;
 }
 bool CircuitEditor::removeWire(Pin* from, Pin* to) {
     if (!to) {
@@ -172,7 +177,7 @@ Pin* CircuitEditor::collidePin(const sf::RenderWindow& w, sf::Vector2i pixel, bo
 
 void CircuitEditor::removeConnectedWires(const Pin* pin) {
     int count = std::erase_if(_wires, [pin](const Wire& w) { return w.isEndpoint(pin); });
-    if(count > 0) {
+    if (count > 0) {
         std::cout << "[INFO/CircuitEditor] Removed " << count << " wires" << std::endl;
     }
 }
@@ -289,8 +294,8 @@ void CircuitEditor::update(const sf::RenderWindow& w, float dt) {
 
     sf::Vector2f topLeft = m_camera.getView().getCenter() - m_camera.getView().getSize() / 2.f;
     sf::Vector2f bottomRight = m_camera.getView().getCenter() + m_camera.getView().getSize() / 2.f;
-    float dist =
-        w.mapCoordsToPixel({100, 0}, m_camera.getView()).x - w.mapCoordsToPixel({0, 0}, m_camera.getView()).x;
+    float dist = w.mapCoordsToPixel({100, 0}, m_camera.getView()).x -
+                 w.mapCoordsToPixel({0, 0}, m_camera.getView()).x;
     const int zoom = std::min(m_camera.getView().getSize().x / w.getSize().x / 4, 3.f);
     const float gridSize = 10 * 1024 / std::pow(2, ceil(log2(dist)));
     const sf::Color dimColor = sf::Color(0xffffff18);
@@ -378,9 +383,8 @@ Pin* CircuitEditor::queryPin(const std::string& path) {
         return nullptr;
     }
     std::vector<Pin*> pins = c->getAllPins();
-    auto it = std::find_if(pins.begin(), pins.end(), [&pin](const Pin* p) {
-            return p->getId() == pin;
-            });
+    auto it =
+        std::find_if(pins.begin(), pins.end(), [&pin](const Pin* p) { return p->getId() == pin; });
     return it == pins.end() ? nullptr : *it;
 }
 
