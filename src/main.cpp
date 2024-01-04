@@ -6,6 +6,7 @@
 #include "asset/ResourceManager.h"
 #include "asset/deserialize.h"
 #include "circuit/BinaryGate.h"
+#include "circuit/CompositeCircuit.h"
 #include "circuit/NotGate.h"
 #include "ui/CircuitButton.h"
 #include "ui/ImageView.h"
@@ -45,6 +46,10 @@ bool openEditor(
     for (auto elem : data["elements"]) {
         std::string type = elem["type"].get<std::string>();
         Circuit* circuit = circuits.read(type, elem);
+        if(!circuit) {
+            std::cout << "[WARN/CircuitEditor] Failed to load circuit: " << type << std::endl;
+            continue;
+        }
         editor.addCircuit(circuit);
     }
 
@@ -84,6 +89,9 @@ int main(int, char**) {
     // --- RESOURCES ---
 
     std::cout << "[INFO] Loading Assets" << std::endl;
+
+    sf::Font font;
+    font.loadFromFile("assets/fonts/CutiveMono-Regular.ttf");
 
     ResourceManager<std::string, sf::Texture> assets;
     assets.load("gate_not", "assets/sprites/gate_not.png");
@@ -146,6 +154,13 @@ int main(int, char**) {
     imageView->getSprite().setColor(sf::Color::Cyan);
     widgets.emplace_back(
         new ui::CircuitButton(editor, new NotGate("not", assets.get("gate_not")), imageView)
+    );
+
+    imageView = new ui::ImageView(assets.get("gate_not"));
+    imageView->getSprite().setScale(0.5f, 0.5f);
+    imageView->getSprite().setColor(sf::Color::Red);
+    widgets.emplace_back(
+        new ui::CircuitButton(editor, new CompositeCircuit("custom", font), imageView)
     );
 
     sf::Vector2f offset(10, 10);

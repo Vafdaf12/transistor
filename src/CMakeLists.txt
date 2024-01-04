@@ -14,6 +14,7 @@ add_executable(${BINARY}
     core/Camera.cpp
     circuit/BinaryGate.cpp
     circuit/NotGate.cpp
+    circuit/CompositeCircuit.cpp
     circuit/Pin.cpp
     circuit/Wire.cpp
     tools/PinConnector.cpp
