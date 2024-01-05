@@ -5,7 +5,7 @@
 #include "SFML/System/Vector2.hpp"
 
 NotGate::NotGate(const std::string& id, const sf::Texture& texture, sf::Vector2f pos)
-    : Circuit(id), m_input("in", Pin::Input), m_output("out", Pin::Output), m_sprite(texture) {
+    : Circuit(id), m_input("in0", Pin::Input), m_output("out0", Pin::Output), m_sprite(texture) {
 
     m_input.setParent(this);
     m_output.setParent(this);

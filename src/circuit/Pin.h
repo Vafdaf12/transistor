@@ -51,6 +51,9 @@ public:
 
     sf::Vector2i getScreenSpacePosition(const sf::RenderTarget&) const;
 
+    // Checks if two pin types can be connected to each other
+    static bool isCompatible(PinType a, PinType b);
+
 private:
     // --- Data model attributes ---
     bool _value = 0;

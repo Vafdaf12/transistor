@@ -1,7 +1,6 @@
 #include "Wire.h"
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "util/util.h"
-#include <iostream>
 
 Wire::Wire(const Pin* source, Pin* target) : m_source(source), m_target(target) {
     m_target->setValue(m_source->getValue());

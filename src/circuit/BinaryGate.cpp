@@ -4,8 +4,8 @@
 #include "SFML/System/Vector2.hpp"
 
 BinaryGate::BinaryGate(const std::string& id, const sf::Texture& texture, Func fn, sf::Vector2f pos)
-    : Circuit(id), m_in1("in1", Pin::Input), m_in2("in2", Pin::Input),
-      m_out("out", Pin::Output, {0, 0}, 0), m_process(fn), m_sprite(texture) {
+    : Circuit(id), m_in1("in0", Pin::Input), m_in2("in1", Pin::Input),
+      m_out("out0", Pin::Output, {0, 0}, 0), m_process(fn), m_sprite(texture) {
     m_in1.setParent(this);
     m_in2.setParent(this);
     m_out.setParent(this);

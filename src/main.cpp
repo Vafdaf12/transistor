@@ -156,11 +156,37 @@ int main(int, char**) {
         new ui::CircuitButton(editor, new NotGate("not", assets.get("gate_not")), imageView)
     );
 
+    CompositeCircuit* tmp = new CompositeCircuit("bingus", font);
+    tmp->setLabel("Cool");
+    tmp->setInputCount(2);
+    tmp->setOutputCount(2);
+
+    assert(tmp->addCircuit(new BinaryGate("or1", assets.get("gate_or"), BinaryGate::Or)));
+    assert(tmp->addCircuit(new NotGate("not1", assets.get("gate_not"))));
+
+    assert(tmp->addCircuit(new BinaryGate("or2", assets.get("gate_or"), BinaryGate::Or)));
+    assert(tmp->addCircuit(new NotGate("not2", assets.get("gate_not"))));
+
+    // Connect input/outputs pins
+    assert(tmp->connectPins("in0", "or1/in0"));
+    assert(tmp->connectPins("in1", "or2/in1"));
+    assert(tmp->connectPins("not1/out0", "out0"));
+    assert(tmp->connectPins("not2/out0", "out1"));
+
+    // Connect NOR pins
+    assert(tmp->connectPins("or1/out0", "not1/in0"));
+    assert(tmp->connectPins("or2/out0", "not2/in0"));
+
+    // Connect feedback pins
+    assert(tmp->connectPins("not1/out0", "or2/in0"));
+    assert(tmp->connectPins("not2/out0", "or1/in1"));
+
+
     imageView = new ui::ImageView(assets.get("gate_not"));
     imageView->getSprite().setScale(0.5f, 0.5f);
     imageView->getSprite().setColor(sf::Color::Red);
     widgets.emplace_back(
-        new ui::CircuitButton(editor, new CompositeCircuit("custom", font), imageView)
+        new ui::CircuitButton(editor, tmp, imageView)
     );
 
     sf::Vector2f offset(10, 10);

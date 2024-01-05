@@ -40,9 +40,7 @@ void Pin::onEvent(const sf::RenderWindow& w, const sf::Event& e) {
         setValue(!getValue());
     }
 }
-void Pin::setValue(bool value) {
-    _value = value;
-}
+void Pin::setValue(bool value) { _value = value; }
 
 sf::Vector2i Pin::getScreenSpacePosition(const sf::RenderTarget& target) const {
     return util::projectToScreenSpace(target, getPosition(), _view);
@@ -57,11 +55,7 @@ void Pin::setPosition(sf::Vector2f pos) {
 sf::Transformable& Pin::getTransform() { return _graphic; }
 
 bool Pin::canConnect(const Pin& other) const {
-    switch (_type) {
-    case Input: return other._type == Output;
-    case Output: return other._type == Input;
-    }
-    return false;
+    return isCompatible(_type, other._type);
 }
 bool Pin::collide(sf::Vector2f pos) const { return _graphic.getGlobalBounds().contains(pos); }
 bool Pin::collide(const sf::RenderTarget& target, sf::Vector2i pos) const {
@@ -91,4 +85,11 @@ std::string Pin::getFullPath() const {
         return _parent->getId() + "/" + getId();
     }
     return getId();
+}
+bool Pin::isCompatible(PinType a, PinType b) {
+    switch (a) {
+    case Input: return b == Output;
+    case Output: return b == Input;
+    }
+    return false;
 }

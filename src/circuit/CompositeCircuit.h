@@ -32,9 +32,30 @@ public:
     void update(const sf::RenderWindow&, float dt) override;
     void draw(sf::RenderWindow&) const override;
 
+    // -------------------------------------------------- CUSTOM METHODS
+
+    // Sets the label of the circuit, adjusting the background to fit the text
     void setLabel(const std::string& label);
 
+    // Configures the number of input pins (IDs are auto-generated). Removes any connected wires if count decreases
+    void setInputCount(size_t count);
+
+    // Configures the number of output pins (IDs are auto-generated). Removes any connected wires if count decreases
+    void setOutputCount(size_t count);
+
+    // Attempts to connect the inner pins with the passed-in IDS
+    bool connectPins(const std::string& source, const std::string& target);
+
+    // Attempts to add a sub-circuit to the circuit
+    bool addCircuit(Circuit* c);
+
 private:
+    // Re-computes pin layout and corresponding circuit size
+    void layout();
+
+    // Checks if the pin is not one of the inputs/outputs
+    bool isInteriorPin(const Pin& pin) const;
+
     Pin* queryPin(const std::string& path);
     Circuit* queryCircuit(const std::string& id);
 
@@ -43,7 +64,7 @@ private:
     sf::RectangleShape m_shape;
     sf::Text m_label;
 
-    std::list<Wire> m_wires;
+    std::vector<Wire> m_wires;
     std::list<Pin> m_inputs;
     std::list<Pin> m_outputs;
     std::list<std::unique_ptr<Circuit>> m_circuits;
