@@ -3,16 +3,17 @@
 #include "SFML/Graphics/Rect.hpp"
 
 #include <algorithm>
+#include <iostream>
 #include <iterator>
 #include <ranges>
 #include <vector>
-#include <iostream>
 
 #include "util/util.h"
 
-
-CompositeCircuit::CompositeCircuit(const std::string& id, const sf::Font& font, sf::Vector2f pos)
-    : Circuit(id), m_label(id, font) {
+CompositeCircuit::CompositeCircuit(
+    const std::string& id, const std::string& type, const sf::Font& font, sf::Vector2f pos
+)
+    : Circuit(id), m_label(id, font), m_type(type) {
 
     m_label.setFillColor(sf::Color::Red);
     m_shape.setFillColor(sf::Color::White);
@@ -21,6 +22,7 @@ CompositeCircuit::CompositeCircuit(const std::string& id, const sf::Font& font, 
 }
 
 CompositeCircuit::CompositeCircuit(const CompositeCircuit& other) : Circuit(other.getId()) {
+    m_type = other.m_type;
     m_label = other.m_label;
     m_shape = other.m_shape;
 
@@ -62,11 +64,11 @@ sf::Vector2f CompositeCircuit::getPosition() const { return m_shape.getPosition(
 void CompositeCircuit::setPosition(sf::Vector2f pos) {
     sf::Vector2f diff = pos - m_shape.getPosition();
     m_shape.setPosition(pos);
-    m_label.setPosition(pos + sf::Vector2f(PADDING, PADDING));
-    for(Pin& pin : m_inputs) {
+    m_label.setPosition(m_label.getPosition() + diff);
+    for (Pin& pin : m_inputs) {
         pin.setPosition(pin.getPosition() + diff);
     }
-    for(Pin& pin : m_outputs) {
+    for (Pin& pin : m_outputs) {
         pin.setPosition(pin.getPosition() + diff);
     }
 }
@@ -77,7 +79,13 @@ Circuit* CompositeCircuit::clone(const std::string& id) const {
     return c;
 }
 
-void CompositeCircuit::toJson(nlohmann::json& j) const { j["type"] = "composite"; }
+void CompositeCircuit::toJson(nlohmann::json& j) const {
+    j["id"] = getId();
+    j["type"] = m_type;
+    sf::Vector2f pos = getPosition();
+    j["position"]["x"] = pos.x;
+    j["position"]["y"] = pos.y;
+}
 
 void CompositeCircuit::update(const sf::RenderWindow& w, float dt) {
     for (auto& p : m_wires) {
@@ -107,10 +115,10 @@ void CompositeCircuit::update(const sf::RenderWindow& w, float dt) {
 void CompositeCircuit::draw(sf::RenderWindow& w) const {
     w.draw(m_shape);
     w.draw(m_label);
-    for(const Pin& p : m_inputs) {
+    for (const Pin& p : m_inputs) {
         p.draw(w);
     }
-    for(const Pin& p : m_outputs) {
+    for (const Pin& p : m_outputs) {
         p.draw(w);
     }
 }
@@ -155,7 +163,7 @@ Circuit* CompositeCircuit::queryCircuit(const std::string& path) {
 void CompositeCircuit::setLabel(const std::string& label) {
     m_label.setString(label);
     m_shape.setSize(
-        {m_label.getGlobalBounds().width + 2 * PADDING, m_label.getCharacterSize() + 2 * PADDING}
+        {m_label.getGlobalBounds().width + 2 * (PADDING+Pin::RADIUS), m_label.getCharacterSize() + 2 * PADDING}
     );
     layout();
 }
@@ -165,6 +173,7 @@ void CompositeCircuit::setInputCount(size_t count) {
         count -= m_inputs.size();
         for (size_t i = 0; i < count; i++) {
             m_inputs.emplace_back("in" + std::to_string(m_inputs.size()), Pin::Input);
+            m_inputs.back().setParent(this);
         }
         layout();
     } else if (count < m_inputs.size()) {
@@ -174,7 +183,7 @@ void CompositeCircuit::setInputCount(size_t count) {
         std::copy(view.begin(), view.end(), std::inserter(pins, pins.begin()));
         std::erase_if(m_wires, [&pins](const Wire& w) { return pins.contains(w.getFrom()); });
 
-        for(size_t i = 0; i < m_inputs.size()-count; i++) {
+        for (size_t i = 0; i < m_inputs.size() - count; i++) {
             m_inputs.pop_back();
         }
         layout();
@@ -185,6 +194,7 @@ void CompositeCircuit::setOutputCount(size_t count) {
         count -= m_outputs.size();
         for (size_t i = 0; i < count; i++) {
             m_outputs.emplace_back("out" + std::to_string(m_outputs.size()), Pin::Output);
+            m_outputs.back().setParent(this);
         }
         layout();
     } else if (count < m_outputs.size()) {
@@ -194,7 +204,7 @@ void CompositeCircuit::setOutputCount(size_t count) {
         std::copy(view.begin(), view.end(), std::inserter(pins, pins.begin()));
         std::erase_if(m_wires, [&pins](const Wire& w) { return pins.contains(w.getTo()); });
 
-        for(size_t i = 0; i < m_outputs.size()-count; i++) {
+        for (size_t i = 0; i < m_outputs.size() - count; i++) {
             m_outputs.pop_back();
         }
         layout();
@@ -204,15 +214,16 @@ void CompositeCircuit::setOutputCount(size_t count) {
 bool CompositeCircuit::connectPins(const std::string& id1, const std::string& id2) {
     Pin* p1 = queryPin(id1);
     Pin* p2 = queryPin(id2);
-    if(!p1) {
+    if (!p1) {
         std::cout << "[WARN/CompositeCircuit] could not find pin " << id1 << std::endl;
         return false;
     }
-    if(!p2) {
+    if (!p2) {
         std::cout << "[WARN/CompositeCircuit] could not find pin " << id2 << std::endl;
         return false;
     }
-    // std::cout << "[INFO/CompositeCircuit] Connecting " << p1->getFullPath() << " -> " << p2->getFullPath() << std::endl;
+    // std::cout << "[INFO/CompositeCircuit] Connecting " << p1->getFullPath() << " -> " <<
+    // p2->getFullPath() << std::endl;
     m_wires.emplace_back(p1, p2);
     return true;
 }
@@ -244,27 +255,26 @@ void CompositeCircuit::layout() {
     labelSize.y = m_label.getCharacterSize();
 
     sf::Vector2f shapeSize;
-    shapeSize.x = labelSize.x + 2 * PADDING;
+    shapeSize.x = labelSize.x + 2 * (PADDING+Pin::RADIUS);
     shapeSize.y = count * (2 * Pin::RADIUS + PADDING) + PADDING;
-    shapeSize.y = util::max<float>(labelSize.y+2*PADDING, shapeSize.y);
+    shapeSize.y = util::max<float>(labelSize.y + 2 * PADDING, shapeSize.y);
 
     m_shape.setSize(shapeSize);
-    m_label.setPosition(m_shape.getPosition() + (shapeSize-labelSize)/2.f);
+    m_label.setPosition(m_shape.getPosition() + (shapeSize - labelSize) / 2.f);
 
     // Layout input pins
-    float pinStart = m_inputs.size()*(2*Pin::RADIUS + PADDING) - PADDING;
+    float pinStart = m_inputs.size() * (2 * Pin::RADIUS + PADDING) - PADDING;
     pinStart = Pin::RADIUS + m_shape.getPosition().y + (shapeSize.y - pinStart) / 2;
-    for(Pin& pin : m_inputs) {
+    for (Pin& pin : m_inputs) {
         pin.setPosition({m_shape.getPosition().x, pinStart});
-        pinStart += 2*Pin::RADIUS + PADDING;
+        pinStart += 2 * Pin::RADIUS + PADDING;
     }
 
     // Layout output pins
-    pinStart = m_outputs.size()*(2*Pin::RADIUS + PADDING) - PADDING;
+    pinStart = m_outputs.size() * (2 * Pin::RADIUS + PADDING) - PADDING;
     pinStart = Pin::RADIUS + m_shape.getPosition().y + (shapeSize.y - pinStart) / 2;
-    for(Pin& pin : m_outputs) {
+    for (Pin& pin : m_outputs) {
         pin.setPosition({m_shape.getPosition().x + m_shape.getSize().x, pinStart});
-        pinStart += 2*Pin::RADIUS + PADDING;
+        pinStart += 2 * Pin::RADIUS + PADDING;
     }
-
 }

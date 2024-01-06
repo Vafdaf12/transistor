@@ -116,8 +116,7 @@ int main(int argc, char** argv) {
         std::bind(serde::createBinaryGate, _1, BinaryGate::Nand, assets.get("gate_nand"))
     );
     loader.addType("not_gate", std::bind(serde::createNot, _1, assets.get("gate_not")));
-    loader.addType("srff", std::bind(serde::createComposite, _1, font, loader));
-    loader.addType("dff", std::bind(serde::createComposite, _1, font, loader));
+    loader.setDefault(std::bind(serde::createComposite, _2, font, loader));
 
     // --- WINDOW SETUP ---
     std::cout << "[INFO] Setting up window" << std::endl;
@@ -168,7 +167,7 @@ int main(int argc, char** argv) {
         new ui::CircuitButton(editor, new NotGate("not", assets.get("gate_not")), imageView)
     );
 
-    CompositeCircuit* tmp = new CompositeCircuit("bingus", font);
+    CompositeCircuit* tmp = new CompositeCircuit("bingus", "bing", font);
     tmp->setLabel("Cool");
     tmp->setInputCount(2);
     tmp->setOutputCount(2);

@@ -12,7 +12,7 @@
 
 class CompositeCircuit : public Circuit {
 public:
-    CompositeCircuit(const std::string& id, const sf::Font& font, sf::Vector2f pos = {0, 0});
+    CompositeCircuit(const std::string& id, const std::string& type, const sf::Font& font, sf::Vector2f pos = {0, 0});
     CompositeCircuit(const CompositeCircuit&);
 
     bool collide(sf::Vector2f) const override;
@@ -68,4 +68,8 @@ private:
     std::list<Pin> m_inputs;
     std::list<Pin> m_outputs;
     std::list<std::unique_ptr<Circuit>> m_circuits;
+
+    // Required for serialization purposes
+    // TODO: find a way to not have to specify this (memento?)
+    std::string m_type;
 };
