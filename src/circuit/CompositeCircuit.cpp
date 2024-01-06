@@ -212,7 +212,7 @@ bool CompositeCircuit::connectPins(const std::string& id1, const std::string& id
         std::cout << "[WARN/CompositeCircuit] could not find pin " << id2 << std::endl;
         return false;
     }
-    std::cout << "[INFO/CompositeCircuit] Connecting " << p1->getFullPath() << " -> " << p2->getFullPath() << std::endl;
+    // std::cout << "[INFO/CompositeCircuit] Connecting " << p1->getFullPath() << " -> " << p2->getFullPath() << std::endl;
     m_wires.emplace_back(p1, p2);
     return true;
 }

@@ -46,7 +46,7 @@ bool openEditor(
     for (auto elem : data["elements"]) {
         std::string type = elem["type"].get<std::string>();
         Circuit* circuit = circuits.read(type, elem);
-        if(!circuit) {
+        if (!circuit) {
             std::cout << "[WARN/CircuitEditor] Failed to load circuit: " << type << std::endl;
             continue;
         }
@@ -85,7 +85,7 @@ bool saveEditor(const CircuitEditor& editor, const std::string& path) {
     return true;
 }
 
-int main(int, char**) {
+int main(int argc, char** argv) {
     // --- RESOURCES ---
 
     std::cout << "[INFO] Loading Assets" << std::endl;
@@ -102,11 +102,22 @@ int main(int, char**) {
 
     AssetLoader<Circuit, std::string> loader;
     using namespace std::placeholders;
-    loader.addType("or_gate", std::bind(serde::createBinaryGate, _1, BinaryGate::Or, assets.get("gate_or")));
-    loader.addType("xor_gate", std::bind(serde::createBinaryGate, _1, BinaryGate::Xor, assets.get("gate_xor")));
-    loader.addType("and_gate", std::bind(serde::createBinaryGate, _1, BinaryGate::And, assets.get("gate_and")));
-    loader.addType("nand_gate",std::bind(serde::createBinaryGate, _1, BinaryGate::Nand, assets.get("gate_nand")));
+    loader.addType(
+        "or_gate", std::bind(serde::createBinaryGate, _1, BinaryGate::Or, assets.get("gate_or"))
+    );
+    loader.addType(
+        "xor_gate", std::bind(serde::createBinaryGate, _1, BinaryGate::Xor, assets.get("gate_xor"))
+    );
+    loader.addType(
+        "and_gate", std::bind(serde::createBinaryGate, _1, BinaryGate::And, assets.get("gate_and"))
+    );
+    loader.addType(
+        "nand_gate",
+        std::bind(serde::createBinaryGate, _1, BinaryGate::Nand, assets.get("gate_nand"))
+    );
     loader.addType("not_gate", std::bind(serde::createNot, _1, assets.get("gate_not")));
+    loader.addType("srff", std::bind(serde::createComposite, _1, font, loader));
+    loader.addType("dff", std::bind(serde::createComposite, _1, font, loader));
 
     // --- WINDOW SETUP ---
     std::cout << "[INFO] Setting up window" << std::endl;
@@ -120,7 +131,8 @@ int main(int, char**) {
     CircuitEditor editor(window.getDefaultView());
 
     std::cout << "[INFO] Loading editor" << std::endl;
-    openEditor(editor, "assets/world.json", loader);
+    std::string filePath = argc > 1 ? argv[1] : "assets/world.json";
+    openEditor(editor, filePath, loader);
 
     // --- GUI ---
     sf::View gui = window.getDefaultView();
@@ -181,13 +193,10 @@ int main(int, char**) {
     assert(tmp->connectPins("not1/out0", "or2/in0"));
     assert(tmp->connectPins("not2/out0", "or1/in1"));
 
-
     imageView = new ui::ImageView(assets.get("gate_not"));
     imageView->getSprite().setScale(0.5f, 0.5f);
     imageView->getSprite().setColor(sf::Color::Red);
-    widgets.emplace_back(
-        new ui::CircuitButton(editor, tmp, imageView)
-    );
+    widgets.emplace_back(new ui::CircuitButton(editor, tmp, imageView));
 
     sf::Vector2f offset(10, 10);
     for (auto& w : widgets) {
@@ -242,5 +251,5 @@ int main(int, char**) {
         }
         window.display();
     }
-    saveEditor(editor, "assets/world.json");
+    saveEditor(editor, filePath);
 }

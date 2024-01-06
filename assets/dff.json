@@ -1,0 +1,126 @@
+{
+    "elements": [
+        {
+            "id": "or",
+            "position": {
+                "x": -68.71089172363281,
+                "y": -71.41049194335938
+            },
+            "type": "or_gate"
+        },
+        {
+            "id": "not1",
+            "position": {
+                "x": 105.32260131835938,
+                "y": -70.24960327148438
+            },
+            "type": "not_gate"
+        },
+        {
+            "id": "or2",
+            "position": {
+                "x": -64.53274536132813,
+                "y": 57.936256408691406
+            },
+            "type": "or_gate"
+        },
+        {
+            "id": "not13",
+            "position": {
+                "x": 109.50074768066406,
+                "y": 59.097145080566406
+            },
+            "type": "not_gate"
+        },
+        {
+            "id": "and4",
+            "position": {
+                "x": -233.66172790527344,
+                "y": -71.41044616699219
+            },
+            "type": "and_gate"
+        },
+        {
+            "id": "and5",
+            "position": {
+                "x": -229.78048706054688,
+                "y": 62.490779876708984
+            },
+            "type": "and_gate"
+        },
+        {
+            "id": "not6",
+            "position": {
+                "x": -411.8467102050781,
+                "y": 1.5525474548339844
+            },
+            "type": "not_gate"
+        }
+    ],
+    "inputs": [
+        "in0",
+        "in1"
+    ],
+    "outputs": [
+        "out0",
+        "out1"
+    ],
+    "wires": [
+        {
+            "from": "in0",
+            "to": "in0"
+        },
+        {
+            "from": "in1",
+            "to": "and5/in1"
+        },
+        {
+            "from": "in1",
+            "to": "and4/in1"
+        },
+        {
+            "from": "in0",
+            "to": "not6/in0"
+        },
+        {
+            "from": "in0",
+            "to": "and4/in0"
+        },
+        {
+            "from": "not6/out0",
+            "to": "and5/in0"
+        },
+        {
+            "from": "and5/out0",
+            "to": "or2/in1"
+        },
+        {
+            "from": "and4/out0",
+            "to": "or/in0"
+        },
+        {
+            "from": "not1/out0",
+            "to": "or2/in0"
+        },
+        {
+            "from": "not13/out0",
+            "to": "or/in1"
+        },
+        {
+            "from": "or/out0",
+            "to": "not1/in0"
+        },
+        {
+            "from": "or2/out0",
+            "to": "not13/in0"
+        },
+        {
+            "from": "not13/out0",
+            "to": "out1"
+        },
+        {
+            "from": "not1/out0",
+            "to": "out0"
+        }
+    ]
+}

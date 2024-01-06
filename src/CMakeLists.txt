@@ -9,6 +9,7 @@ FetchContent_MakeAvailable(SFML)
 add_executable(${BINARY}
     main.cpp
     app/CircuitEditor.cpp
+    asset/deserialize.cpp
     ui/ImageView.cpp
     ui/CircuitButton.cpp
     core/Camera.cpp
