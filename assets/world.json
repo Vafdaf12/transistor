@@ -1,64 +1,17 @@
 {
-    "inputs": ["in0", "in1", "in2"],
-    "outputs": ["out"],
-    "elements": [
-        {
-            "id": "nand",
-            "type": "nand_gate",
-            "position": { "x": -96, "y": 13 }
-        },
-        {
-            "type": "xor_gate",
-            "id": "xor",
-            "position": { "x": 122, "y": -57 }
-        },
-        {
-            "id": "or",
-            "type": "or_gate",
-            "position": { "x": -293, "y": -47 }
-        },
-        {
-            "id": "and",
-            "type": "and_gate",
-            "position": { "x": -101, "y": -104 }
-        }
+    "elements": null,
+    "inputs": [
+        "in",
+        "in1",
+        "in2",
+        "in3"
     ],
-    "wires": [
-        {
-            "from": "xor/in1",
-            "to": "and/out"
-        },
-        {
-            "from": "nand/out",
-            "to": "xor/in2"
-        },
-        {
-            "from": "or/out",
-            "to": "and/in2"
-        },
-        {
-            "from": "or/out",
-            "to": "nand/in1"
-        },
-        {
-            "from": "in2",
-            "to": "or/in2"
-        },
-        {
-            "from": "in1",
-            "to": "or/in1"
-        },
-        {
-            "from": "in0",
-            "to": "and/in1"
-        },
-        {
-            "from": "out",
-            "to": "xor/out"
-        },
-        {
-            "from": "in2",
-            "to": "nand/in2"
-        }
-    ]
+    "outputs": [
+        "out",
+        "out1",
+        "out2",
+        "out3",
+        "out4"
+    ],
+    "wires": null
 }

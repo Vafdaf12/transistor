@@ -2,18 +2,13 @@
     "version": 3,
     "configurePresets": [
         {
-            "name": "base",
-            "hidden": true,
+            "name": "default",
             "binaryDir": "${sourceDir}/build"
         },
         {
             "name": "windows",
-            "inherits": "base",
-            "generator": "Ninja",
-            "cacheVariables": {
-                "CMAKE_C_COMPILER": "clang.exe",
-                "CMAKE_CXX_COMPILER": "clang++.exe"
-            },
+            "hidden": true,
+            "inherits": "default",
             "condition": {
                 "type": "equals",
                 "lhs": "${hostSystemName}",
@@ -21,12 +16,13 @@
             }
         },
         {
-            "name": "other",
-            "inherits": "base",
-            "condition": {
-                "type": "notEquals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Windows"
+            "name": "windows-clang",
+            "description": "My custom build preset for working with clangd",
+            "generator": "Ninja",
+            "inherits": "windows",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "clang.exe",
+                "CMAKE_CXX_COMPILER": "clang++.exe"
             }
         }
     ]
