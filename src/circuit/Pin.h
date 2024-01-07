@@ -38,6 +38,7 @@ public:
     std::string getFullPath() const;
 
     inline void setParent(Circuit* c) { _parent = c; }
+    inline const Circuit* getParent() const { return _parent; }
 
     inline void setEditable(bool val) { _editable = val; }
     inline void setType(PinType val) { _type = val; }

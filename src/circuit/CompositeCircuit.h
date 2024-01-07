@@ -68,6 +68,7 @@ private:
     std::list<Pin> m_inputs;
     std::list<Pin> m_outputs;
     std::list<std::unique_ptr<Circuit>> m_circuits;
+    std::set<const Pin*> m_rootPins;
 
     // Required for serialization purposes
     // TODO: find a way to not have to specify this (memento?)

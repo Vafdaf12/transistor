@@ -41,7 +41,22 @@ CompositeCircuit::CompositeCircuit(const CompositeCircuit& other) : Circuit(othe
         other.m_wires.end(),
         std::back_inserter(m_wires),
         [this](const Wire& w) {
-            return Wire(queryPin(w.getFrom()->getFullPath()), queryPin(w.getTo()->getFullPath()));
+
+            Pin* source = nullptr;
+            if(w.getFrom()->getParent() == this) {
+                source = queryPin(w.getFrom()->getFullPath());
+            } else {
+                source = queryPin(w.getFrom()->getId());
+            }
+
+            Pin* target = nullptr;
+            if(w.getTo()->getParent() == this) {
+                target = queryPin(w.getTo()->getFullPath());
+            } else {
+                target = queryPin(w.getTo()->getId());
+            }
+
+            return Wire(source, target);
         }
     );
 }
@@ -174,6 +189,7 @@ void CompositeCircuit::setInputCount(size_t count) {
         for (size_t i = 0; i < count; i++) {
             m_inputs.emplace_back("in" + std::to_string(m_inputs.size()), Pin::Input);
             m_inputs.back().setParent(this);
+            m_rootPins.insert(&m_inputs.back());
         }
         layout();
     } else if (count < m_inputs.size()) {
@@ -184,6 +200,7 @@ void CompositeCircuit::setInputCount(size_t count) {
         std::erase_if(m_wires, [&pins](const Wire& w) { return pins.contains(w.getFrom()); });
 
         for (size_t i = 0; i < m_inputs.size() - count; i++) {
+            m_rootPins.erase(&m_inputs.back());
             m_inputs.pop_back();
         }
         layout();
@@ -195,6 +212,7 @@ void CompositeCircuit::setOutputCount(size_t count) {
         for (size_t i = 0; i < count; i++) {
             m_outputs.emplace_back("out" + std::to_string(m_outputs.size()), Pin::Output);
             m_outputs.back().setParent(this);
+            m_rootPins.insert(&m_outputs.back());
         }
         layout();
     } else if (count < m_outputs.size()) {
@@ -205,6 +223,7 @@ void CompositeCircuit::setOutputCount(size_t count) {
         std::erase_if(m_wires, [&pins](const Wire& w) { return pins.contains(w.getTo()); });
 
         for (size_t i = 0; i < m_outputs.size() - count; i++) {
+            m_rootPins.erase(&m_outputs.back());
             m_outputs.pop_back();
         }
         layout();
@@ -228,15 +247,7 @@ bool CompositeCircuit::connectPins(const std::string& id1, const std::string& id
     return true;
 }
 bool CompositeCircuit::isInteriorPin(const Pin& pin) const {
-    const std::string& id = pin.getFullPath();
-    size_t i = id.find('/');
-    if (i != std::string::npos) {
-        return false;
-    }
-    if (id.size() < 2) {
-        return false;
-    }
-    return id.substr(0, 2) == "in" || id.substr(0, 3) == "out";
+    return !m_rootPins.contains(&pin);
 }
 bool CompositeCircuit::addCircuit(Circuit* circuit) {
     if (!circuit)
