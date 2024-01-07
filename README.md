@@ -20,8 +20,7 @@ By default, Transistor will attempt to open a the file `data/world.json`. This c
 The basic controls of Transistor are as follows:
 - `Up/Down Arrow` increases/decreases the number of output pins respectively
 - `Alt +Up/Down Arrow` increases/decreases the number of input pins respectively
-- `Control+C` copies the selected circuits
-- `Control+V` pastes the copied selection
+- `Control+C`/`Control+V` copies/pastes the selected circuits respectively (WIP)
 - `Delete` deletes the selected circuits
 
 Primitive gates can be dragged and dropped into the world from the top bar. 

@@ -1,17 +1,103 @@
 {
-    "elements": null,
+    "elements": [
+        {
+            "id": "register",
+            "position": {
+                "x": -74.00001525878906,
+                "y": -144.0
+            },
+            "type": "register_8bit"
+        }
+    ],
     "inputs": [
         "in",
         "in1",
         "in2",
-        "in3"
+        "in3",
+        "in4",
+        "in5",
+        "in6",
+        "in7",
+        "in8"
     ],
     "outputs": [
         "out",
         "out1",
         "out2",
         "out3",
-        "out4"
+        "out4",
+        "out5",
+        "out6",
+        "out7"
     ],
-    "wires": null
+    "wires": [
+        {
+            "from": "in",
+            "to": "register/in0"
+        },
+        {
+            "from": "in1",
+            "to": "register/in1"
+        },
+        {
+            "from": "in2",
+            "to": "register/in2"
+        },
+        {
+            "from": "in3",
+            "to": "register/in3"
+        },
+        {
+            "from": "in4",
+            "to": "register/in4"
+        },
+        {
+            "from": "in5",
+            "to": "register/in5"
+        },
+        {
+            "from": "in6",
+            "to": "register/in6"
+        },
+        {
+            "from": "in7",
+            "to": "register/in7"
+        },
+        {
+            "from": "in8",
+            "to": "register/in8"
+        },
+        {
+            "from": "register/out0",
+            "to": "out"
+        },
+        {
+            "from": "register/out1",
+            "to": "out1"
+        },
+        {
+            "from": "register/out2",
+            "to": "out2"
+        },
+        {
+            "from": "register/out3",
+            "to": "out3"
+        },
+        {
+            "from": "register/out4",
+            "to": "out4"
+        },
+        {
+            "from": "register/out5",
+            "to": "out5"
+        },
+        {
+            "from": "register/out6",
+            "to": "out6"
+        },
+        {
+            "from": "register/out7",
+            "to": "out7"
+        }
+    ]
 }

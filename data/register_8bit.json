@@ -1,452 +1,68 @@
 {
     "elements": [
         {
-            "id": "not",
+            "id": "dff",
             "position": {
-                "x": 172.43710327148438,
-                "y": -95.8973388671875
+                "x": -50.0,
+                "y": -297.31463623046875
             },
-            "type": "not_gate"
+            "type": "dff"
         },
         {
-            "id": "or1",
+            "id": "dff1",
             "position": {
-                "x": -12.912887573242188,
-                "y": -90.89849853515625
+                "x": -50.0,
+                "y": -222.31463623046875
             },
-            "type": "or_gate"
+            "type": "dff"
         },
         {
-            "id": "not2",
+            "id": "dff2",
             "position": {
-                "x": 174.43710327148438,
-                "y": -10.8973388671875
+                "x": -50.0,
+                "y": -146.31463623046875
             },
-            "type": "not_gate"
+            "type": "dff"
         },
         {
-            "id": "or13",
+            "id": "dff3",
             "position": {
-                "x": -10.912887573242188,
-                "y": -5.8985595703125
+                "x": -50.0,
+                "y": -71.31463623046875
             },
-            "type": "or_gate"
+            "type": "dff"
         },
         {
-            "id": "and4",
+            "id": "dff4",
             "position": {
-                "x": -183.392333984375,
-                "y": -105.6890869140625
+                "x": -50.0,
+                "y": 5.6853485107421875
             },
-            "type": "and_gate"
+            "type": "dff"
         },
         {
-            "id": "and5",
+            "id": "dff5",
             "position": {
-                "x": -187.9849853515625,
-                "y": -2.02532958984375
+                "x": -50.0,
+                "y": 80.68534851074219
             },
-            "type": "and_gate"
+            "type": "dff"
         },
         {
-            "id": "not6",
+            "id": "dff6",
             "position": {
-                "x": -355.5074768066406,
-                "y": 5.320556640625
+                "x": -50.0,
+                "y": 156.68533325195313
             },
-            "type": "not_gate"
+            "type": "dff"
         },
         {
-            "id": "not7",
+            "id": "dff7",
             "position": {
-                "x": 168.92715454101563,
-                "y": 105.69769287109375
+                "x": -50.0,
+                "y": 231.68536376953125
             },
-            "type": "not_gate"
-        },
-        {
-            "id": "or18",
-            "position": {
-                "x": -16.422821044921875,
-                "y": 110.69656372070313
-            },
-            "type": "or_gate"
-        },
-        {
-            "id": "not29",
-            "position": {
-                "x": 170.92715454101563,
-                "y": 190.69769287109375
-            },
-            "type": "not_gate"
-        },
-        {
-            "id": "or1310",
-            "position": {
-                "x": -14.422821044921875,
-                "y": 195.69647216796875
-            },
-            "type": "or_gate"
-        },
-        {
-            "id": "and411",
-            "position": {
-                "x": -186.90225219726563,
-                "y": 95.9058837890625
-            },
-            "type": "and_gate"
-        },
-        {
-            "id": "and512",
-            "position": {
-                "x": -191.49490356445313,
-                "y": 199.5697021484375
-            },
-            "type": "and_gate"
-        },
-        {
-            "id": "not613",
-            "position": {
-                "x": -359.0174255371094,
-                "y": 206.91558837890625
-            },
-            "type": "not_gate"
-        },
-        {
-            "id": "not14",
-            "position": {
-                "x": 170.03549194335938,
-                "y": 306.44488525390625
-            },
-            "type": "not_gate"
-        },
-        {
-            "id": "or115",
-            "position": {
-                "x": -15.314483642578125,
-                "y": 311.4436950683594
-            },
-            "type": "or_gate"
-        },
-        {
-            "id": "not216",
-            "position": {
-                "x": 172.03549194335938,
-                "y": 391.44488525390625
-            },
-            "type": "not_gate"
-        },
-        {
-            "id": "or1317",
-            "position": {
-                "x": -13.314483642578125,
-                "y": 396.4436950683594
-            },
-            "type": "or_gate"
-        },
-        {
-            "id": "and418",
-            "position": {
-                "x": -185.79391479492188,
-                "y": 296.6531066894531
-            },
-            "type": "and_gate"
-        },
-        {
-            "id": "and519",
-            "position": {
-                "x": -190.38656616210938,
-                "y": 400.31689453125
-            },
-            "type": "and_gate"
-        },
-        {
-            "id": "not620",
-            "position": {
-                "x": -357.9090881347656,
-                "y": 407.66278076171875
-            },
-            "type": "not_gate"
-        },
-        {
-            "id": "not721",
-            "position": {
-                "x": 166.52554321289063,
-                "y": 508.0399169921875
-            },
-            "type": "not_gate"
-        },
-        {
-            "id": "or1822",
-            "position": {
-                "x": -18.82440948486328,
-                "y": 512.1177978515625
-            },
-            "type": "or_gate"
-        },
-        {
-            "id": "not2923",
-            "position": {
-                "x": 168.52554321289063,
-                "y": 593.0399169921875
-            },
-            "type": "not_gate"
-        },
-        {
-            "id": "or131024",
-            "position": {
-                "x": -16.824417114257813,
-                "y": 598.0386962890625
-            },
-            "type": "or_gate"
-        },
-        {
-            "id": "and41125",
-            "position": {
-                "x": -189.30386352539063,
-                "y": 498.24810791015625
-            },
-            "type": "and_gate"
-        },
-        {
-            "id": "and51226",
-            "position": {
-                "x": -193.89651489257813,
-                "y": 601.9119262695313
-            },
-            "type": "and_gate"
-        },
-        {
-            "id": "not61327",
-            "position": {
-                "x": -361.4190368652344,
-                "y": 609.2578125
-            },
-            "type": "not_gate"
-        },
-        {
-            "id": "not28",
-            "position": {
-                "x": 158.89703369140625,
-                "y": 714.4645385742188
-            },
-            "type": "not_gate"
-        },
-        {
-            "id": "or129",
-            "position": {
-                "x": -26.452964782714844,
-                "y": 719.46337890625
-            },
-            "type": "or_gate"
-        },
-        {
-            "id": "not230",
-            "position": {
-                "x": 183.43048095703125,
-                "y": 804.5191650390625
-            },
-            "type": "not_gate"
-        },
-        {
-            "id": "or1331",
-            "position": {
-                "x": -22.610572814941406,
-                "y": 813.6751708984375
-            },
-            "type": "or_gate"
-        },
-        {
-            "id": "and432",
-            "position": {
-                "x": -196.93240356445313,
-                "y": 704.6727905273438
-            },
-            "type": "and_gate"
-        },
-        {
-            "id": "and533",
-            "position": {
-                "x": -201.52505493164063,
-                "y": 808.3366088867188
-            },
-            "type": "and_gate"
-        },
-        {
-            "id": "not634",
-            "position": {
-                "x": -369.96868896484375,
-                "y": 820.2883911132813
-            },
-            "type": "not_gate"
-        },
-        {
-            "id": "not735",
-            "position": {
-                "x": 155.3870849609375,
-                "y": 916.0596313476563
-            },
-            "type": "not_gate"
-        },
-        {
-            "id": "or1836",
-            "position": {
-                "x": -29.962890625,
-                "y": 921.0584716796875
-            },
-            "type": "or_gate"
-        },
-        {
-            "id": "not2937",
-            "position": {
-                "x": 157.3870849609375,
-                "y": 1001.0596923828125
-            },
-            "type": "not_gate"
-        },
-        {
-            "id": "or131038",
-            "position": {
-                "x": -27.962890625,
-                "y": 1006.0584716796875
-            },
-            "type": "or_gate"
-        },
-        {
-            "id": "and41139",
-            "position": {
-                "x": -211.4967498779297,
-                "y": 897.9768676757813
-            },
-            "type": "and_gate"
-        },
-        {
-            "id": "and51240",
-            "position": {
-                "x": -205.03497314453125,
-                "y": 1029.2764892578125
-            },
-            "type": "and_gate"
-        },
-        {
-            "id": "not61341",
-            "position": {
-                "x": -372.5574951171875,
-                "y": 1017.2774658203125
-            },
-            "type": "not_gate"
-        },
-        {
-            "id": "not1442",
-            "position": {
-                "x": 156.49542236328125,
-                "y": 1126.0189208984375
-            },
-            "type": "not_gate"
-        },
-        {
-            "id": "or11543",
-            "position": {
-                "x": -27.01213836669922,
-                "y": 1127.3328857421875
-            },
-            "type": "or_gate"
-        },
-        {
-            "id": "not21644",
-            "position": {
-                "x": 158.49542236328125,
-                "y": 1201.8067626953125
-            },
-            "type": "not_gate"
-        },
-        {
-            "id": "or131745",
-            "position": {
-                "x": -26.85455322265625,
-                "y": 1206.8055419921875
-            },
-            "type": "or_gate"
-        },
-        {
-            "id": "and41846",
-            "position": {
-                "x": -199.333984375,
-                "y": 1107.0150146484375
-            },
-            "type": "and_gate"
-        },
-        {
-            "id": "and51947",
-            "position": {
-                "x": -203.9266357421875,
-                "y": 1210.6788330078125
-            },
-            "type": "and_gate"
-        },
-        {
-            "id": "not62048",
-            "position": {
-                "x": -371.44915771484375,
-                "y": 1218.0247802734375
-            },
-            "type": "not_gate"
-        },
-        {
-            "id": "not72149",
-            "position": {
-                "x": 152.9854736328125,
-                "y": 1318.4017333984375
-            },
-            "type": "not_gate"
-        },
-        {
-            "id": "or182250",
-            "position": {
-                "x": -32.36448669433594,
-                "y": 1323.4005126953125
-            },
-            "type": "or_gate"
-        },
-        {
-            "id": "not292351",
-            "position": {
-                "x": 154.9854736328125,
-                "y": 1403.4017333984375
-            },
-            "type": "not_gate"
-        },
-        {
-            "id": "or13102452",
-            "position": {
-                "x": -30.364486694335938,
-                "y": 1408.4005126953125
-            },
-            "type": "or_gate"
-        },
-        {
-            "id": "and4112553",
-            "position": {
-                "x": -202.84393310546875,
-                "y": 1308.6099853515625
-            },
-            "type": "and_gate"
-        },
-        {
-            "id": "and5122654",
-            "position": {
-                "x": -207.43658447265625,
-                "y": 1412.2738037109375
-            },
-            "type": "and_gate"
-        },
-        {
-            "id": "not6132755",
-            "position": {
-                "x": -374.9591064453125,
-                "y": 1419.6197509765625
-            },
-            "type": "not_gate"
+            "type": "dff"
         }
     ],
     "inputs": [
@@ -472,387 +88,99 @@
     ],
     "wires": [
         {
-            "from": "or1/out",
-            "to": "not/in"
-        },
-        {
-            "from": "or13/out",
-            "to": "not2/in"
-        },
-        {
-            "from": "not/out",
-            "to": "or13/in1"
-        },
-        {
-            "from": "not2/out",
-            "to": "or1/in2"
-        },
-        {
-            "from": "and4/out",
-            "to": "or1/in1"
-        },
-        {
-            "from": "and5/out",
-            "to": "or13/in2"
-        },
-        {
             "from": "in0",
-            "to": "and4/in1"
-        },
-        {
-            "from": "in0",
-            "to": "and5/in1"
-        },
-        {
-            "from": "not6/out",
-            "to": "and5/in2"
+            "to": "dff/in1"
         },
         {
             "from": "in1",
-            "to": "and4/in2"
-        },
-        {
-            "from": "in1",
-            "to": "not6/in"
-        },
-        {
-            "from": "not7/out",
-            "to": "or1310/in1"
-        },
-        {
-            "from": "not29/out",
-            "to": "or18/in2"
-        },
-        {
-            "from": "or18/out",
-            "to": "not7/in"
-        },
-        {
-            "from": "or1310/out",
-            "to": "not29/in"
-        },
-        {
-            "from": "and411/out",
-            "to": "or18/in1"
-        },
-        {
-            "from": "and512/out",
-            "to": "or1310/in2"
-        },
-        {
-            "from": "not613/out",
-            "to": "and512/in2"
+            "to": "dff/in0"
         },
         {
             "from": "in0",
-            "to": "and411/in1"
+            "to": "dff1/in1"
         },
         {
             "from": "in0",
-            "to": "and512/in1"
+            "to": "dff2/in1"
+        },
+        {
+            "from": "in0",
+            "to": "dff3/in1"
+        },
+        {
+            "from": "in0",
+            "to": "dff4/in1"
+        },
+        {
+            "from": "in0",
+            "to": "dff5/in1"
+        },
+        {
+            "from": "in0",
+            "to": "dff6/in1"
+        },
+        {
+            "from": "in0",
+            "to": "dff7/in1"
         },
         {
             "from": "in2",
-            "to": "and411/in2"
-        },
-        {
-            "from": "not29/out",
-            "to": "out1"
-        },
-        {
-            "from": "not216/out",
-            "to": "out2"
-        },
-        {
-            "from": "not2923/out",
-            "to": "out3"
-        },
-        {
-            "from": "or115/out",
-            "to": "not14/in"
-        },
-        {
-            "from": "or1317/out",
-            "to": "not216/in"
-        },
-        {
-            "from": "or1822/out",
-            "to": "not721/in"
-        },
-        {
-            "from": "or131024/out",
-            "to": "not2923/in"
-        },
-        {
-            "from": "not721/out",
-            "to": "or131024/in1"
-        },
-        {
-            "from": "not2923/out",
-            "to": "or1822/in2"
-        },
-        {
-            "from": "not216/out",
-            "to": "or115/in2"
-        },
-        {
-            "from": "not14/out",
-            "to": "or1317/in1"
-        },
-        {
-            "from": "and418/out",
-            "to": "or115/in1"
-        },
-        {
-            "from": "and519/out",
-            "to": "or1317/in2"
-        },
-        {
-            "from": "and41125/out",
-            "to": "or1822/in1"
-        },
-        {
-            "from": "and51226/out",
-            "to": "or131024/in2"
-        },
-        {
-            "from": "not620/out",
-            "to": "and519/in2"
-        },
-        {
-            "from": "not61327/out",
-            "to": "and51226/in2"
-        },
-        {
-            "from": "in0",
-            "to": "and418/in1"
-        },
-        {
-            "from": "in0",
-            "to": "and519/in1"
-        },
-        {
-            "from": "in0",
-            "to": "and41125/in1"
-        },
-        {
-            "from": "in0",
-            "to": "and51226/in1"
-        },
-        {
-            "from": "in4",
-            "to": "not61327/in"
-        },
-        {
-            "from": "in4",
-            "to": "and41125/in2"
+            "to": "dff1/in0"
         },
         {
             "from": "in3",
-            "to": "not620/in"
+            "to": "dff2/in0"
         },
         {
-            "from": "in3",
-            "to": "and418/in2"
+            "from": "in4",
+            "to": "dff3/in0"
         },
         {
-            "from": "not230/out",
-            "to": "out4"
+            "from": "in5",
+            "to": "dff4/in0"
         },
         {
-            "from": "not2937/out",
-            "to": "out5"
+            "from": "in6",
+            "to": "dff5/in0"
         },
         {
-            "from": "not21644/out",
-            "to": "out6"
+            "from": "in7",
+            "to": "dff6/in0"
         },
         {
-            "from": "not292351/out",
+            "from": "in8",
+            "to": "dff7/in0"
+        },
+        {
+            "from": "dff7/out1",
             "to": "out7"
         },
         {
-            "from": "or129/out",
-            "to": "not28/in"
+            "from": "dff6/out1",
+            "to": "out6"
         },
         {
-            "from": "or1331/out",
-            "to": "not230/in"
+            "from": "dff5/out1",
+            "to": "out5"
         },
         {
-            "from": "or1836/out",
-            "to": "not735/in"
+            "from": "dff4/out1",
+            "to": "out4"
         },
         {
-            "from": "or131038/out",
-            "to": "not2937/in"
+            "from": "dff3/out1",
+            "to": "out3"
         },
         {
-            "from": "or11543/out",
-            "to": "not1442/in"
+            "from": "dff2/out1",
+            "to": "out2"
         },
         {
-            "from": "or131745/out",
-            "to": "not21644/in"
+            "from": "dff1/out1",
+            "to": "out1"
         },
         {
-            "from": "or182250/out",
-            "to": "not72149/in"
-        },
-        {
-            "from": "or13102452/out",
-            "to": "not292351/in"
-        },
-        {
-            "from": "not72149/out",
-            "to": "or13102452/in1"
-        },
-        {
-            "from": "not292351/out",
-            "to": "or182250/in2"
-        },
-        {
-            "from": "not1442/out",
-            "to": "or131745/in1"
-        },
-        {
-            "from": "not21644/out",
-            "to": "or11543/in2"
-        },
-        {
-            "from": "not735/out",
-            "to": "or131038/in1"
-        },
-        {
-            "from": "not2937/out",
-            "to": "or1836/in2"
-        },
-        {
-            "from": "not28/out",
-            "to": "or1331/in1"
-        },
-        {
-            "from": "not230/out",
-            "to": "or129/in2"
-        },
-        {
-            "from": "and432/out",
-            "to": "or129/in1"
-        },
-        {
-            "from": "and533/out",
-            "to": "or1331/in2"
-        },
-        {
-            "from": "and41139/out",
-            "to": "or1836/in1"
-        },
-        {
-            "from": "and51240/out",
-            "to": "or131038/in2"
-        },
-        {
-            "from": "and41846/out",
-            "to": "or11543/in1"
-        },
-        {
-            "from": "and51947/out",
-            "to": "or131745/in2"
-        },
-        {
-            "from": "and4112553/out",
-            "to": "or182250/in1"
-        },
-        {
-            "from": "and5122654/out",
-            "to": "or13102452/in2"
-        },
-        {
-            "from": "in0",
-            "to": "and432/in1"
-        },
-        {
-            "from": "in0",
-            "to": "and533/in1"
-        },
-        {
-            "from": "not634/out",
-            "to": "and533/in2"
-        },
-        {
-            "from": "not61341/out",
-            "to": "and51240/in2"
-        },
-        {
-            "from": "not62048/out",
-            "to": "and51947/in2"
-        },
-        {
-            "from": "not6132755/out",
-            "to": "and5122654/in2"
-        },
-        {
-            "from": "in0",
-            "to": "and41846/in1"
-        },
-        {
-            "from": "in0",
-            "to": "and51947/in1"
-        },
-        {
-            "from": "in0",
-            "to": "and4112553/in1"
-        },
-        {
-            "from": "in0",
-            "to": "and5122654/in1"
-        },
-        {
-            "from": "in5",
-            "to": "and432/in2"
-        },
-        {
-            "from": "in5",
-            "to": "not634/in"
-        },
-        {
-            "from": "in6",
-            "to": "and41139/in2"
-        },
-        {
-            "from": "in6",
-            "to": "not61341/in"
-        },
-        {
-            "from": "in0",
-            "to": "and41139/in1"
-        },
-        {
-            "from": "in0",
-            "to": "and51240/in1"
-        },
-        {
-            "from": "in7",
-            "to": "and41846/in2"
-        },
-        {
-            "from": "in7",
-            "to": "not62048/in"
-        },
-        {
-            "from": "in8",
-            "to": "and4112553/in2"
-        },
-        {
-            "from": "in8",
-            "to": "not6132755/in"
-        },
-        {
-            "from": "in2",
-            "to": "not613/in"
-        },
-        {
-            "from": "not2/out",
+            "from": "dff/out1",
             "to": "out"
         }
     ]

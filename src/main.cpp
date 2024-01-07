@@ -116,7 +116,7 @@ int main(int argc, char** argv) {
         std::bind(serde::createBinaryGate, _1, BinaryGate::Nand, assets.get("gate_nand"))
     );
     loader.addType("not_gate", std::bind(serde::createNot, _1, assets.get("gate_not")));
-    loader.setDefault(std::bind(serde::createComposite, _2, font, loader));
+    loader.setDefault(std::bind(serde::createComposite, _2, font, std::cref(loader)));
 
     // --- WINDOW SETUP ---
     std::cout << "[INFO] Setting up window" << std::endl;
