@@ -1,5 +1,5 @@
 # Transistor
-Transistor is an attempt to make a high-performance digital logic simulator that can be used in an educational context to showcase the complex circuitry behind the concepts taught in computer architecure classes.
+Transistor is an attempt to make a high-performance digital logic simulator that can be used in an educational context to showcase the complex circuitry behind the concepts taught in computer architecure classes. It uses SFML for Graphics and nlohmann's JSON library for saving circuits.
 
 ![image](https://github.com/Vafdaf12/transistor/assets/25525445/58ce5173-615b-4394-a9ce-5552eb62693b)
 
