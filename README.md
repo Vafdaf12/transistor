@@ -1,6 +1,7 @@
 # Transistor
-
 Transistor is an attempt to make a high-performance digital logic simulator that can be used in an educational context to showcase the complex circuitry behind the concepts taught in computer architecure classes.
+
+![image](https://github.com/Vafdaf12/transistor/assets/25525445/58ce5173-615b-4394-a9ce-5552eb62693b)
 
 # Building
 Building this project requires CMake. In most cases you should be able to configure and build the project with
@@ -20,7 +21,7 @@ By default, Transistor will attempt to open a the file `data/world.json`. This c
 The basic controls of Transistor are as follows:
 - `Up/Down Arrow` increases/decreases the number of output pins respectively
 - `Alt +Up/Down Arrow` increases/decreases the number of input pins respectively
-- `Control+C`/`Control+V` copies/pastes the selected circuits respectively (WIP)
+- `Control+C`/`Control+V` copies/pastes the selected circuits respectively
 - `Delete` deletes the selected circuits
 
 Primitive gates can be dragged and dropped into the world from the top bar. 
