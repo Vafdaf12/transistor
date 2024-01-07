@@ -1,5 +1,7 @@
 # Transistor
 
+Transistor is an attempt to make a high-performance digital logic simulator that can be used in an educational context to showcase the complex circuitry behind the concepts taught in computer architecure classes.
+
 # Building
 Building this project requires CMake. In most cases you should be able to configure and build the project with
 ```sh
@@ -37,6 +39,4 @@ Custom circuits are loaded from a a JSON file in the `data` folder. In general, 
 }
 ```
 4. Once loaded into the world, you can use copy-paste to retrieve multiple circuits
-
-
 
