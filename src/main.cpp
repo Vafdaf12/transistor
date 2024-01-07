@@ -91,14 +91,14 @@ int main(int argc, char** argv) {
     std::cout << "[INFO] Loading Assets" << std::endl;
 
     sf::Font font;
-    font.loadFromFile("assets/fonts/CutiveMono-Regular.ttf");
+    font.loadFromFile("data/fonts/CutiveMono-Regular.ttf");
 
     ResourceManager<std::string, sf::Texture> assets;
-    assets.load("gate_not", "assets/sprites/gate_not.png");
-    assets.load("gate_or", "assets/sprites/gate_or.png");
-    assets.load("gate_xor", "assets/sprites/gate_xor.png");
-    assets.load("gate_and", "assets/sprites/gate_and.png");
-    assets.load("gate_nand", "assets/sprites/gate_nand.png");
+    assets.load("gate_not", "data/sprites/gate_not.png");
+    assets.load("gate_or", "data/sprites/gate_or.png");
+    assets.load("gate_xor", "data/sprites/gate_xor.png");
+    assets.load("gate_and", "data/sprites/gate_and.png");
+    assets.load("gate_nand", "data/sprites/gate_nand.png");
 
     AssetLoader<Circuit, std::string> loader;
     using namespace std::placeholders;
@@ -130,7 +130,7 @@ int main(int argc, char** argv) {
     CircuitEditor editor(window.getDefaultView());
 
     std::cout << "[INFO] Loading editor" << std::endl;
-    std::string filePath = argc > 1 ? argv[1] : "assets/world.json";
+    std::string filePath = argc > 1 ? argv[1] : "data/world.json";
     openEditor(editor, filePath, loader);
 
     // --- GUI ---

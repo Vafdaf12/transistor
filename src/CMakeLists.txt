@@ -33,6 +33,6 @@ target_link_libraries(${BINARY} sfml-graphics)
 # Copy resource files to build directory
 add_custom_target(assets ALL
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_SOURCE_DIR}/assets
-    ${CMAKE_CURRENT_BINARY_DIR}/assets
+    ${CMAKE_SOURCE_DIR}/data
+    ${CMAKE_CURRENT_BINARY_DIR}/data
 )

@@ -25,7 +25,7 @@ CompositeCircuit* createComposite(
     const json& j, const sf::Font& font, const AssetLoader<Circuit, std::string>& loader
 ) {
     std::string type = j["type"].get<std::string>();
-    std::string path = "assets/" + type + ".json";
+    std::string path = "data/" + type + ".json";
     std::ifstream file(path);
 
     if (!file.is_open()) {
