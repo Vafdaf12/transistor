@@ -12,6 +12,7 @@ add_executable(${BINARY}
     asset/deserialize.cpp
     ui/ImageView.cpp
     ui/CircuitButton.cpp
+    ui/HBox.cpp
     core/Camera.cpp
     circuit/BinaryGate.cpp
     circuit/NotGate.cpp

@@ -6,9 +6,9 @@
 #include "asset/ResourceManager.h"
 #include "asset/deserialize.h"
 #include "circuit/BinaryGate.h"
-#include "circuit/CompositeCircuit.h"
 #include "circuit/NotGate.h"
 #include "ui/CircuitButton.h"
+#include "ui/HBox.h"
 #include "ui/ImageView.h"
 #include "ui/Widget.h"
 
@@ -136,42 +136,42 @@ int main(int argc, char** argv) {
     // --- GUI ---
     sf::View gui = window.getDefaultView();
 
-    std::vector<std::unique_ptr<ui::Widget>> widgets;
+    ui::HBox box;
+    box.setPadding(10);
+    box.setSeperation(10);
+    box.setBackground(sf::Color(0x404040ff));
 
     std::cout << "[INFO] Loading Sprites" << std::endl;
     ui::ImageView* imageView = new ui::ImageView(assets.get("gate_xor"));
-    imageView->getSprite().setScale(0.5f, 0.5f);
+    imageView->getSprite().setScale(0.4f, 0.4f);
     imageView->getSprite().setColor(sf::Color::Cyan);
-    widgets.emplace_back(new ui::CircuitButton(
+    assert(box.addWidget(new ui::CircuitButton(
         editor, new BinaryGate("xor", assets.get("gate_xor"), BinaryGate::Xor), imageView
-    ));
+    )));
 
     imageView = new ui::ImageView(assets.get("gate_and"));
-    imageView->getSprite().setScale(0.5f, 0.5f);
+    imageView->getSprite().setScale(0.4f, 0.4f);
     imageView->getSprite().setColor(sf::Color::Cyan);
-    widgets.emplace_back(new ui::CircuitButton(
+    assert(box.addWidget(new ui::CircuitButton(
         editor, new BinaryGate("and", assets.get("gate_and"), BinaryGate::And), imageView
-    ));
+    )));
 
     imageView = new ui::ImageView(assets.get("gate_or"));
-    imageView->getSprite().setScale(0.5f, 0.5f);
+    imageView->getSprite().setScale(0.4f, 0.4f);
     imageView->getSprite().setColor(sf::Color::Cyan);
-    widgets.emplace_back(new ui::CircuitButton(
+    assert(box.addWidget(new ui::CircuitButton(
         editor, new BinaryGate("or", assets.get("gate_or"), BinaryGate::Or), imageView
-    ));
+    )));
 
     imageView = new ui::ImageView(assets.get("gate_not"));
-    imageView->getSprite().setScale(0.5f, 0.5f);
+    imageView->getSprite().setScale(0.4f, 0.4f);
     imageView->getSprite().setColor(sf::Color::Cyan);
-    widgets.emplace_back(
+    assert(box.addWidget(
         new ui::CircuitButton(editor, new NotGate("not", assets.get("gate_not")), imageView)
-    );
+    ));
 
-    sf::Vector2f offset(10, 10);
-    for (auto& w : widgets) {
-        w->setPosition(offset);
-        offset += sf::Vector2f(w->getBoundingBox().getSize().x + 10, 0);
-    }
+    float x = (window.getSize().x - box.getBoundingBox().width) / 2;
+    box.setPosition({x, 10});
 
     // --- EVENT LOOP ---
     float time = clock.restart().asMilliseconds();
@@ -184,18 +184,17 @@ int main(int argc, char** argv) {
                 window.close();
             }
             if (event.type == sf::Event::Resized) {
-                gui = window.getDefaultView();
+                gui.setSize(sf::Vector2f(event.size.width, event.size.height));
+                gui.setCenter(sf::Vector2f(event.size.width, event.size.height) / 2.f);
+
+                float x = (event.size.width - box.getBoundingBox().width) / 2;
+                box.setPosition({x, 10});
             }
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
                 window.close();
             }
             window.setView(gui);
-            bool handled = false;
-            for (auto& w : widgets) {
-                if (w->onEvent(window, event)) {
-                    handled = true;
-                }
-            }
+            bool handled = box.onEvent(window, event);
             if (handled) {
                 continue;
             }
@@ -206,18 +205,14 @@ int main(int argc, char** argv) {
         float dt = clock.restart().asSeconds();
         editor.update(window, dt);
         window.setView(gui);
-        for (auto& w : widgets) {
-            w->update(window, dt);
-        }
+        box.update(window, dt);
 
         // --- RENDERING ---
         window.clear(sf::Color(0x181818ff));
         editor.draw(window);
 
         window.setView(gui);
-        for (auto& w : widgets) {
-            w->draw(window);
-        }
+        box.draw(window);
         window.display();
     }
     saveEditor(editor, filePath);
