@@ -7,6 +7,7 @@
 #include "asset/deserialize.h"
 #include "circuit/BinaryGate.h"
 #include "circuit/NotGate.h"
+#include "ui/components/Button.h"
 #include "ui/components/CircuitButton.h"
 #include "ui/components/ImageView.h"
 #include "ui/components/Label.h"
@@ -175,13 +176,18 @@ int main(int argc, char** argv) {
     box.setPosition({x, 10});
     box.setAnchor({window.getSize().x / 2.f, 0}, false);
 
-    ui::Label label("Library", font);
-    label.setPadding(10);
-    label.setBackground(BACKGROUND);
-    label.setForeground(sf::Color::White);
-
-    label.setPosition({float(window.getSize().x - label.getBoundingBox().width - 10), 10});
-    label.setAnchor({float(window.getSize().x), 0}, false);
+    std::unique_ptr<ui::Widget> widget;
+    {
+        ui::Label* label = new ui::Label("Library", font);
+        label->setPadding(10);
+        label->setBackground(BACKGROUND);
+        label->setForeground(sf::Color::White);
+        label->setPosition({float(window.getSize().x - label->getBoundingBox().width - 10), 10});
+        label->setAnchor({float(window.getSize().x), 0}, false);
+        widget = std::make_unique<ui::Button>(label, []() {
+            std::cout << "Open Library!" << std::endl;
+        });
+    }
 
     // --- EVENT LOOP ---
     float time = clock.restart().asMilliseconds();
@@ -194,7 +200,7 @@ int main(int argc, char** argv) {
                 window.close();
             };
             if (event.type == sf::Event::Resized) {
-                label.setAnchor({float(event.size.width), 0});
+                widget->setAnchor({float(event.size.width), 0});
                 box.setAnchor({event.size.width / 2.f, 0});
 
                 gui.setSize(sf::Vector2f(event.size.width, event.size.height));
@@ -208,7 +214,7 @@ int main(int argc, char** argv) {
             if (handled) {
                 continue;
             }
-            handled = label.onEvent(window, event);
+            handled = widget->onEvent(window, event);
             if (handled) {
                 continue;
             }
@@ -220,7 +226,7 @@ int main(int argc, char** argv) {
         editor.update(window, dt);
         window.setView(gui);
         box.update(window, dt);
-        label.update(window, dt);
+        widget->update(window, dt);
 
         // --- RENDERING ---
         window.clear(sf::Color(0x181818ff));
@@ -228,7 +234,7 @@ int main(int argc, char** argv) {
 
         window.setView(gui);
         box.draw(window);
-        label.draw(window);
+        widget->draw(window);
         window.display();
     }
     saveEditor(editor, filePath);

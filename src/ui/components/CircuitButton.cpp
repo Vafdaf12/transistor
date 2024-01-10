@@ -11,40 +11,40 @@
 
 namespace ui {
 CircuitButton::CircuitButton(CircuitEditor& editor, Circuit* circuit, Widget* w)
-    : _circuit(circuit), _editor(editor), _widget(w) {}
+    : WidgetDecorator(w), m_circuit(circuit), m_editor(editor) {}
+
 
 void CircuitButton::update(const sf::RenderWindow& w, float) {
     sf::Vector2i pos = sf::Mouse::getPosition(w);
     sf::Vector2f worldPos = w.mapPixelToCoords(pos);
 
-    if (_widget->getBoundingBox().contains(worldPos)) {
-        _state |= Hover;
+    if (m_inner->getBoundingBox().contains(worldPos)) {
+        m_state |= Hover;
     } else {
-        _state ^= (_state & Hover);
+        m_state ^= (m_state & Hover);
     }
 }
 bool CircuitButton::onEvent(const sf::RenderWindow& w, const sf::Event& e) {
     if (e.type == sf::Event::MouseButtonPressed && e.mouseButton.button == sf::Mouse::Left) {
-        if (_state & Hover) {
-            _state |= Dragging;
+        if (m_state & Hover) {
+            m_state |= Dragging;
         }
     }
     if (e.type == sf::Event::MouseButtonReleased && e.mouseButton.button == sf::Mouse::Left) {
-        if((_state & Dragging) && !(_state & Hover)) {
+        if((m_state & Dragging) && !(m_state & Hover)) {
             sf::Vector2i pos(e.mouseButton.x, e.mouseButton.y);
-            sf::Vector2f worldPos = w.mapPixelToCoords(pos, _editor.getWorldView());
+            sf::Vector2f worldPos = w.mapPixelToCoords(pos, m_editor.getWorldView());
 
-            Circuit* c = _circuit->clone(_editor.getCircuitId(_circuit->getId()));
+            Circuit* c = m_circuit->clone(m_editor.getCircuitId(m_circuit->getId()));
             worldPos -= c->getBoundingBox().getSize() / 2.f;
             c->setPosition(worldPos);
-            _editor.addCircuit(c);
+            m_editor.addCircuit(c);
             std::cout << "Spawn circuit in world: " << c->getId() << std::endl;
         }
 
-        _state ^= (_state & Dragging);
+        m_state ^= (m_state & Dragging);
     }
     return isActive();
 }
-void CircuitButton::draw(sf::RenderWindow& window) const { _widget->draw(window); }
 
 } // namespace ui

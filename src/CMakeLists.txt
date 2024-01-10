@@ -13,6 +13,7 @@ add_executable(${BINARY}
     ui/layout/HBox.cpp
     ui/components/ImageView.cpp
     ui/components/CircuitButton.cpp
+    ui/components/Button.cpp
     ui/components/Label.cpp
     core/Camera.cpp
     circuit/BinaryGate.cpp
