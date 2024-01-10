@@ -10,6 +10,7 @@
 #include "ui/CircuitButton.h"
 #include "ui/HBox.h"
 #include "ui/ImageView.h"
+#include "ui/Label.h"
 #include "ui/Widget.h"
 
 #include <fstream>
@@ -136,10 +137,12 @@ int main(int argc, char** argv) {
     // --- GUI ---
     sf::View gui = window.getDefaultView();
 
+    static const sf::Color BACKGROUND = sf::Color(0x404040ff);
     ui::HBox box;
     box.setPadding(10);
     box.setSeperation(10);
-    box.setBackground(sf::Color(0x404040ff));
+    box.setBackground(BACKGROUND);
+
 
     std::cout << "[INFO] Loading Sprites" << std::endl;
     ui::ImageView* imageView = new ui::ImageView(assets.get("gate_xor"));
@@ -173,6 +176,13 @@ int main(int argc, char** argv) {
     float x = (window.getSize().x - box.getBoundingBox().width) / 2;
     box.setPosition({x, 10});
 
+    ui::Label label("Library", font);
+    x = (window.getSize().x - label.getBoundingBox().width);
+    label.setPosition({x - 10, 10});
+    label.setBackground(BACKGROUND);
+    label.setForeground(sf::Color::White);
+    label.setPadding(10);
+
     // --- EVENT LOOP ---
     float time = clock.restart().asMilliseconds();
     std::cout << "Startup time: " << time << "ms" << std::endl;
@@ -182,19 +192,26 @@ int main(int argc, char** argv) {
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
                 window.close();
-            }
+            };
             if (event.type == sf::Event::Resized) {
                 gui.setSize(sf::Vector2f(event.size.width, event.size.height));
                 gui.setCenter(sf::Vector2f(event.size.width, event.size.height) / 2.f);
 
                 float x = (event.size.width - box.getBoundingBox().width) / 2;
                 box.setPosition({x, 10});
+
+                x = (event.size.width - label.getBoundingBox().width);
+                label.setPosition({x - 10, 10});
             }
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
                 window.close();
             }
             window.setView(gui);
             bool handled = box.onEvent(window, event);
+            if (handled) {
+                continue;
+            }
+            handled = label.onEvent(window, event);
             if (handled) {
                 continue;
             }
@@ -206,6 +223,7 @@ int main(int argc, char** argv) {
         editor.update(window, dt);
         window.setView(gui);
         box.update(window, dt);
+        label.update(window, dt);
 
         // --- RENDERING ---
         window.clear(sf::Color(0x181818ff));
@@ -213,6 +231,7 @@ int main(int argc, char** argv) {
 
         window.setView(gui);
         box.draw(window);
+        label.draw(window);
         window.display();
     }
     saveEditor(editor, filePath);
