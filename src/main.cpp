@@ -11,7 +11,6 @@
 #include "ui/HBox.h"
 #include "ui/ImageView.h"
 #include "ui/Label.h"
-#include "ui/Widget.h"
 
 #include <fstream>
 #include <iostream>
@@ -175,13 +174,16 @@ int main(int argc, char** argv) {
 
     float x = (window.getSize().x - box.getBoundingBox().width) / 2;
     box.setPosition({x, 10});
+    box.setAnchor({window.getSize().x / 2.f, 0}, false);
+
 
     ui::Label label("Library", font);
-    x = (window.getSize().x - label.getBoundingBox().width);
-    label.setPosition({x - 10, 10});
+    label.setPadding(10);
     label.setBackground(BACKGROUND);
     label.setForeground(sf::Color::White);
-    label.setPadding(10);
+
+    label.setPosition({float(window.getSize().x - label.getBoundingBox().width - 10), 10});
+    label.setAnchor({float(window.getSize().x), 0}, false);
 
     // --- EVENT LOOP ---
     float time = clock.restart().asMilliseconds();
@@ -194,14 +196,11 @@ int main(int argc, char** argv) {
                 window.close();
             };
             if (event.type == sf::Event::Resized) {
+                label.setAnchor({float(event.size.width), 0});
+                box.setAnchor({event.size.width / 2.f, 0});
+                
                 gui.setSize(sf::Vector2f(event.size.width, event.size.height));
                 gui.setCenter(sf::Vector2f(event.size.width, event.size.height) / 2.f);
-
-                float x = (event.size.width - box.getBoundingBox().width) / 2;
-                box.setPosition({x, 10});
-
-                x = (event.size.width - label.getBoundingBox().width);
-                label.setPosition({x - 10, 10});
             }
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
                 window.close();

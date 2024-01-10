@@ -14,6 +14,7 @@ public:
     inline void draw(sf::RenderWindow& w) const override { w.draw(_sprite); }
 
     inline sf::FloatRect getBoundingBox() const override { return _sprite.getGlobalBounds(); }
+    inline void move(sf::Vector2f delta) override { _sprite.move(delta); }
     inline void setPosition(sf::Vector2f p) override { _sprite.setPosition(p); }
     inline sf::Vector2f getPosition() const override { return _sprite.getPosition(); }
 

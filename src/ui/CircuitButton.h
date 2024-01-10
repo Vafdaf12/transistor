@@ -18,6 +18,7 @@ public:
 
     inline sf::FloatRect getBoundingBox() const override { return _widget->getBoundingBox(); }
 
+    inline void move(sf::Vector2f p) override { _widget->move(p); }
     inline void setPosition(sf::Vector2f p) override { _widget->setPosition(p); }
     inline sf::Vector2f getPosition() const override { return _widget->getPosition(); }
 

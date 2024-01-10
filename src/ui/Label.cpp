@@ -1,4 +1,6 @@
 #include "Label.h"
+#include "SFML/System/Vector2.hpp"
+#include <iostream>
 namespace ui {
 
 Label::Label(const std::string& text, const sf::Font& font, sf::Vector2f pos) : m_text(text, font) {
@@ -24,6 +26,10 @@ void Label::setPosition(sf::Vector2f p) {
     m_background.setPosition(p);
     layout();
 }
+void Label::move(sf::Vector2f delta) {
+    m_background.move(delta);
+    m_text.move(delta);
+}
 void Label::setPadding(float padding) {
     if(m_padding != padding) {
         m_padding = padding;
@@ -39,12 +45,14 @@ void Label::setText(const std::string& text) {
     layout();
 }
 void Label::layout() {
+
     sf::Vector2f size(2*m_padding, 2*m_padding);
     size.x += m_text.getGlobalBounds().width;
     size.y += m_text.getCharacterSize();
-    m_background.setSize(size);
 
-    size = {m_padding, m_padding};
-    m_text.setPosition(m_background.getPosition() + size); 
+    sf::Vector2f pos = m_background.getPosition();
+
+    m_background.setSize(size);
+    m_text.setPosition(pos + sf::Vector2f(m_padding, m_padding)); 
 }
 } // namespace ui

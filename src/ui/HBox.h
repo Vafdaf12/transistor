@@ -8,7 +8,7 @@
 #include <vector>
 
 namespace ui {
-class HBox : ui::Widget {
+class HBox : public ui::Widget {
 public:
     HBox() = default;
 
@@ -19,6 +19,7 @@ public:
     void update(const sf::RenderWindow&, float dt) override;
     void draw(sf::RenderWindow&) const override;
 
+    void move(sf::Vector2f) override;
     void setPosition(sf::Vector2f) override;
 
     inline void setBackground(const sf::Color& color) { m_shape.setFillColor(color); }

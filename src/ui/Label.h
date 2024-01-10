@@ -4,6 +4,7 @@
 #include "SFML/Graphics/RectangleShape.hpp"
 #include "SFML/Graphics/Text.hpp"
 #include "ui/Widget.h"
+
 namespace ui {
 class Label : public Widget {
 public:
@@ -18,12 +19,16 @@ public:
 
     inline void setBackground(const sf::Color& color) { m_background.setFillColor(color); }
     inline void setForeground(const sf::Color& color) { m_text.setFillColor(color); }
-    void setPosition(sf::Vector2f p) override;
     void setPadding(float padding);
     void setFont(const sf::Font& font);
     void setText(const std::string& text);
 
+    void move(sf::Vector2f d) override;
+    void setPosition(sf::Vector2f p) override;
+
 private:
+    sf::Vector2f m_anchor;
+
     void layout();
 
     sf::Text m_text;

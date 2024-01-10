@@ -15,4 +15,9 @@ template <typename T>
 inline T max(T a, T b) {
     return a > b ? a : b;
 }
+
+template <typename To, typename From>
+inline sf::Vector2<To> castVector(sf::Vector2<From> a) {
+    return { static_cast<To>(a.x), static_cast<To>(a.y) };
+}
 } // namespace util

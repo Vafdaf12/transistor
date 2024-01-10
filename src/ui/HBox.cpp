@@ -44,6 +44,12 @@ void HBox::draw(sf::RenderWindow& win) const {
     }
 }
 
+void HBox::move(sf::Vector2f delta) {
+    m_shape.move(delta);
+    for (auto& child : m_widgets) {
+        child->move(delta);
+    }
+}
 void HBox::setPosition(sf::Vector2f pos) {
     m_shape.setPosition(pos);
     layout();

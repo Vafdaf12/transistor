@@ -20,7 +20,24 @@ public:
     virtual void draw(sf::RenderWindow&) const = 0;
     virtual sf::FloatRect getBoundingBox() const = 0;
 
+    // Moves the widget by passed-in amount
+    virtual void move(sf::Vector2f delta) = 0;
+
     virtual void setPosition(sf::Vector2f) = 0;
     virtual sf::Vector2f getPosition() const = 0;
+
+    // Sets the anchor of the widget, optionally adjusting the position of the widget accordingly.
+    virtual void setAnchor(sf::Vector2f p, bool adjust = true) {
+        if (adjust) {
+            move(p - m_anchor);
+        }
+        m_anchor = p;
+    }
+
+    // Gets the anchor of the widget
+    inline sf::Vector2f getAnchor() const { return m_anchor; }
+
+protected:
+    sf::Vector2f m_anchor = {0, 0};
 };
 } // namespace ui
