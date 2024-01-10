@@ -1,7 +1,7 @@
 #pragma once
 
 #include "SFML/Graphics/Sprite.hpp"
-#include "Widget.h"
+#include "ui/Widget.h"
 
 namespace ui {
 class ImageView : public Widget {

@@ -7,10 +7,10 @@
 #include "asset/deserialize.h"
 #include "circuit/BinaryGate.h"
 #include "circuit/NotGate.h"
-#include "ui/CircuitButton.h"
-#include "ui/HBox.h"
-#include "ui/ImageView.h"
-#include "ui/Label.h"
+#include "ui/components/CircuitButton.h"
+#include "ui/components/ImageView.h"
+#include "ui/components/Label.h"
+#include "ui/layout/HBox.h"
 
 #include <fstream>
 #include <iostream>
@@ -142,7 +142,6 @@ int main(int argc, char** argv) {
     box.setSeperation(10);
     box.setBackground(BACKGROUND);
 
-
     std::cout << "[INFO] Loading Sprites" << std::endl;
     ui::ImageView* imageView = new ui::ImageView(assets.get("gate_xor"));
     imageView->getSprite().setScale(0.4f, 0.4f);
@@ -176,7 +175,6 @@ int main(int argc, char** argv) {
     box.setPosition({x, 10});
     box.setAnchor({window.getSize().x / 2.f, 0}, false);
 
-
     ui::Label label("Library", font);
     label.setPadding(10);
     label.setBackground(BACKGROUND);
@@ -198,7 +196,7 @@ int main(int argc, char** argv) {
             if (event.type == sf::Event::Resized) {
                 label.setAnchor({float(event.size.width), 0});
                 box.setAnchor({event.size.width / 2.f, 0});
-                
+
                 gui.setSize(sf::Vector2f(event.size.width, event.size.height));
                 gui.setCenter(sf::Vector2f(event.size.width, event.size.height) / 2.f);
             }

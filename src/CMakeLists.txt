@@ -10,10 +10,10 @@ add_executable(${BINARY}
     main.cpp
     app/CircuitEditor.cpp
     asset/deserialize.cpp
-    ui/ImageView.cpp
-    ui/CircuitButton.cpp
-    ui/HBox.cpp
-    ui/Label.cpp
+    ui/layout/HBox.cpp
+    ui/components/ImageView.cpp
+    ui/components/CircuitButton.cpp
+    ui/components/Label.cpp
     core/Camera.cpp
     circuit/BinaryGate.cpp
     circuit/NotGate.cpp
