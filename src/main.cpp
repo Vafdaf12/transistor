@@ -1,6 +1,8 @@
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Window/ContextSettings.hpp"
 #include "SFML/Window/Event.hpp"
+#include "spdlog/spdlog.h"
+
 #include "app/CircuitEditor.h"
 #include "asset/AssetLoader.h"
 #include "asset/ResourceManager.h"
@@ -87,9 +89,9 @@ bool saveEditor(const CircuitEditor& editor, const std::string& path) {
 }
 
 int main(int argc, char** argv) {
-    // --- RESOURCES ---
 
-    std::cout << "[INFO] Loading Assets" << std::endl;
+    // --- RESOURCES ---
+    spdlog::info("Loading Assets");
 
     sf::Font font;
     font.loadFromFile("data/fonts/CutiveMono-Regular.ttf");
