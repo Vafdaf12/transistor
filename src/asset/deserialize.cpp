@@ -1,9 +1,9 @@
 #include "deserialize.h"
 #include "asset/AssetLoader.h"
 #include "circuit/NotGate.h"
+#include "spdlog/spdlog.h"
 
 #include <fstream>
-#include <iostream>
 
 namespace serde {
 BinaryGate* createBinaryGate(const json& j, BinaryGate::Func func, const sf::Texture& texture) {
@@ -24,14 +24,17 @@ NotGate* createNot(const json& j, const sf::Texture& texture) {
 CompositeCircuit* createComposite(
     const json& j, const sf::Font& font, const AssetLoader<Circuit, std::string>& loader
 ) {
+    auto logger = spdlog::get("file");
+
     std::string type = j["type"].get<std::string>();
     std::string path = "data/" + type + ".json";
     std::ifstream file(path);
 
     if (!file.is_open()) {
-        std::cout << "[WARN/serde] Could not load composite circuit: " << type << std::endl;
+        logger->error("Failed load circuit from file \"{}\": Not found", path);
         return nullptr;
     }
+    logger->info("Loading circuit from file \"{}\"", path);
 
     std::string id = j["id"].get<std::string>();
     float x = j["position"]["x"].get<float>();
@@ -43,25 +46,24 @@ CompositeCircuit* createComposite(
     circuit->setInputCount(data["inputs"].size());
     circuit->setOutputCount(data["outputs"].size());
 
-    std::cout << "[INFO/serde] Loading circuits" << std::endl;
+    logger->debug("Loading child circuits for composite of type \"{}\"", type);
     for (auto elem : data["elements"]) {
         std::string type = elem["type"].get<std::string>();
         Circuit* inner = loader.read(type, elem);
         if (!inner) {
-            std::cout << "[WARN/serde] Failed to load circuit: " << type << std::endl;
+            logger->warn("Failed to load child circuit of type \"{}\"", type);
             continue;
         }
         circuit->addCircuit(inner);
     }
 
-    std::cout << "[INFO/serde] Loading wires" << std::endl;
+    logger->debug("Loading wires for composite of type \"{}\"", type);
     for (auto w : data["wires"]) {
         std::string froms, tos;
         w["from"].get_to(froms);
         w["to"].get_to(tos);
         if (!circuit->connectPins(froms, tos)) {
-            std::cout << "[WARN/serde] Failed to load wire: " << froms << " -> " << tos
-                      << std::endl;
+            logger->warn("Failed to load wire {} -> {}", froms, tos);
         }
     }
 

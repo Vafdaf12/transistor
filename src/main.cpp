@@ -1,6 +1,9 @@
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Window/ContextSettings.hpp"
 #include "SFML/Window/Event.hpp"
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
+
 #include "app/CircuitEditor.h"
 #include "asset/AssetLoader.h"
 #include "asset/ResourceManager.h"
@@ -14,7 +17,7 @@
 #include "ui/layout/HBox.h"
 
 #include <fstream>
-#include <iostream>
+#include <memory>
 #include <string>
 
 bool openEditor(
@@ -22,6 +25,8 @@ bool openEditor(
     const std::string& path,
     const AssetLoader<Circuit, std::string>& circuits
 ) {
+    auto logger = spdlog::get("editor");
+
     std::ifstream file(path);
     if (!file.is_open()) {
         return false;
@@ -29,32 +34,26 @@ bool openEditor(
 
     json data = json::parse(file);
 
-    std::cout << "[INFO/CircuitEditor] Loading inputs" << std::endl;
+    logger->info("Loading I/O pins");
     for (auto id : data["inputs"]) {
-        if (!editor.addInput(id.get<std::string>())) {
-            std::cout << "[WARN/CircuitEditor] Failed to load input: " << id << std::endl;
-        }
+        editor.addInput(id.get<std::string>());
     }
-
-    std::cout << "[INFO/CircuitEditor] Loading outputs" << std::endl;
     for (auto id : data["outputs"]) {
-        if (!editor.addOutput(id.get<std::string>())) {
-            std::cout << "[WARN/CircuitEditor] Failed to load input: " << id << std::endl;
-        }
+        editor.addOutput(id.get<std::string>());
     }
 
-    std::cout << "[INFO/CircuitEditor] Loading circuits" << std::endl;
+    logger->info("Loading Circuits");
     for (auto elem : data["elements"]) {
         std::string type = elem["type"].get<std::string>();
         Circuit* circuit = circuits.read(type, elem);
         if (!circuit) {
-            std::cout << "[WARN/CircuitEditor] Failed to load circuit: " << type << std::endl;
+            logger->warn("Failed to load circuit of type \"{}\"", type);
             continue;
         }
         editor.addCircuit(circuit);
     }
 
-    std::cout << "[INFO/CircuitEditor] Loading wires" << std::endl;
+    logger->info("Connecting pins");
     for (auto w : data["wires"]) {
         std::string froms, tos;
         w["from"].get_to(froms);
@@ -63,13 +62,12 @@ bool openEditor(
         Pin* to = editor.queryPin(tos);
 
         if (!from || !to) {
-            std::cout << "[WARN/CircuitEditor] Failed to load wire: " << froms << " -> " << tos
-                      << std::endl;
+            logger->warn("Failed to load wire {} -> {}: pins not found", froms, tos);
             continue;
         }
         editor.addWire(from, to);
     }
-    std::cout << "[INFO/CircuitEditor] Done." << std::endl;
+    logger->info("Editor loaded");
 
     return true;
 }
@@ -87,9 +85,14 @@ bool saveEditor(const CircuitEditor& editor, const std::string& path) {
 }
 
 int main(int argc, char** argv) {
-    // --- RESOURCES ---
+    // --- Initialize logging ---
+    auto sink = std::make_shared<spdlog::sinks::stderr_color_sink_st>();
+    spdlog::register_logger(std::make_shared<spdlog::logger>("editor", sink));
+    spdlog::register_logger(std::make_shared<spdlog::logger>("file", sink));
+    spdlog::register_logger(std::make_shared<spdlog::logger>("ui", sink));
 
-    std::cout << "[INFO] Loading Assets" << std::endl;
+
+    spdlog::info("Loading assets");
 
     sf::Font font;
     font.loadFromFile("data/fonts/CutiveMono-Regular.ttf");
@@ -120,7 +123,7 @@ int main(int argc, char** argv) {
     loader.setDefault(std::bind(serde::createComposite, _2, font, std::cref(loader)));
 
     // --- WINDOW SETUP ---
-    std::cout << "[INFO] Setting up window" << std::endl;
+    spdlog::info("Initializing window and game world");
     sf::Clock clock;
     sf::ContextSettings settings;
     settings.antialiasingLevel = 5;
@@ -130,7 +133,6 @@ int main(int argc, char** argv) {
     // --- GAME WORLD ---
     CircuitEditor editor(window.getDefaultView());
 
-    std::cout << "[INFO] Loading editor" << std::endl;
     std::string filePath = argc > 1 ? argv[1] : "data/world.json";
     openEditor(editor, filePath, loader);
 
@@ -143,7 +145,6 @@ int main(int argc, char** argv) {
     box.setSeperation(10);
     box.setBackground(BACKGROUND);
 
-    std::cout << "[INFO] Loading Sprites" << std::endl;
     ui::ImageView* imageView = new ui::ImageView(assets.get("gate_xor"));
     imageView->getSprite().setScale(0.4f, 0.4f);
     imageView->getSprite().setColor(sf::Color::Cyan);
@@ -185,13 +186,13 @@ int main(int argc, char** argv) {
         label->setPosition({float(window.getSize().x - label->getBoundingBox().width - 10), 10});
         label->setAnchor({float(window.getSize().x), 0}, false);
         widget = std::make_unique<ui::Button>(label, []() {
-            std::cout << "Open Library!" << std::endl;
+                spdlog::debug("Open Library!");
         });
     }
 
     // --- EVENT LOOP ---
     float time = clock.restart().asMilliseconds();
-    std::cout << "Startup time: " << time << "ms" << std::endl;
+    spdlog::info("Startup time: {}ms", time);
     while (window.isOpen()) {
         // --- EVENT HANDLING ---
         sf::Event event;

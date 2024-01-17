@@ -4,7 +4,11 @@ FetchContent_Declare(SFML
     GIT_REPOSITORY https://github.com/SFML/SFML
     GIT_TAG 2.6.1
 )
-FetchContent_MakeAvailable(SFML)
+FetchContent_Declare(spdlog
+    GIT_REPOSITORY https://github.com/gabime/spdlog
+    GIT_TAG v1.13.0
+)
+FetchContent_MakeAvailable(SFML spdlog)
 
 add_executable(${BINARY}
     main.cpp
@@ -31,7 +35,7 @@ target_include_directories(${BINARY}
     PUBLIC .
     PUBLIC ${INCLUDE_VENDOR}
 )
-target_link_libraries(${BINARY} sfml-graphics)
+target_link_libraries(${BINARY} sfml-graphics spdlog)
 
 # Copy resource files to build directory
 add_custom_target(assets ALL

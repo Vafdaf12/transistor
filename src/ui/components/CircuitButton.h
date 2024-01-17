@@ -4,6 +4,7 @@
 
 #include "app/CircuitEditor.h"
 #include "circuit/Circuit.h"
+#include "spdlog/logger.h"
 #include "ui/WidgetDecorator.h"
 
 namespace ui {
@@ -23,5 +24,6 @@ private:
 
     std::unique_ptr<Circuit> m_circuit;
     CircuitEditor& m_editor;
+    std::shared_ptr<spdlog::logger> m_logger;
 };
 } // namespace ui
