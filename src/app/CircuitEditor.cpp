@@ -1,16 +1,19 @@
 #include "CircuitEditor.h"
 #include "circuit/Circuit.h"
 
+#include "spdlog/spdlog.h"
 #include "tools/CircuitDragger.h"
 #include "tools/PinConnector.h"
 #include "tools/SelectionTool.h"
 
 #include <algorithm>
 #include <cmath>
-#include <iostream>
 #include <string>
 
 CircuitEditor::CircuitEditor(const sf::View& screen) : _screenSpace(screen), m_camera(screen) {
+    m_logger = spdlog::get("editor");
+    assert(m_logger);
+
     layoutPins();
     m_camera.setTarget({0, 0});
     _tools.emplace_back(new PinConnector(*this));
@@ -27,14 +30,21 @@ bool CircuitEditor::addInput(const std::string& id) {
         _inputs.back().setView(&_screenSpace);
         _inputs.back().setEditable(true);
         layoutPins();
+        m_logger->debug("Added input pin with ID \"{}\"", id);
+    } else {
+        m_logger->warn("Failed to add input pin \"{}\": ID already taken", id);
     }
     return !exists;
 }
 bool CircuitEditor::removeInput(Pin* pin) {
+    std::string id = pin->getId();
     bool removed = std::erase_if(_inputs, [&pin](const Pin& p) { return &p == pin; }) > 0;
     if (removed) {
+        m_logger->debug("Removed input pin \"{}\"", id);
         removeConnectedWires(pin);
         layoutPins();
+    } else {
+        m_logger->warn("Failed to remove input pin \"{}\": Not found", id);
     }
     return removed;
 }
@@ -47,14 +57,21 @@ bool CircuitEditor::addOutput(const std::string& id) {
         _outputs.emplace_back(id, Pin::Input);
         _outputs.back().setView(&_screenSpace);
         layoutPins();
+        m_logger->debug("Added output pin with ID \"{}\"", id);
+    } else {
+        m_logger->warn("Failed to add output pin \"{}\": ID already taken", id);
     }
     return !exists;
 }
 bool CircuitEditor::removeOutput(Pin* pin) {
+    std::string id = pin->getId();
     bool removed = std::erase_if(_outputs, [&pin](const Pin& p) { return &p == pin; }) > 0;
     if (removed) {
+        m_logger->debug("Removed output pin \"{}\"", id);
         removeConnectedWires(pin);
         layoutPins();
+    } else {
+        m_logger->warn("Failed to remove output pin \"{}\": Not found", id);
     }
     return removed;
 }
@@ -68,6 +85,9 @@ bool CircuitEditor::addCircuit(Circuit* c) {
         for (Pin* p : c->getAllPins()) {
             p->setView(&m_camera.getView());
         }
+        m_logger->debug("Added circuit with ID \"{}\"", c->getId());
+    } else {
+        m_logger->warn("Failed to add circuit \"{}\": ID already taken", c->getId());
     }
     return !exists;
 }
@@ -80,6 +100,9 @@ bool CircuitEditor::removeCircuit(const Circuit* c) {
         for (Pin* p : circuitPins) {
             removeConnectedWires(p);
         }
+        m_logger->debug("Removed circuit with ID \"{}\"", c->getId());
+    } else {
+        m_logger->warn("Failed to remove circuit with ID \"{}\": Not found", c->getId());
     }
     return removed;
 }
@@ -99,6 +122,7 @@ bool CircuitEditor::addWire(Pin* from, Pin* to) {
         return false;
     }
     _wires.emplace_back(from, to);
+    m_logger->debug("Wire added: {} -> {}", from->getFullPath(), to->getFullPath());
     return true;
 }
 bool CircuitEditor::removeWire(Pin* from, Pin* to) {
@@ -178,7 +202,7 @@ Pin* CircuitEditor::collidePin(const sf::RenderWindow& w, sf::Vector2i pixel, bo
 void CircuitEditor::removeConnectedWires(const Pin* pin) {
     int count = std::erase_if(_wires, [pin](const Wire& w) { return w.isEndpoint(pin); });
     if (count > 0) {
-        std::cout << "[INFO/CircuitEditor] Removed " << count << " wires" << std::endl;
+        m_logger->debug("Removed {} wires", count);
     }
 }
 void CircuitEditor::layoutPins() {
@@ -215,20 +239,16 @@ void CircuitEditor::onEvent(const sf::RenderWindow& w, const sf::Event& e) {
             if (e.key.alt) {
                 std::string id = getInputId("in");
                 addInput(id);
-                std::cout << "Add input: " << id << std::endl;
             } else {
                 std::string id = getOutputId("out");
                 addOutput(id);
-                std::cout << "Add output: " << id << std::endl;
             }
         }
         if (e.key.code == sf::Keyboard::Down) {
             if (e.key.alt && _inputs.size() > 0) {
                 removeInput(&_inputs.back());
-                std::cout << "Remove input" << std::endl;
             } else if (_outputs.size() > 0) {
                 removeOutput(&_outputs.back());
-                std::cout << "Remove output" << std::endl;
             }
         }
         if (e.key.code == sf::Keyboard::Delete) {
@@ -239,7 +259,7 @@ void CircuitEditor::onEvent(const sf::RenderWindow& w, const sf::Event& e) {
         }
         if (e.key.control && e.key.code == sf::Keyboard::C) {
             _board.setClipboard(_board.getSelection());
-            std::cout << "Copy " << _board.getClipboard().size() << std::endl;
+            m_logger->info("Copied {} circuits to clipboard", _board.getClipboard().size());
         }
         if (e.key.control && e.key.code == sf::Keyboard::V) {
             std::vector<Circuit*> copied = _board.getClipboard();
@@ -251,7 +271,7 @@ void CircuitEditor::onEvent(const sf::RenderWindow& w, const sf::Event& e) {
             });
             _board.setSelection(copied);
             _board.setClipboard(copied);
-            std::cout << "Paste " << _board.getClipboard().size() << std::endl;
+            m_logger->info("Pasted {} circuits from clipboard", _board.getClipboard().size());
         }
     }
 

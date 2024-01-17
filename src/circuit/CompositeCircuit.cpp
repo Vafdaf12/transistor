@@ -3,17 +3,20 @@
 #include "SFML/Graphics/Rect.hpp"
 
 #include <algorithm>
-#include <iostream>
 #include <iterator>
 #include <ranges>
 #include <vector>
 
+#include "spdlog/spdlog.h"
 #include "util/util.h"
 
 CompositeCircuit::CompositeCircuit(
     const std::string& id, const std::string& type, const sf::Font& font, sf::Vector2f pos
 )
     : Circuit(id), m_label(id, font), m_type(type) {
+
+    m_logger = spdlog::get("editor");
+    assert(m_logger);
 
     m_label.setFillColor(sf::Color::Red);
     m_shape.setFillColor(sf::Color::White);
@@ -234,16 +237,15 @@ bool CompositeCircuit::connectPins(const std::string& id1, const std::string& id
     Pin* p1 = queryPin(id1);
     Pin* p2 = queryPin(id2);
     if (!p1) {
-        std::cout << "[WARN/CompositeCircuit] could not find pin " << id1 << std::endl;
+        m_logger->warn("Failed to connect pins {} -> {}: {} not found", id1, id2, id1);
         return false;
     }
     if (!p2) {
-        std::cout << "[WARN/CompositeCircuit] could not find pin " << id2 << std::endl;
+        m_logger->warn("Failed to connect pins {} -> {}: {} not found", id1, id2, id2);
         return false;
     }
-    // std::cout << "[INFO/CompositeCircuit] Connecting " << p1->getFullPath() << " -> " <<
-    // p2->getFullPath() << std::endl;
     m_wires.emplace_back(p1, p2);
+    m_logger->debug("Connected pins {} -> {}", id1, id2);
     return true;
 }
 bool CompositeCircuit::isInteriorPin(const Pin& pin) const {

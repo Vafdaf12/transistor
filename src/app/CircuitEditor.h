@@ -11,6 +11,7 @@
 
 #include "circuit/Pin.h"
 #include "circuit/Wire.h"
+#include "spdlog/logger.h"
 #include "tools/Tool.h"
 #include "util/DragBoard.h"
 
@@ -91,4 +92,6 @@ private:
 
     std::vector<std::unique_ptr<Tool>> _tools;
     DragBoard _board;
+
+    std::shared_ptr<spdlog::logger> m_logger;
 };

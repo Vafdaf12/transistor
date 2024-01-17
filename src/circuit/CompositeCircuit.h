@@ -8,6 +8,7 @@
 #include "./Circuit.h"
 #include "./Pin.h"
 #include "./Wire.h"
+#include "spdlog/logger.h"
 
 
 class CompositeCircuit : public Circuit {
@@ -73,4 +74,5 @@ private:
     // Required for serialization purposes
     // TODO: find a way to not have to specify this (memento?)
     std::string m_type;
+    std::shared_ptr<spdlog::logger> m_logger;
 };

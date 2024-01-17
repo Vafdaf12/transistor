@@ -1,6 +1,6 @@
 #include "Label.h"
 #include "SFML/System/Vector2.hpp"
-#include <iostream>
+
 namespace ui {
 
 Label::Label(const std::string& text, const sf::Font& font, sf::Vector2f pos) : m_text(text, font) {
