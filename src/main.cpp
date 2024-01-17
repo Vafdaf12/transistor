@@ -17,6 +17,7 @@
 #include "ui/layout/HBox.h"
 
 #include <fstream>
+#include <memory>
 #include <string>
 
 bool openEditor(
@@ -84,11 +85,12 @@ bool saveEditor(const CircuitEditor& editor, const std::string& path) {
 }
 
 int main(int argc, char** argv) {
+    // --- Initialize logging ---
+    auto sink = std::make_shared<spdlog::sinks::stderr_color_sink_st>();
+    spdlog::register_logger(std::make_shared<spdlog::logger>("editor", sink));
+    spdlog::register_logger(std::make_shared<spdlog::logger>("file", sink));
+    spdlog::register_logger(std::make_shared<spdlog::logger>("ui", sink));
 
-    // --- RESOURCES ---
-    spdlog::stdout_color_st("editor");
-    spdlog::stdout_color_st("file");
-    spdlog::stdout_color_st("ui");
 
     spdlog::info("Loading assets");
 
