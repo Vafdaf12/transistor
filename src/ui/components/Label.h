@@ -23,7 +23,6 @@ public:
     void setFont(const sf::Font& font);
     void setText(const std::string& text);
 
-    void move(sf::Vector2f d) override;
     void setPosition(sf::Vector2f p) override;
 
 private:
@@ -33,7 +32,7 @@ private:
 
     sf::Text m_text;
     sf::RectangleShape m_background;
-    State m_state = 0;
+    WidgetState m_state = 0;
     float m_padding = 0;
 };
 }

@@ -5,6 +5,7 @@
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/Mouse.hpp"
 
+#include "ui/Widget.h"
 #include "ui/WidgetDecorator.h"
 
 namespace ui {

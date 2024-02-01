@@ -26,10 +26,6 @@ void Label::setPosition(sf::Vector2f p) {
     m_background.setPosition(p);
     layout();
 }
-void Label::move(sf::Vector2f delta) {
-    m_background.move(delta);
-    m_text.move(delta);
-}
 void Label::setPadding(float padding) {
     if(m_padding != padding) {
         m_padding = padding;

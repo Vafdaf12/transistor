@@ -1,28 +1,8 @@
 #include "HBox.h"
 #include "SFML/Graphics/Rect.hpp"
 #include "util/util.h"
-#include <algorithm>
-#include <vector>
+
 namespace ui {
-
-bool HBox::addWidget(ui::Widget* widget) {
-    bool exists = std::any_of(m_widgets.begin(), m_widgets.end(), [widget](const auto& w) {
-        return w.get() == widget;
-    });
-    if (!exists) {
-        m_widgets.emplace_back(widget);
-        layout();
-    }
-    return !exists;
-}
-bool HBox::removeWidget(ui::Widget* widget) {
-    if (std::erase_if(m_widgets, [widget](const auto& w) { return w.get() == widget; }) > 0) {
-        layout();
-        return true;
-    }
-    return false;
-}
-
 bool HBox::onEvent(const sf::RenderWindow& win, const sf::Event& e) {
     bool handled = false;
     for (auto& w : m_widgets) {
@@ -44,14 +24,44 @@ void HBox::draw(sf::RenderWindow& win) const {
     }
 }
 
-void HBox::move(sf::Vector2f delta) {
-    m_shape.move(delta);
-    for (auto& child : m_widgets) {
-        child->move(delta);
-    }
+bool HBox::addWidget(Widget* child) {
+    m_widgets.emplace_back(child);
+    layout();
+    return true;
 }
-void HBox::setPosition(sf::Vector2f pos) {
-    m_shape.setPosition(pos);
+
+bool HBox::removeWidget(Widget* child) {
+    size_t count =
+        std::erase_if(m_widgets, [child](const auto& w) { return w.get() == child; });
+    if (count > 0) {
+        layout();
+    }
+    return count > 0;
+}
+
+Widget* HBox::getWidget(size_t i) { return i >= m_widgets.size() ? nullptr : m_widgets[i].get(); }
+
+void HBox::setPosition(sf::Vector2f p) {
+    if (m_shape.getPosition() == p) {
+        return;
+    }
+    m_shape.setPosition(p);
+    layout();
+}
+
+void HBox::setPadding(float padding) {
+    if(padding == m_padding) {
+        return;
+    }
+    m_padding = padding;
+    layout();
+}
+
+void HBox::setSeperation(float seperation) {
+    if(seperation == m_seperation) {
+        return;
+    }
+    m_seperation = seperation;
     layout();
 }
 
