@@ -1,6 +1,8 @@
 #include "deserialize.h"
 #include "asset/AssetLoader.h"
 #include "circuit/NotGate.h"
+#include "circuit/view/SpriteView.h"
+#include "circuit/view/TextView.h"
 #include "spdlog/spdlog.h"
 
 #include <fstream>
@@ -11,7 +13,7 @@ BinaryGate* createBinaryGate(const json& j, BinaryGate::Func func, const sf::Tex
     float x = j["position"]["x"].get<float>();
     float y = j["position"]["y"].get<float>();
 
-    return new BinaryGate(id, texture, func, {x, y});
+    return new BinaryGate(id, func, new SpriteView(texture, {x, y}));
 }
 
 NotGate* createNot(const json& j, const sf::Texture& texture) {
@@ -19,7 +21,7 @@ NotGate* createNot(const json& j, const sf::Texture& texture) {
     float x = j["position"]["x"].get<float>();
     float y = j["position"]["y"].get<float>();
 
-    return new NotGate(id, texture, {x, y});
+    return new NotGate(id, new SpriteView(texture, {x, y}));
 }
 CompositeCircuit* createComposite(
     const json& j, const sf::Font& font, const AssetLoader<Circuit, std::string>& loader
@@ -39,7 +41,7 @@ CompositeCircuit* createComposite(
     std::string id = j["id"].get<std::string>();
     float x = j["position"]["x"].get<float>();
     float y = j["position"]["y"].get<float>();
-    auto circuit = std::make_unique<CompositeCircuit>(id, type, font, sf::Vector2f(x, y));
+    auto circuit = std::make_unique<CompositeCircuit>(id, type, new TextView(font, type, {x, y}));
 
     json data = json::parse(file);
 

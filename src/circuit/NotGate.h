@@ -1,7 +1,6 @@
 #pragma once
 
 #include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Sprite.hpp"
 
 #include <string>
 
@@ -10,18 +9,13 @@
 
 class NotGate : public Circuit {
 public:
-    NotGate(const std::string& id, const sf::Texture& assets, sf::Vector2f pos = {0, 0});
+    NotGate(const std::string& id, CircuitView* view);
     NotGate(const NotGate& other);
 
-    virtual sf::Vector2f getPosition() const override;
     virtual void setPosition(sf::Vector2f) override;
-
-    sf::FloatRect getBoundingBox() const override;
 
     void draw(sf::RenderWindow& window) const override;
     void update(const sf::RenderWindow&, float dt) override;
-
-    bool collide(sf::Vector2f) const override;
 
     NotGate* clone(const std::string& id) const override;
 
@@ -29,7 +23,6 @@ public:
     inline std::vector<Pin*> getAllPins() override { return {&m_input, &m_output}; }
 
 private:
+    void layout();
     Pin m_input, m_output;
-
-    sf::Sprite m_sprite;
 };

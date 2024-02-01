@@ -11,23 +11,17 @@
 #include "util/util.h"
 
 CompositeCircuit::CompositeCircuit(
-    const std::string& id, const std::string& type, const sf::Font& font, sf::Vector2f pos
+    const std::string& id, const std::string& type, CircuitView* view
 )
-    : Circuit(id), m_label(id, font), m_type(type) {
+    : Circuit(id, view), m_type(type) {
 
     m_logger = spdlog::get("editor");
     assert(m_logger);
-
-    m_label.setFillColor(sf::Color::Red);
-    m_shape.setFillColor(sf::Color::White);
-    setPosition(pos);
     layout();
 }
 
-CompositeCircuit::CompositeCircuit(const CompositeCircuit& other) : Circuit(other.getId()) {
+CompositeCircuit::CompositeCircuit(const CompositeCircuit& other) : Circuit(other.getId(), other.m_view->clone()) {
     m_type = other.m_type;
-    m_label = other.m_label;
-    m_shape = other.m_shape;
 
     m_inputs = other.m_inputs;
     m_outputs = other.m_outputs;
@@ -63,9 +57,6 @@ CompositeCircuit::CompositeCircuit(const CompositeCircuit& other) : Circuit(othe
         }
     );
 }
-bool CompositeCircuit::collide(sf::Vector2f p) const {
-    return m_shape.getGlobalBounds().contains(p);
-}
 
 std::vector<Pin*> CompositeCircuit::getAllPins() {
     std::vector<Pin*> pins;
@@ -77,12 +68,9 @@ std::vector<Pin*> CompositeCircuit::getAllPins() {
     return pins;
 }
 
-sf::FloatRect CompositeCircuit::getBoundingBox() const { return m_shape.getGlobalBounds(); }
-sf::Vector2f CompositeCircuit::getPosition() const { return m_shape.getPosition(); }
 void CompositeCircuit::setPosition(sf::Vector2f pos) {
-    sf::Vector2f diff = pos - m_shape.getPosition();
-    m_shape.setPosition(pos);
-    m_label.setPosition(m_label.getPosition() + diff);
+    sf::Vector2f diff = pos - m_view->getPosition();
+    m_view->setPosition(pos);
     for (Pin& pin : m_inputs) {
         pin.setPosition(pin.getPosition() + diff);
     }
@@ -131,8 +119,7 @@ void CompositeCircuit::update(const sf::RenderWindow& w, float dt) {
     */
 }
 void CompositeCircuit::draw(sf::RenderWindow& w) const {
-    w.draw(m_shape);
-    w.draw(m_label);
+    m_view->draw(w);
     for (const Pin& p : m_inputs) {
         p.draw(w);
     }
@@ -177,13 +164,6 @@ Circuit* CompositeCircuit::queryCircuit(const std::string& path) {
         }
     }
     return nullptr;
-}
-void CompositeCircuit::setLabel(const std::string& label) {
-    m_label.setString(label);
-    m_shape.setSize(
-        {m_label.getGlobalBounds().width + 2 * (PADDING+Pin::RADIUS), m_label.getCharacterSize() + 2 * PADDING}
-    );
-    layout();
 }
 
 void CompositeCircuit::setInputCount(size_t count) {
@@ -263,31 +243,27 @@ bool CompositeCircuit::addCircuit(Circuit* circuit) {
 void CompositeCircuit::layout() {
     size_t count = util::max(m_inputs.size(), m_outputs.size());
 
-    sf::Vector2f labelSize;
-    labelSize.x = m_label.getGlobalBounds().width;
-    labelSize.y = m_label.getCharacterSize();
+    sf::Vector2f minSize = m_view->getMinimumSize();
+    sf::Vector2f size = minSize;
+    size.x += 2 * (PADDING+Pin::RADIUS);
+    size.y = count * (2 * Pin::RADIUS + PADDING) + PADDING;
+    size.y = util::max<float>(minSize.y + 2 * PADDING, size.y);
 
-    sf::Vector2f shapeSize;
-    shapeSize.x = labelSize.x + 2 * (PADDING+Pin::RADIUS);
-    shapeSize.y = count * (2 * Pin::RADIUS + PADDING) + PADDING;
-    shapeSize.y = util::max<float>(labelSize.y + 2 * PADDING, shapeSize.y);
-
-    m_shape.setSize(shapeSize);
-    m_label.setPosition(m_shape.getPosition() + (shapeSize - labelSize) / 2.f);
+    m_view->setSize(size);
 
     // Layout input pins
     float pinStart = m_inputs.size() * (2 * Pin::RADIUS + PADDING) - PADDING;
-    pinStart = Pin::RADIUS + m_shape.getPosition().y + (shapeSize.y - pinStart) / 2;
+    pinStart = Pin::RADIUS + m_view->getPosition().y + (size.y - pinStart) / 2;
     for (Pin& pin : m_inputs) {
-        pin.setPosition({m_shape.getPosition().x, pinStart});
+        pin.setPosition({m_view->getPosition().x, pinStart});
         pinStart += 2 * Pin::RADIUS + PADDING;
     }
 
     // Layout output pins
     pinStart = m_outputs.size() * (2 * Pin::RADIUS + PADDING) - PADDING;
-    pinStart = Pin::RADIUS + m_shape.getPosition().y + (shapeSize.y - pinStart) / 2;
+    pinStart = Pin::RADIUS + m_view->getPosition().y + (size.y - pinStart) / 2;
     for (Pin& pin : m_outputs) {
-        pin.setPosition({m_shape.getPosition().x + m_shape.getSize().x, pinStart});
+        pin.setPosition({m_view->getPosition().x + m_view->getBoundingBox().width, pinStart});
         pinStart += 2 * Pin::RADIUS + PADDING;
     }
 }

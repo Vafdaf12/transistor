@@ -1,9 +1,7 @@
 #pragma once
 
-#include "SFML/Graphics/Sprite.hpp"
-#include "SFML/Graphics/Texture.hpp"
-
 #include "circuit/Circuit.h"
+#include "circuit/view/CircuitView.h"
 #include "circuit/Pin.h"
 
 class BinaryGate : public Circuit {
@@ -12,19 +10,15 @@ public:
 
     BinaryGate(
         const std::string& id,
-        const sf::Texture& texture,
         Func fn,
-        sf::Vector2f pos = {0, 0}
+        CircuitView* view
     );
     BinaryGate(const BinaryGate& other);
 
-    bool collide(sf::Vector2f) const override;
 
-    virtual sf::Vector2f getPosition() const override;
-    virtual void setPosition(sf::Vector2f) override;
 
-    sf::FloatRect getBoundingBox() const override;
 
+    void setPosition(sf::Vector2f p) override;
     BinaryGate* clone(const std::string& id) const override;
 
     void update(const sf::RenderWindow&, float dt) override;
@@ -42,6 +36,7 @@ public:
     static int Xor(int, int);
 
 private:
+    void layout();
     static constexpr float PADDING = 20;
 
     Pin m_in1;
@@ -49,6 +44,4 @@ private:
     Pin m_out;
 
     Func m_process;
-
-    sf::Sprite m_sprite;
 };

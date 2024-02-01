@@ -1,6 +1,7 @@
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Window/ContextSettings.hpp"
 #include "SFML/Window/Event.hpp"
+#include "circuit/view/SpriteView.h"
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 
@@ -9,7 +10,6 @@
 #include "asset/ResourceManager.h"
 #include "asset/deserialize.h"
 #include "circuit/BinaryGate.h"
-#include "circuit/NotGate.h"
 #include "ui/components/Button.h"
 #include "ui/components/CircuitButton.h"
 #include "ui/components/ImageView.h"
@@ -149,28 +149,28 @@ int main(int argc, char** argv) {
     imageView->getSprite().setScale(0.4f, 0.4f);
     imageView->getSprite().setColor(sf::Color::Cyan);
     assert(box.addWidget(new ui::CircuitButton(
-        editor, new BinaryGate("xor", assets.get("gate_xor"), BinaryGate::Xor), imageView
+        editor, new BinaryGate("xor", BinaryGate::Xor, new SpriteView(assets.get("gate_xor"))), imageView
     )));
 
     imageView = new ui::ImageView(assets.get("gate_and"));
     imageView->getSprite().setScale(0.4f, 0.4f);
     imageView->getSprite().setColor(sf::Color::Cyan);
     assert(box.addWidget(new ui::CircuitButton(
-        editor, new BinaryGate("and", assets.get("gate_and"), BinaryGate::And), imageView
+        editor, new BinaryGate("and", BinaryGate::And, new SpriteView(assets.get("gate_and"))), imageView
     )));
 
     imageView = new ui::ImageView(assets.get("gate_or"));
     imageView->getSprite().setScale(0.4f, 0.4f);
     imageView->getSprite().setColor(sf::Color::Cyan);
     assert(box.addWidget(new ui::CircuitButton(
-        editor, new BinaryGate("or", assets.get("gate_or"), BinaryGate::Or), imageView
+        editor, new BinaryGate("or", BinaryGate::Or, new SpriteView(assets.get("gate_or"))), imageView
     )));
 
     imageView = new ui::ImageView(assets.get("gate_not"));
     imageView->getSprite().setScale(0.4f, 0.4f);
     imageView->getSprite().setColor(sf::Color::Cyan);
     assert(box.addWidget(
-        new ui::CircuitButton(editor, new NotGate("not", assets.get("gate_not")), imageView)
+        new ui::CircuitButton(editor, new NotGate("not", new SpriteView(assets.get("gate_not"))), imageView)
     ));
 
     float x = (window.getSize().x - box.getBoundingBox().width) / 2;
