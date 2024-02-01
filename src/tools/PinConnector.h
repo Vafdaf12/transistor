@@ -10,16 +10,15 @@ class PinConnector : public Tool {
 public:
     PinConnector(CircuitEditor& world);
 
-    bool isActive() const override { return _firstPin; }
 
     void onEvent(const sf::RenderWindow&, const sf::Event&) override;
     void update(const sf::RenderWindow&, float) override;
     void draw(sf::RenderWindow&) const override;
 
 private:
-    CircuitEditor& _editor;
+    CircuitEditor& m_editor;
 
-    Pin* _firstPin = nullptr;
+    Pin* m_firstPin = nullptr;
 
-    sf::Vertex _vertices[2] = {sf::Vertex({0, 0}, sf::Color::White)};
+    sf::Vertex m_vertices[2] = {sf::Vertex({0, 0}, sf::Color::White)};
 };

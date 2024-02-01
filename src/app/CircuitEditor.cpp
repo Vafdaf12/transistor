@@ -2,6 +2,7 @@
 #include "circuit/Circuit.h"
 
 #include "spdlog/spdlog.h"
+#include "tools/CameraController.h"
 #include "tools/CircuitDragger.h"
 #include "tools/PinConnector.h"
 #include "tools/SelectionTool.h"
@@ -10,15 +11,16 @@
 #include <cmath>
 #include <string>
 
-CircuitEditor::CircuitEditor(const sf::View& screen) : _screenSpace(screen), m_camera(screen) {
+CircuitEditor::CircuitEditor(const sf::View& screen) : _screenSpace(screen), m_cameraView(screen) {
     m_logger = spdlog::get("editor");
     assert(m_logger);
 
     layoutPins();
-    m_camera.setTarget({0, 0});
-    _tools.emplace_back(new PinConnector(*this));
-    _tools.emplace_back(new CircuitDragger(*this, _board));
-    _tools.emplace_back(new SelectionTool(*this, _board));
+    m_cameraView.setCenter({0, 0});
+    m_tools = std::make_unique<CameraController>(m_cameraView);
+    m_tools->append(new PinConnector(*this));
+    m_tools->append(new CircuitDragger(*this, _board));
+    m_tools->append(new SelectionTool(*this, _board));
 }
 
 bool CircuitEditor::addInput(const std::string& id) {
@@ -83,7 +85,7 @@ bool CircuitEditor::addCircuit(Circuit* c) {
     if (!exists) {
         _circuits.emplace_back(c);
         for (Pin* p : c->getAllPins()) {
-            p->setView(&m_camera.getView());
+            p->setView(&m_cameraView);
         }
         m_logger->debug("Added circuit with ID \"{}\"", c->getId());
     } else {
@@ -227,7 +229,6 @@ void CircuitEditor::layoutPins() {
     }
 }
 void CircuitEditor::onEvent(const sf::RenderWindow& w, const sf::Event& e) {
-    m_camera.onEvent(w, e);
     if (e.type == sf::Event::Resized) {
         _screenSpace.setSize(e.size.width, e.size.height);
         _screenSpace.setCenter(e.size.width / 2.f, e.size.height / 2.f);
@@ -284,15 +285,9 @@ void CircuitEditor::onEvent(const sf::RenderWindow& w, const sf::Event& e) {
     for (auto& c : _circuits) {
         c->onEvent(w, e);
     }
-    for (auto& tool : _tools) {
-        tool->onEvent(w, e);
-        if (tool->isActive()) {
-            break;
-        }
-    }
+    m_tools->onEvent(w, e);
 }
 void CircuitEditor::update(const sf::RenderWindow& w, float dt) {
-    m_camera.update(w, dt);
     for (auto& p : _wires) {
         p.update(w, dt);
     }
@@ -305,18 +300,13 @@ void CircuitEditor::update(const sf::RenderWindow& w, float dt) {
     for (auto& c : _circuits) {
         c->update(w, dt);
     }
-    for (auto& tool : _tools) {
-        tool->update(w, dt);
-        if (tool->isActive()) {
-            break;
-        }
-    }
+    m_tools->update(w, dt);
 
-    sf::Vector2f topLeft = m_camera.getView().getCenter() - m_camera.getView().getSize() / 2.f;
-    sf::Vector2f bottomRight = m_camera.getView().getCenter() + m_camera.getView().getSize() / 2.f;
-    float dist = w.mapCoordsToPixel({100, 0}, m_camera.getView()).x -
-                 w.mapCoordsToPixel({0, 0}, m_camera.getView()).x;
-    const int zoom = std::min(m_camera.getView().getSize().x / w.getSize().x / 4, 3.f);
+    sf::Vector2f topLeft = m_cameraView.getCenter() - m_cameraView.getSize() / 2.f;
+    sf::Vector2f bottomRight = m_cameraView.getCenter() + m_cameraView.getSize() / 2.f;
+    float dist = w.mapCoordsToPixel({100, 0}, m_cameraView).x -
+                 w.mapCoordsToPixel({0, 0}, m_cameraView).x;
+    const int zoom = std::min(m_cameraView.getSize().x / w.getSize().x / 4, 3.f);
     const float gridSize = 10 * 1024 / std::pow(2, ceil(log2(dist)));
     const sf::Color dimColor = sf::Color(0xffffff18);
 
@@ -357,7 +347,7 @@ void CircuitEditor::update(const sf::RenderWindow& w, float dt) {
     }
 }
 void CircuitEditor::draw(sf::RenderWindow& w) const {
-    w.setView(m_camera.getView());
+    w.setView(m_cameraView);
     w.draw(_grid);
     for (const auto& p : _wires) {
         p.draw(w);
@@ -374,10 +364,8 @@ void CircuitEditor::draw(sf::RenderWindow& w) const {
         p.draw(w);
     }
 
-    w.setView(m_camera.getView());
-    for (auto& tool : _tools) {
-        tool->draw(w);
-    }
+    w.setView(m_cameraView);
+    m_tools->draw(w);
 }
 Pin* CircuitEditor::queryPin(const std::string& path) {
     size_t i = path.find('/');

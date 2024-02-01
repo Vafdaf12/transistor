@@ -1,54 +1,57 @@
 #include "SelectionTool.h"
 #include "SFML/Graphics/RenderWindow.hpp"
+#include "spdlog/spdlog.h"
 
 SelectionTool::SelectionTool(CircuitEditor& editor, DragBoard& board)
-    : _editor(editor), _board(board) {
-    _selector.setFillColor({66, 135, 245, 100});
+    : m_editor(editor), m_board(board) {
+    m_selector.setFillColor({66, 135, 245, 100});
 }
 
 void SelectionTool::onEvent(const sf::RenderWindow& window, const sf::Event& event) {
-    if (event.type == sf::Event::MouseButtonPressed) {
-        if (event.mouseButton.button != sf::Mouse::Left) {
-            return;
-        }
 
-        _board.clearSelection();
+    // Start a new selection
+    if (event.type == sf::Event::MouseButtonPressed &&
+        event.mouseButton.button == sf::Mouse::Left) {
+        m_board.clearSelection();
 
         sf::Vector2i mousePos = {event.mouseButton.x, event.mouseButton.y};
-        sf::Vector2f worldPos = window.mapPixelToCoords(mousePos, _editor.getWorldView());
+        sf::Vector2f worldPos = window.mapPixelToCoords(mousePos, m_editor.getWorldView());
 
-        if (!_editor.collidePin(window, mousePos, true)) {
-            _selector.setPosition(worldPos);
-            _selector.setSize({0, 0});
-            _active = true;
-        }
-    }
-    if (event.type == sf::Event::MouseMoved) {
-        if (!_active) {
-            return;
-        }
-        _board.setSelection(_editor.collideCircuit(_selector.getGlobalBounds()));
+        m_selector.setPosition(worldPos);
+        m_selector.setSize({0, 0});
+        m_active = true;
+        spdlog::debug("set to true");
     }
 
-    if (event.type == sf::Event::MouseButtonReleased) {
-        _active = false;
+    if (m_active) {
+        if (event.type == sf::Event::MouseMoved) {
+            m_board.setSelection(m_editor.collideCircuit(m_selector.getGlobalBounds()));
+        } else if (event.type == sf::Event::MouseButtonReleased) {
+            spdlog::debug("set to false");
+            m_active = false;
+        }
+    } else {
+        Tool::onEvent(window, event);
     }
 }
 
-void SelectionTool::update(const sf::RenderWindow& window, float) {
-    if (_active) {
+void SelectionTool::update(const sf::RenderWindow& window, float dt) {
+    if (m_active) {
         sf::Vector2i pos = sf::Mouse::getPosition(window);
-        sf::Vector2f worldPos = window.mapPixelToCoords(pos, _editor.getWorldView());
-        sf::Vector2f size = worldPos - _selector.getPosition();
-        _selector.setSize(size);
+        sf::Vector2f worldPos = window.mapPixelToCoords(pos, m_editor.getWorldView());
+        sf::Vector2f size = worldPos - m_selector.getPosition();
+        m_selector.setSize(size);
+    } else {
+        Tool::update(window, dt);
     }
 }
 
 void SelectionTool::draw(sf::RenderWindow& window) const {
-    if (_active) {
-        window.draw(_selector);
+    if (m_active) {
+        window.draw(m_selector);
+            spdlog::debug("draw");
     }
-    for (const Circuit* c : _board.getSelection()) {
+    for (const Circuit* c : m_board.getSelection()) {
         sf::RectangleShape outline;
         sf::FloatRect rect = c->getBoundingBox();
         outline.setSize(rect.getSize());
@@ -58,4 +61,5 @@ void SelectionTool::draw(sf::RenderWindow& window) const {
         outline.setOutlineThickness(5);
         window.draw(outline);
     }
+    Tool::draw(window);
 }

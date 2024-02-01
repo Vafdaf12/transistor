@@ -19,7 +19,6 @@ add_executable(${BINARY}
     ui/components/CircuitButton.cpp
     ui/components/Button.cpp
     ui/components/Label.cpp
-    core/Camera.cpp
     circuit/view/SpriteView.cpp
     circuit/view/TextView.cpp
     circuit/BinaryGate.cpp
@@ -30,6 +29,7 @@ add_executable(${BINARY}
     tools/PinConnector.cpp
     tools/SelectionTool.cpp
     tools/CircuitDragger.cpp
+    tools/CameraController.cpp
     util/DragBoard.cpp
     util/util.cpp
 )

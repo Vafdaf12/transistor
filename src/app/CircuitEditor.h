@@ -6,7 +6,6 @@
 
 #include "SFML/Graphics/VertexArray.hpp"
 #include "SFML/Graphics/View.hpp"
-#include "core/Camera.h"
 #include "json.hpp"
 
 #include "circuit/Pin.h"
@@ -65,7 +64,7 @@ public:
     void update(const sf::RenderWindow&, float dt);
     void draw(sf::RenderWindow&) const;
 
-    inline const sf::View& getWorldView() { return m_camera.getView(); }
+    inline const sf::View& getWorldView() { return m_cameraView; }
 
     void toJson(nlohmann::json&) const;
 
@@ -77,7 +76,7 @@ private:
     std::string getOutputId(const std::string& base) const;
 
     sf::View _screenSpace;
-    Camera m_camera;
+    sf::View m_cameraView;
 
     sf::VertexArray _grid;
 
@@ -90,7 +89,7 @@ private:
 
     std::vector<std::unique_ptr<Circuit>> _circuits;
 
-    std::vector<std::unique_ptr<Tool>> _tools;
+    std::unique_ptr<Tool> m_tools;
     DragBoard _board;
 
     std::shared_ptr<spdlog::logger> m_logger;

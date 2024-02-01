@@ -6,16 +6,16 @@
 
 class CircuitDragger : public Tool {
 public:
-    CircuitDragger(CircuitEditor& editor, const DragBoard& board);
-    bool isActive() const override;
+    CircuitDragger(CircuitEditor& editor, DragBoard& board);
 
     void onEvent(const sf::RenderWindow&, const sf::Event&) override;
     void update(const sf::RenderWindow&, float) override;
     void startDragging(const sf::RenderWindow& window, const std::vector<Circuit*> selection);
 
 private:
-    std::vector<std::pair<sf::Vector2f, Circuit*>> _circuits;
+    bool isActive() const;
+    std::vector<std::pair<sf::Vector2f, Circuit*>> m_circuits;
 
-    CircuitEditor& _editor;
-    const DragBoard& _board;
+    CircuitEditor& m_editor;
+    DragBoard& m_board;
 };

@@ -14,15 +14,12 @@ public:
     void onEvent(const sf::RenderWindow&, const sf::Event&) override;
     void update(const sf::RenderWindow&, float) override;
     void draw(sf::RenderWindow&) const override;
-
-    bool isActive() const override { return _active; }
 private:
 
-    bool _active = false;
+    bool m_active = false;
 
-    CircuitEditor& _editor;
-    DragBoard& _board;
+    CircuitEditor& m_editor;
+    DragBoard& m_board;
 
-    sf::RectangleShape _selector;
-
+    sf::RectangleShape m_selector;
 };
