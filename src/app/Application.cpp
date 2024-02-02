@@ -5,6 +5,7 @@
 #include "circuit/view/SpriteView.h"
 #include "ui/components/CircuitButton.h"
 #include "ui/components/ImageView.h"
+#include "ui/components/InputLabel.h"
 #include "ui/layout/HBox.h"
 
 #include "SFML/System/Clock.hpp"
@@ -209,6 +210,8 @@ void Application::createInterface() {
     assert(root->addWidget(new ui::CircuitButton(
         *m_editor, new NotGate("not", new SpriteView(m_textures.get("gate_not"))), imageView
     )));
+
+    root->addWidget(new ui::InputLabel("hi", m_font));
 
     float x = (m_window.getSize().x - root->getBoundingBox().width) / 2;
     root->setPosition({x, 10});

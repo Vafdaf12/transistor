@@ -29,7 +29,7 @@ public:
     void setPadding(float padding);
     void setSeperation(float seperation);
 
-    void layout();
+    void invalidateRect() override;
 
 private:
     std::vector<std::unique_ptr<ui::Widget>> m_widgets;

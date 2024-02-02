@@ -55,7 +55,21 @@ public:
     }
     inline sf::Vector2f getAnchor() const { return m_anchor; }
 
+    // Triggered when the bounding box of a widget is changed
+    virtual void invalidateRect() {
+        if(m_parent) {
+            m_parent->invalidateRect();
+        }
+    }
+
 protected:
+    // Helper method to get around using friend classes
+    static void setParent(Widget* widget, Widget* parent) {
+        widget->m_parent = parent;
+    }
+
+    Widget* m_parent = nullptr;
+
     sf::Vector2f m_anchor;
 };
 } // namespace ui

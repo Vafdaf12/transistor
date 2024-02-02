@@ -25,18 +25,31 @@ void HBox::draw(sf::RenderWindow& win) const {
 }
 
 bool HBox::addWidget(Widget* child) {
+    bool found = std::any_of(m_widgets.begin(), m_widgets.end(), [child](const auto& w) {
+        return w.get() == child;
+    });
+    if (found) {
+        return false;
+    }
+
     m_widgets.emplace_back(child);
-    layout();
+    setParent(child, this);
+    invalidateRect();
     return true;
 }
 
 bool HBox::removeWidget(Widget* child) {
-    size_t count =
-        std::erase_if(m_widgets, [child](const auto& w) { return w.get() == child; });
-    if (count > 0) {
-        layout();
+    auto it = std::find_if(m_widgets.begin(), m_widgets.end(), [child](const auto& w) {
+        return w.get() == child;
+    });
+    if (it == m_widgets.end()) {
+        return false;
     }
-    return count > 0;
+
+    (void)it->release();
+    setParent(child, this);
+    invalidateRect();
+    return true;
 }
 
 Widget* HBox::getWidget(size_t i) { return i >= m_widgets.size() ? nullptr : m_widgets[i].get(); }
@@ -46,40 +59,45 @@ void HBox::setPosition(sf::Vector2f p) {
         return;
     }
     m_shape.setPosition(p);
-    layout();
+    invalidateRect();
 }
 
 void HBox::setPadding(float padding) {
-    if(padding == m_padding) {
+    if (padding == m_padding) {
         return;
     }
     m_padding = padding;
-    layout();
+    invalidateRect();
 }
 
 void HBox::setSeperation(float seperation) {
-    if(seperation == m_seperation) {
+    if (seperation == m_seperation) {
         return;
     }
     m_seperation = seperation;
-    layout();
+    invalidateRect();
 }
 
-void HBox::layout() {
+void HBox::invalidateRect() {
     sf::Vector2f size(0, 0);
     sf::Vector2f pos = m_shape.getPosition() + sf::Vector2f(m_padding, m_padding);
     for (auto& child : m_widgets) {
         sf::FloatRect rect = child->getBoundingBox();
+        setParent(child.get(), nullptr);
         child->setPosition(pos);
 
         pos.x += rect.width + m_seperation;
 
         size.x += rect.width + m_seperation;
         size.y = util::max(size.y, rect.height);
+        setParent(child.get(), this);
     }
     size.x = size.x - m_seperation + 2 * m_padding;
     size.y = size.y + 2 * m_padding;
 
-    m_shape.setSize(size);
+    if (m_shape.getSize() != size) {
+        m_shape.setSize(size);
+        Widget::invalidateRect();
+    }
 }
 } // namespace ui

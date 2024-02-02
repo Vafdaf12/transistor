@@ -20,6 +20,7 @@ add_executable(${BINARY}
     ui/components/CircuitButton.cpp
     ui/components/Button.cpp
     ui/components/Label.cpp
+    ui/components/InputLabel.cpp
     circuit/view/SpriteView.cpp
     circuit/view/TextView.cpp
     circuit/BinaryGate.cpp

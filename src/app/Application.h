@@ -40,7 +40,8 @@ private:
     ResourceManager<std::string, sf::Texture> m_textures;
     AssetLoader<Circuit, std::string> m_circuitLoader;
 
-    std::unique_ptr<CircuitEditor> m_editor = nullptr;
     std::string m_filePath;
+    std::unique_ptr<CircuitEditor> m_editor = nullptr;
     std::unique_ptr<ui::Widget> m_gui;
+    sf::View m_screenSpace;
 };
