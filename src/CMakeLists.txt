@@ -13,6 +13,7 @@ FetchContent_MakeAvailable(SFML spdlog)
 add_executable(${BINARY}
     main.cpp
     app/CircuitEditor.cpp
+    app/Application.cpp
     asset/deserialize.cpp
     ui/layout/HBox.cpp
     ui/components/ImageView.cpp

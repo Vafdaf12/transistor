@@ -20,14 +20,12 @@ void SelectionTool::onEvent(const sf::RenderWindow& window, const sf::Event& eve
         m_selector.setPosition(worldPos);
         m_selector.setSize({0, 0});
         m_active = true;
-        spdlog::debug("set to true");
     }
 
     if (m_active) {
         if (event.type == sf::Event::MouseMoved) {
             m_board.setSelection(m_editor.collideCircuit(m_selector.getGlobalBounds()));
         } else if (event.type == sf::Event::MouseButtonReleased) {
-            spdlog::debug("set to false");
             m_active = false;
         }
     } else {
@@ -49,7 +47,6 @@ void SelectionTool::update(const sf::RenderWindow& window, float dt) {
 void SelectionTool::draw(sf::RenderWindow& window) const {
     if (m_active) {
         window.draw(m_selector);
-            spdlog::debug("draw");
     }
     for (const Circuit* c : m_board.getSelection()) {
         sf::RectangleShape outline;
